@@ -1,0 +1,24 @@
+// tina/config.ts
+import { LocalAuthProvider, defineConfig } from "tinacms";
+import { UsernamePasswordAuthJSProvider, TinaUserCollection } from "tinacms-authjs/dist/tinacms";
+var isLocal = process.env.TINA_PUBLIC_IS_LOCAL === "true";
+var branch = process.env.NEXT_PUBLIC_TINA_BRANCH || process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_REF || process.env.HEAD || "main";
+var config_default = defineConfig({
+  contentApiUrlOverride: "/api/tina/gql",
+  authProvider: isLocal ? new LocalAuthProvider() : new UsernamePasswordAuthJSProvider(),
+  branch,
+  build: {
+    publicFolder: "public",
+    outputFolder: "admin"
+    // within the public folder
+  },
+  // See https://tina.io/docs/reference/schema/ for more information
+  schema: {
+    collections: [
+      TinaUserCollection
+    ]
+  }
+});
+export {
+  config_default as default
+};
