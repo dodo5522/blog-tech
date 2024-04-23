@@ -9,8 +9,6 @@ export default defineConfig({
     contentApiUrlOverride: "/api/tina/gql",
     authProvider: isLocal ? new LocalAuthProvider() : new UsernamePasswordAuthJSProvider(),
     branch,
-    token: '<Your Read Only Token>', // generated on app.tina.io
-    clientId: '<Your Client ID>', // generated on app.tina.io
     build: {
         publicFolder: "public",
         outputFolder: "admin" // within the public folder
