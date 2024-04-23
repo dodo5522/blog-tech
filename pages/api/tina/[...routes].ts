@@ -1,5 +1,6 @@
 import { TinaNodeBackend, LocalBackendAuthProvider } from "@tinacms/datalayer";
 import { AuthJsBackendAuthProvider, TinaAuthJSOptions } from "tinacms-authjs";
+import type { IncomingMessage, ServerResponse } from 'http';
 
 import databaseClient from "../../../tina/__generated__/databaseClient";
 
@@ -11,13 +12,15 @@ const handler = TinaNodeBackend({
     : AuthJsBackendAuthProvider({
         authOptions: TinaAuthJSOptions({
           databaseClient: databaseClient,
-          secret: process.env.NEXTAUTH_SECRET,
+          secret: process.env.NEXTAUTH_SECRET ?? '',
         }),
       }),
   databaseClient,
 });
 
-export default (req, res) => {
+const TinaApiRoutes = (req: IncomingMessage, res: ServerResponse) => {
   // Modify the request here if you need to
   return handler(req, res);
 };
+
+export default TinaApiRoutes;
