@@ -1,0 +1,34 @@
+name: Check code format
+
+on:
+  push:
+    branches:
+      - feature/*/main
+      - staging
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    environment: test
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.9.0'
+      - uses: actions/cache@v4
+        id: cache
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+      - if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        run: yarn install
+      - name: Build and lint
+        run: |
+          echo GITHUB_PERSONAL_ACCESS_TOKEN=${{secrets.REPO_PERSONAL_ACCESS_TOKEN}} > .env
+          echo GITHUB_OWNER=${GITHUB_REPOSITORY_OWNER} >> .env
+          echo GITHUB_REPO=$(basename ${GITHUB_REPOSITORY}) >> .env
+          echo GITHUB_BRANCH=${GITHUB_REF_NAME} >> .env
+          echo NEXT_PUBLIC_TINA_CLIENT_ID=${{secrets.TINA_CLIENT_ID}} >> .env
+          echo TINA_TOKEN=${{secrets.TINA_TOKEN}} >> .env
+          yarn build

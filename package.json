@@ -56,7 +56,7 @@
       },
       "import/resolver": {
         "typescript": {
-          "project": "tsconfig.json"
+          "project": {}
         }
       }
     },
