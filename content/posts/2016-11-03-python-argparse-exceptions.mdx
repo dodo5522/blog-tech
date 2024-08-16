@@ -1,0 +1,121 @@
+---
+title: "ちょっとしたコマンドラインツールをpythonで作る時に便利なargparseのテストで気をつけるべきこと。"
+description: "ちょっとしたコマンドラインツールをpythonで作る時に便利なargparseなんですが、位置引数ありparserが出す例外をテストするコードを書いて初めて知っ..."
+tags:
+  - "argparse"
+  - "python"
+  - "プログラミング"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-11-03T12:31:06.000Z
+author: takashi
+---
+
+
+<p><a href="http://blog.rinka-blossom.com/python-argparsenoshi-ifang/">ちょっとしたコマンドラインツールをpythonで作る時に便利なargparse</a>なんですが、位置引数ありparserが出す例外をテストするコードを書いて初めて知ったことがありました。
+そのメモ書きになります。</p>
+<h2>位置引数とは</h2>
+<p><a href="http://docs.python.jp/3.5/library/argparse.html#name-or-flags">argparseの公式ページ</a>にも載っている通り、コマンドライン実行時に必須となる引数のことです。以下引用。
+位置引数は次のように作成します:</p>
+<pre><code class="language-python">&gt;&gt;&gt;
+&gt;&gt;&gt; parser.add_argument(&#039;bar&#039;)</code></pre>
+<p>parse_args() が呼ばれたとき、オプション引数は接頭辞 - により識別され、それ以外の引数は位置引数として扱われます:</p>
+<pre><code class="language-python">&gt;&gt;&gt;
+&gt;&gt;&gt; parser = argparse.ArgumentParser(prog=&#039;PROG&#039;)
+&gt;&gt;&gt; parser.add_argument(&#039;-f&#039;, &#039;--foo&#039;)
+&gt;&gt;&gt; parser.add_argument(&#039;bar&#039;)
+&gt;&gt;&gt; parser.parse_args([&#039;BAR&#039;])
+Namespace(bar=&#039;BAR&#039;, foo=None)
+&gt;&gt;&gt; parser.parse_args([&#039;BAR&#039;, &#039;--foo&#039;, &#039;FOO&#039;])
+Namespace(bar=&#039;BAR&#039;, foo=&#039;FOO&#039;)
+&gt;&gt;&gt; parser.parse_args([&#039;--foo&#039;, &#039;FOO&#039;])
+usage: PROG [-h] [-f FOO] bar
+PROG: error: too few arguments</code></pre>
+<h2>位置引数ありのparserをテストする際に気をつけるべきこと</h2>
+<p>あれっ　と思いました。
+位置引数ありのparserをテストするとき、エラーケースのテストを書くにはどうするんだ？？と。
+例えば以下のようなコードを書いたとして、</p>
+<pre><code class="language-python">import sys
+import argparse
+def init(argv=sys.argv[1:]):
+    arg = argparse.ArgumentParser(
+        description=&quot;&quot;main program to test TS-MPPT-60 monitor modules&quot;&quot;)
+    arg.add_argument(
+        &quot;&quot;host_name&quot;&quot;,
+        type=str,
+        help=&quot;&quot;TS-MPPT-60 host address&quot;&quot;
+    )
+    arg.add_argument(
+        &quot;&quot;-xa&quot;&quot;, &quot;&quot;--xively-api-key&quot;&quot;,
+        type=str,
+        nargs=&#039;?&#039;, default=None, const=None,
+        help=&quot;&quot;Xively API key string&quot;&quot;
+    )
+    return arg.parse_args(argv)</code></pre>
+<p>以下のようなテストを書くと、</p>
+<pre><code class="language-python">class TestArgParser(unittest.TestCase):
+    def test_default_args(self):
+        parsed = argparser.init([])</code></pre>
+<p>以下のようなエラーになります。</p>
+<pre><code class="language-bash">test_argparser.py: error: the following arguments are required: host_name
+Eusage: test_argparser.py [-h] [-xa [XIVELY_API_KEY]] [-xf [XIVELY_FEED_KEY]]
+                         [-kp [KEENIO_PROJECT_ID]] [-kw [KEENIO_WRITE_KEY]]
+                         [-tck [TWITTER_CONSUMER_KEY]]
+                         [-tcs [TWITTER_CONSUMER_SECRET]] [-tk [TWITTER_KEY]]
+                         [-ts [TWITTER_SECRET]] [-be] [-bl [BATTERY_LIMIT]]
+                         [-bs [BATTERY_LIMIT_HOOK_SCRIPT]]
+                         [-ch [CHARGE_CURRENT_HIGH]]
+                         [-bf [BATTERY_FULL_LIMIT]] [-i INTERVAL]
+                         [-l LOG_FILE] [--just-get-status] [--status-all]
+                         [--debug]
+                         host_name
+test_argparser.py: error: the following arguments are required: host_name
+E
+======================================================================
+ERROR: test_battery_full_limit (__main__.TestArgParser)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File &quot;&quot;/Users/takashi/Development/solar_monitor/test/test_argparser.py&quot;&quot;, line 81, in test_battery_full_limit
+    parsed = argparser.init([&quot;&quot;-bf&quot;&quot;, ])
+  File &quot;&quot;/Users/takashi/.anyenv/envs/pyenv/versions/test_py35/lib/python3.5/site-packages/solar_monitor/argparser.py&quot;&quot;, line 147, in init
+    return arg.parse_args(argv)
+  File &quot;&quot;/Users/takashi/.anyenv/envs/pyenv/versions/3.5.1/lib/python3.5/argparse.py&quot;&quot;, line 1726, in parse_args
+    args, argv = self.parse_known_args(args, namespace)
+  File &quot;&quot;/Users/takashi/.anyenv/envs/pyenv/versions/3.5.1/lib/python3.5/argparse.py&quot;&quot;, line 1758, in parse_known_args
+    namespace, args = self._parse_known_args(args, namespace)
+  File &quot;&quot;/Users/takashi/.anyenv/envs/pyenv/versions/3.5.1/lib/python3.5/argparse.py&quot;&quot;, line 1993, in _parse_known_args
+    &#039;, &#039;.join(required_actions))
+  File &quot;&quot;/Users/takashi/.anyenv/envs/pyenv/versions/3.5.1/lib/python3.5/argparse.py&quot;&quot;, line 2385, in error
+    self.exit(2, _(&#039;%(prog)s: error: %(message)s\n&#039;) % args)
+  File &quot;&quot;/Users/takashi/.anyenv/envs/pyenv/versions/3.5.1/lib/python3.5/argparse.py&quot;&quot;, line 2372, in exit
+    _sys.exit(status)
+SystemExit: 2</code></pre>
+<p>最後の行に回答があるんですけどね。
+SystemExit例外がraiseされることを想定してテストを書けば良いのです。</p>
+<pre><code class="language-python">class TestArgParser(unittest.TestCase):
+    def test_default_args(self):
+        self.assertRaises(SystemExit, argparser.init, [])</code></pre>
+<h2>SystemExit例外とは</h2>
+<p>これは<code>sys.exit()</code>が送出する例外で、<code>Exception</code>を継承した普通の例外とはちょっと扱いが異なります。
+<a href="http://docs.python.jp/3/library/exceptions.html#SystemExit">詳しくは公式のヘルプ</a>に載っていますが、重要な部分だけ引用したのが以下です。</p>
+<blockquote>
+<p>Exception をキャッチするコードに誤ってキャッチされないように、Exception ではなく BaseException を継承しています。
+つまり、以下のようなコードではキャッチできないんですね。</p>
+<pre><code class="language-python">try:
+argparser.init([])
+except Exception as e:
+print(&quot;&quot;hoge: &quot;&quot; + type(e).__name__)</code></pre>
+<p><code>SystemExit</code>をキャッチするにはこうする必要があります。</p>
+<pre><code class="language-python">try:
+argparser.init([])
+except BaseException as e:
+print(&quot;&quot;hoge: &quot;&quot; + type(e).__name__)</code></pre>
+<p><a href="http://docs.python.jp/3/library/exceptions.html#exception-hierarchy">例外階層</a>をみると、<code>SystemExit</code>以外にも<code>KeyboardInterrupt</code>や<code>GeneratorExit</code>なんかも<code>BaseException</code>を継承しているようです。なるほど。</p>
+<h2>まとめ</h2>
+<ul>
+<li>位置引数ありのparserに位置引数を与えずに実行すると、<code>SystemExit</code>例外を出す（要するに<code>sys.exit()</code>する）</li>
+<li><code>SystemExit</code>は<code>Exception</code>ではなく<code>BaseException</code>を継承している</li>
+<li>位置引数ありのparserの<code>SystemExit</code>を出すケースをテストする際には、普通に<code>unittest</code>の<code>assertRaises</code>が使える</li>
+</ul>
+</blockquote>

@@ -1,0 +1,156 @@
+---
+title: "GitHubにpush済みのpythonコードのテストカバレッジを計測してみる。"
+description: "DIY太陽光発電システム監視用のPythonドライバをCIしてみた記事の続編で、今回はpythonコードのカバレッジ（テストのカバー率）を計測します。コマンドラ..."
+tags:
+  - "python"
+  - "プログラミング"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-02-20T06:17:22.000Z
+author: takashi
+---
+
+
+<a href="http://blog.rinka-blossom.com/githubnipushji-minopythonkodowocisitemita/">DIY太陽光発電システム監視用のPythonドライバをCIしてみた記事</a>の続編で、今回はpythonコードのカバレッジ（テストのカバー率）を計測します。
+<h1>コマンドラインでカバレッジを計測する</h1>
+<h2>まずはテストを実行</h2>
+以下のようなtest runnerコードを毎回書くのは面倒なので、noseパッケージをpip installし、nosetestsコマンドを使います。
+<pre><code class="python">import unittest
+if __name__ == "__main__":
+    all_tests = unittest.TestLoader().discover("./", "test_*.py")
+    unittest.TextTestRunner(verbosity=1).run(all_tests)
+</code></pre>
+nosetestsは、noseパッケージをpip installすると使えるようになるコマンドです。
+<a href="http://nose.readthedocs.org/en/latest/finding_tests.html">nosetestsのテストケースの見つけ方</a>を見ると分かりますが、とりあえずunittest.TestCaseのサブクラスをかき集めて実行してくれるようです。
+<pre><code class="bash">tsmppt60_driver $ nosetests -v
+test_init (test_base_controller.TestChargeControllerStatus) ... ok
+test_compute_scaler_current (test_base_management.TestMb) ... ok
+test_compute_scaler_voltage (test_base_management.TestMb) ... ok
+----------------------------------------------------------------------
+Ran 3 tests in 0.230s
+OK
+</code></pre>
+<a href="http://nose.readthedocs.org/en/latest/setuptools_integration.html">setup.pyのtest_suiteに以下のように書いておき</a>、noseにtest suiteをかき集めてもらって、setup.py経由でテスト実行することも可能です。
+<pre><code class="python">setup (
+    # ...
+    test_suite='nose.collector'
+)
+</code></pre>
+<pre><code class="bash">$ python setup.py test
+</code></pre>
+<h2>テストカバレッジ計測</h2>
+カバレッジを計測するには、以下の--with-coverageオプションをつけます。
+命令網羅だけでなく、--cover-branchesオプションで分岐網羅もできるようです。
+<pre><code class="bash">tsmppt60_driver $ nosetests -h | grep coverage
+...
+  --with-coverage       Enable plugin Coverage:  Activate a coverage report
+  --cover-branches      Include branch coverage in coverage report
+...
+tsmppt60_driver $ nosetests -v --with-coverage
+test_init (test_base_controller.TestChargeControllerStatus) ... ok
+test_compute_scaler_current (test_base_management.TestMb) ... ok
+test_compute_scaler_voltage (test_base_management.TestMb) ... ok
+Name                                                       Stmts   Miss  Cover   Missing
+----------------------------------------------------------------------------------------
+minimock.py                                                  197     79    60%   51-57, 63-66, 108-109, 113, 229, 231-232, 237-238, 241-242, 258, 264-265, 290, 294, 297, 300, 325, 335-341, 364, 388-393, 408, 417-418, 455-465, 479-487, 493, 506, 517, 526, 528, 530-533, 537, 540-548, 551-565, 643-644
+...
+</code></pre>
+カバレッジ計測結果は、同ディレクトリ下の.coverageファイルに記録されます。
+<pre><code class="bash">tsmppt60_driver $ cat .coverage | head
+!coverage.py: This is a private format, don't read it directly!{"lines": {"/Users/
+</code></pre>
+<h2>テストカバレッジレポート作成</h2>
+coverageパッケージとコマンドを使って、カバレッジレポートを生成します。
+pip installしてヘルプ表示すると、以下のようなサブコマンドが用意されていることが分かります。
+<pre><code class="bash">$ pip install coverage
+$ coverage --help
+Coverage.py, version 4.0.3
+Measure, collect, and report on code coverage in Python programs.
+usage: coverage &lt;command&gt; [options] [args]
+Commands:
+    annotate    Annotate source files with execution information.
+    combine     Combine a number of data files.
+    erase       Erase previously collected coverage data.
+    help        Get help on using coverage.py.
+    html        Create an HTML report.
+    report      Report coverage stats on modules.
+    run         Run a Python program and measure code execution.
+    xml         Create an XML report of coverage results.
+</code></pre>
+カバレッジ計測結果が記録された.coverageファイルを読み込み、レポートを表示することができます。
+--includeオプションで対象モジュールを絞らないと、テスト対象以外の依存モジュールも一緒くたにレポートしてしまい、煩雑になるのでご注意を。
+<pre><code class="bash">tsmppt60_driver $ coverage report --include=tsmppt60_driver/*
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+tsmppt60_driver/__init__.py      28     16    43%
+tsmppt60_driver/base.py         117     51    56%
+tsmppt60_driver/status.py        60     37    38%
+-------------------------------------------------
+TOTAL                           205    104    49%
+</code></pre>
+コード内のどのパスがカバーできて、どのパスがカバーできていないのかを視覚的に確認できる、HTML形式のレポートも生成できます。
+<pre><code class="bash">tsmppt60_driver $ coverage html --include=tsmppt60_driver/*
+tsmppt60_driver $ open htmlcov/index.html
+</code></pre>
+こんな感じです。
+<img src="https://farm2.staticflickr.com/1515/24413123892_ab1d5b8613_z_d.jpg" alt="" />
+<h1>Webサービスを使って自動的にカバレッジを計測する</h1>
+前置きが長くなりましたが、ここからが本題です。
+<a href="http://blog.rinka-blossom.com/githubnipushji-minopythonkodowocisitemita/">前回紹介したTravisCI</a>と連携しやすい<a href="https://coveralls.io/">Coveralls</a>を使います。
+.travis.ymlが設定済みであれば以下のような内容だったと思いますが、
+<pre><code>language: python
+python:
+  - "2.7"
+# - "3.2"
+# TODO:
+# dest.write(u'  ')
+# ^
+# SyntaxError: invalid syntax
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  # does not have headers provided, please ask https://launchpad.net/~pypy/+archive/ppa
+  # maintainers to fix their pypy-dev package.
+  - "pypy"
+# command to install dependencies
+install:
+  - pip install .
+  - pip install -r requirements.txt -r test-requirements.txt
+</code></pre>
+これに以下を追記して、
+<pre><code>script:
+  - coverage run --source=tsmppt60_driver setup.py test
+after_success:
+  - coveralls
+</code></pre>
+test-requirements.txtには以下を追記します。
+<pre><code>nose
+coverage
+coveralls
+</code></pre>
+ほとんど<a href="https://github.com/coagulant/coveralls-python">coveralls-python</a>のREADMEに従うだけなんですけどね。
+これでgithubリポジトリにpushする度、自動的にTravisCIでテストを回し、自動的にCoverallsでカバレッジ計測してくれます。
+<img src="https://farm2.staticflickr.com/1638/23537481564_56c23632fe_z_d.jpg" alt="" />
+<h1>バッジの表示</h1>
+<h2>Coverallsのカバレッジ計測結果バッジ</h2>
+coverallsのREPOSで、カバレッジ計測後に対象のリポジトリのリンクに飛び、画面上の方に「BADGE YOUR REPO: TSMPPT60_DRIVER」というリンクがあるので、そこでバッジのURLを取得できます。
+MARKDOWN形式他、一通り揃っているので、環境に合わせてコピペして使ってください。
+<img src="https://farm2.staticflickr.com/1672/23797864439_021774c782_z_d.jpg" alt="" />
+GitHubのREADMEにも、以下のようなバッジを貼ることができます。
+<a href="https://coveralls.io/github/dodo5522/tsmppt60_driver?branch=master"><img src="https://coveralls.io/repos/dodo5522/tsmppt60_driver/badge.svg?branch=master&amp;service=github" alt="Coverage Status" /></a>
+<h2>いろいろなバッジ</h2>
+TravisCIやCoverallsのようなバッジをREADMEに貼ると、なんだか他の情報も同じようなバッジで表示したくなります。よね？
+そこで、<a href="http://shields.io/">shields.io</a>というサービスがあります。
+上記リンク先の通り、以下のようなフォーマットで様々なバッジを自分で作ることができます。
+<pre><code>https://img.shields.io/badge/&lt;SUBJECT&gt;-&lt;STATUS&gt;-&lt;COLOR&gt;.svg
+</code></pre>
+例えば以下のようにすると、
+<pre><code>https://img.shields.io/badge/python-3.3,3.4,3.5-blue.svg
+</code></pre>
+以下のように表示されます。
+<a href="https://pypi.python.org/pypi/tsmppt60_driver"><img src="https://img.shields.io/badge/python-3.3,3.4,3.5-blue.svg" alt="python" /></a>
+あまり意味はないですが、こんなバッジも作れちゃいます。
+<a href=""><img src="https://img.shields.io/badge/hello-world-red.svg" alt="hoge" /></a>
+<a href=""><img src="https://img.shields.io/badge/mac-book-green.svg" alt="hoge" /></a>
+<a href=""><img src="https://img.shields.io/badge/ubuntu-14.04-yellow.svg" alt="hoge" /></a>

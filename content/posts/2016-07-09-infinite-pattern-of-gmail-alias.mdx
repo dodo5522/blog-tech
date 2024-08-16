@@ -1,0 +1,56 @@
+---
+title: "gmailのメールアドレスは、エイリアス（別名）が無制限に作れるって知ってた？"
+description: "驚愕の小ネタ。gmailのアカウント一つあれば、エイリアス（別名）を無制限に作れてしまうとは…。Googleのヘルプにも、以下の通りしっかり記載されています。 ..."
+tags:
+  - "gmail"
+  - "ツール"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-07-09T11:44:43.000Z
+author: takashi
+---
+
+
+<br />
+驚愕の小ネタ。
+<strong>gmailのアカウント一つあれば、エイリアス（別名）を無制限に作れてしまう</strong>とは…。
+<a href="https://support.google.com/mail/answer/12096?hl=ja">Googleのヘルプ</a>にも、以下の通りしっかり記載されています。
+<blockquote>
+  Gmail では、従来のエイリアスはご利用いただけませんが、your.username+any.alias@gmail.com 宛のメッセージを受け取ることができます。
+  たとえば、jane.doe+notes@gmail.com 宛のメッセージは jane.doe@gmail.com に配信されます。
+  フィルタを設定すると、これらのメッセージを [ごみ箱] に振り分ける、ラベルやスターを付ける、受信トレイ以外の場所に振り分ける、他のメール アカウントに転送するなどの操作を自動的に行うことができます。
+</blockquote>
+ちょうどいい機会なので調べてみると、これ以外にも様々なパターンでエイリアスが作れる…　というより、無視されるけとメールヘッダに情報が残るので、エイリアスとして使えるパターンがあることがわかりました。
+詳細は<a href="http://gmail-tips.blogspot.jp/2014/07/not-my-email.html">E-mail addressed to me intended for someone else</a>に記載されていますが、実際に試してみると確かにその通りでした。
+<h1>ドット "." は無視される</h1>
+どういうことかというと、以下のメールアドレスは等価です。
+でも受信したメールのヘッダには、上記の情報がそのまま残るので、例えば複数のサイトにユーザ登録する際に登録するメールアドレスを、上記３つのアドレスを別々に登録し、受信側でフィルタ設定に使うことができる、というわけです（gmailのヘルプそのまま）。
+<ol>
+<li>mymailaddress@gmail.com</li>
+<li>my.mailaddress@gmail.com</li>
+<li>my.mail.address@gmail.com</li>
+</ol>
+<h1>大文字は無視される</h1>
+以下は等価ということですね。
+これはメールヘッダに残ってくれなかったので、フィルタには使えなそう。
+<ol>
+<li>MyMailAddress@gmail.com</li>
+<li>mymailaddress@gmail.com</li>
+</ol>
+<h1>@googlemail.comは@gmail.comと同じ</h1>
+以下は等価です。
+これもメールヘッダに情報が残ってくれたので、フィルタに使える。あまり使う意味なさそうではありますが。
+<ol>
+<li>mymailaddress@googlemail.com</li>
+<li>mymailaddress@gmail.com</li>
+</ol>
+<h1>ドット "." とプラス "+" の組み合わせ</h1>
+以下は等価な上、メールヘッダに情報が残るのでフィルタ設定に使えます。
+<ol>
+<li>mymailaddress@googlemail.com</li>
+<li>my.mail.address+bot@gmail.com</li>
+</ol>
+<h1>まとめ</h1>
+このエイリアスで、例えばbot用のTwitterアカウントをmy.mail.address+bot@gmail.comで取得し、<a href="http://blog.rinka-blossom.com/how_to_make_diy_offgrid/">蓄電池が一定の電圧を下回ったら<strong>「消費量が大きいxxの電源を自動的に切りますね」</strong>とか、逆に満充電されたら<strong>「使わないと勿体ないよ」</strong>とかTwitterで呟く</a>こともできるということですね。
+また一つ便利な機能を知ることができた、gmailでした。

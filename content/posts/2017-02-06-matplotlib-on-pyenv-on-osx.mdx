@@ -1,0 +1,85 @@
+---
+title: "matplotlibをOSXのpyenv仮想環境下で使用するには。"
+description: "matplotlibを使いたかっただけなのに、まさかトラブるとは思っていませんでした…。ちょと前まで普通に使えていたはずなのですが、そういえばSSD換装後にOS..."
+tags:
+  - "python"
+  - "プログラミング"
+  - "可視化"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2017-02-06T12:59:43.000Z
+author: takashi
+---
+
+
+matplotlibを使いたかっただけなのに、まさかトラブるとは思っていませんでした…。
+ちょと前まで普通に使えていたはずなのですが、そういえば<a href="">SSD換装後にOSXを再インストール</a>して以降、使った覚えがない。
+pyenv環境下でmatplotlibを使用するためには色々と下準備が必要ということを今更知り、とりあえず解決したので、その備忘録です。
+<h2>import matplotlibでいきなり警告</h2>
+<code>pip install matplotlib</code>は何事もなく成功するのですが、<code>import matplotlib</code>でおもむろに警告が出力されます。
+が、これは問題ありません。
+フォントのキャッシュを作ってるのでしばし待てと。
+OSX再インストール前にも表示されたかどうかは…　うーん、記憶にない。
+<pre><code class="python">In [11]: import matplotlib.pyplot as plt
+/Users/takashi/.anyenv/envs/pyenv/versions/3.5.1/lib/python3.5/site-packages/matplotlib/font_manager.py:273: UserWarning: Matplotlib is building the font cache using fc-list. This may take a moment.
+  warnings.warn('Matplotlib is building the font cache using fc-list. This may take a moment.')
+/Users/takashi/.anyenv/envs/pyenv/versions/3.5.1/lib/python3.5/site-packages/matplotlib/font_manager.py:273: UserWarning: Matplotlib is building the font cache using fc-list. This may take a moment.
+  warnings.warn('Matplotlib is building the font cache using fc-list. This may take a moment.')
+</code></pre>
+<h2>そしてRuntimeError</h2>
+フォントキャッシュ作成を待つこと数分の後、出ました、エラー。
+<pre><code class="python">RuntimeError: Python is not installed as a framework. The Mac OS X backend will not be able to function correctly if Python is not installed as a framework. See the Python documentation for more information on installing Python as a framework on Mac OS X. Please either reinstall Python as a framework, or try one of the other backends. If you are Working with Matplotlib in a virtual enviroment see 'Working with Matplotlib in Virtual environments' in the Matplotlib FAQ
+</code></pre>
+仮想環境下でmatplotlib使うには、どうも何か下準備が必要そうです。
+Matplotlib FAQを見ろとあったので、ググってみたところ、ありました。
+<ul>
+<li><a href="http://matplotlib.org/faq/virtualenv_faq.html">Working with Matplotlib in Virtual environments</a></li>
+</ul>
+matplotlibの問題ではないと前置きした上で（そこ強調するよね）、GUIフレームワークとのインタラクションのためにおまじないが必要なのだそう。
+OSXの場合は、以下のリンクを参照してくださいとのこと。
+しっかりpyenv環境下での対処法が記載されています。
+<ul>
+<li><a href="http://matplotlib.org/faq/osx_framework.html#short-version">Working with Matplotlib on OSX</a></li>
+</ul>
+<pre><code class="bash">PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install x.x.x
+</code></pre>
+<h2>RuntimeError解決方法</h2>
+<code>--enable-framework</code>オプションを有効にした上でインストールせよとのこと。
+やってみます。
+<pre><code class="bash">moca:python $ PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install 3.5.1
+Downloading Python-3.5.1.tgz...
+-&gt; https://www.python.org/ftp/python/3.5.1/Python-3.5.1.tgz
+Installing Python-3.5.1...
+Installed Python-3.5.1 to /Users/takashi/.anyenv/envs/pyenv/versions/3.5.1
+moca:python $ pyenv global 3.5.1
+moca:python $ pip install ipython matplotlib
+Collecting ipython
+  Downloading ipython-5.2.2-py3-none-any.whl (749kB)
+    100% |________________________________| 749kB 377kB/s
+...
+</code></pre>
+インストールは普通に完了したので、必要なパッケージをインストールします。
+<pre><code class="python">moca:python $ ipython
+Python 3.5.1 (default, Feb  7 2017, 06:25:06)
+Type "copyright", "credits" or "license" for more information.
+IPython 5.2.2 -- An enhanced Interactive Python.
+?         -&gt; Introduction and overview of IPython's features.
+%quickref -&gt; Quick reference.
+help      -&gt; Python's own help system.
+object?   -&gt; Details about 'object', use 'object??' for extra details.
+In [1]: import matplotlib.pyplot as plt
+In [6]: png = plt.imread("/Users/takashi/Downloads/auth_ssl.png")
+In [7]: plt.imshow(png)
+Out[7]: &lt;matplotlib.image.AxesImage at 0x10a825588&gt;
+</code></pre>
+エラーなく動きました…　が、<code>imshow</code>した後にウィンドウが表示されるはずが、何も表示されない…。
+ipython notebookでブラウザ表示できればいいか…。
+<h2>まとめ</h2>
+とりあえず、<code>RuntimeError</code>なしにpyenv環境下でmatplotlibが使えるようになりました。
+<code>plt.imsave()</code>すれば、バッファ上に確保した画像データをpngファイルに吐き出すこともできたので、当面は問題なさそうです。
+<pre><code class="python">In [7]: plt.imsave("/Users/takashi/temp.png", png)
+In [8]:
+Do you really want to exit ([y]/n)? y
+moca:python $ open /Users/takashi/temp.png
+</code></pre>

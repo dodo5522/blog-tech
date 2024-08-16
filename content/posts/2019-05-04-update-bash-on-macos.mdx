@@ -1,0 +1,77 @@
+---
+title: "古すぎるmacOSのbash…　Ubuntu相当の5.0に更新しました"
+description: "bashのcompleteコマンドオプション仕様がUbuntu 18.04のそれと異なるので、Pythonのargcompleteモジュールを使って生成したシェ..."
+tags:
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2019-05-04T22:24:41.000Z
+author: takashi
+---
+
+
+bashのcompleteコマンドオプション仕様がUbuntu 18.04のそれと異なるので、Pythonのargcompleteモジュールを使って生成したシェルスクリプトがエラー吐いて使えない…。
+<h1>macOSのbashはバージョン3 (2019/05時点の最新は5)</h1>
+なぜcompleteコマンドオプション仕様が異なるかというと、macOSのbashバージョンが3.x系に対して、Ubuntu等の新しめの環境では4.x以上だから。
+<blockquote class="twitter-tweet" data-lang="ja">
+<p dir="ltr" lang="ja">bashのcompleteコマンドオプション仕様がUbuntu 18.04と違いすぎて調べてみたら、macOSのbashはライセンス上の理由からバージョンがかなり古いという事実を今更知る。
+Upgrading Bash on macOS by <a href="https://twitter.com/weibeld?ref_src=twsrc%5Etfw">@weibeld</a> <a href="https://t.co/wgW3P861AM">https://t.co/wgW3P861AM</a></p>
+— takashi ando (@takashi7ando) <a href="https://twitter.com/takashi7ando/status/1124787903320608768?ref_src=twsrc%5Etfw">2019年5月4日</a></blockquote>
+macOSのbashが3.xを維持しているのは下記理由から。
+<blockquote>The reason that Apple includes such an old version of Bash in its operating system has to do with <strong class="markup--strong markup--p-strong">licensing</strong>. Since version 4.0 (successor of 3.2), Bash uses the <a class="markup--anchor markup--p-anchor" href="https://www.gnu.org/licenses/gpl.html" target="_blank" rel="noopener noreferrer" data-href="https://www.gnu.org/licenses/gpl.html">GNU General Public License v3 (GPLv3)</a>, which Apple does not (want to) support. You can find some discussions about this <a class="markup--anchor markup--p-anchor" href="https://www.reddit.com/r/apple/comments/7v97ls/why_doesnt_apple_use_any_gpl_v3_unix_packages_in/" target="_blank" rel="noopener noreferrer" data-href="https://www.reddit.com/r/apple/comments/7v97ls/why_doesnt_apple_use_any_gpl_v3_unix_packages_in/">here</a> and <a class="markup--anchor markup--p-anchor" href="http://meta.ath0.com/2012/02/05/apples-great-gpl-purge/" target="_blank" rel="noopener noreferrer" data-href="http://meta.ath0.com/2012/02/05/apples-great-gpl-purge/">here</a>. Version 3.2 of GNU Bash is the last version with GPLv2, which Apple accepts, and so it sticks with it.</blockquote>
+some discussions about thisのリンク先を見ると、アップルがGPLv3を受け入れない理由はこれっぽいですね。そういえば前々職で似たような話が職場で問題になったな…。
+<blockquote>
+<p class="s1w8oh2o-10 bQeEFC">GPL v3. require the code to be modifiable. So users would have to be able to make changes and run it. Much of Apple code is signed, so Apple would have to allow users to sign or run unsigned code. Very problematic on iOS for Apple.</p>
+<p class="s1w8oh2o-10 bQeEFC">Also has automatic patent licensing and Apple is very protective of its patents.</p>
+</blockquote>
+<h1 class="s1w8oh2o-10 bQeEFC">macOSのbashを更新する</h1>
+<p class="s1w8oh2o-10 bQeEFC">更新手順は、上記のサイトを見れば全部解説されているのですが、日本語意訳として参考にしてください。</p>
+<p class="s1w8oh2o-10 bQeEFC">ざっくり以下３ステップの手順になります。</p>
+<ol class="postList">
+ 	<li id="ed16" class="graf graf--li graf-after--p"><strong class="markup--strong markup--li-strong">最新バージョンのBashをインストールする</strong></li>
+ 	<li id="c00f" class="graf graf--li graf--startsWithDoubleQuote graf-after--li"><strong class="markup--strong markup--li-strong">最新バージョンのBashをログインシェルとして使用可能にする</strong></li>
+ 	<li id="094d" class="graf graf--li graf-after--li"><strong class="markup--strong markup--li-strong">最新バージョンのBashをデフォルトシェルに設定する</strong></li>
+</ol>
+<h2 class="s1w8oh2o-10 bQeEFC">最新バージョンのBashをインストールする</h2>
+<p class="s1w8oh2o-10 bQeEFC">Homebrew一発です。</p>
+<pre class="lang:sh decode:true">$ brew install bash</pre>
+上記コマンドでインストールすると、その後必要な手順を解説したログが出力されますが、とっておくのを忘れた…。
+無事インストールが完了すると、/usr/local/bin下に最新バージョンのbashが入ります。
+<pre class="lang:sh decode:true">$ which -a bash
+/usr/local/bin/bash
+/bin/bash
+$ /bin/bash --version
+GNU bash, version 3.2.57(1)-release (x86_64-apple-darwin17)
+Copyright (C) 2007 Free Software Foundation, Inc.
+$ /usr/local/bin/bash --version
+GNU bash, バージョン 5.0.7(1)-release (x86_64-apple-darwin17.7.0)
+Copyright (C) 2019 Free Software Foundation, Inc.
+ライセンス GPLv3+: GNU GPL バージョン 3 またはそれ以降 &lt;http://gnu.org/licenses/gpl.html&gt;
+This is free software; you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.</pre>
+<h2 class="s1w8oh2o-10 bQeEFC">最新バージョンのBashをログインシェルとして使用可能にする</h2>
+Homebrewでインストールしたbashを/etc/shellsに追記します。
+<pre class="lang:sh decode:true">$ sudo vim /etc/shells
+/bin/bash
+/bin/csh
+/bin/ksh
+/bin/sh
+/bin/tcsh
+/bin/zsh
+/usr/local/bin/bash　← 追記</pre>
+<h2 class="s1w8oh2o-10 bQeEFC">最新バージョンのBashをデフォルトシェルに設定する</h2>
+<p class="s1w8oh2o-10 bQeEFC">chshコマンドを実行して、デフォルトシェルを最新bashに変更します。</p>
+<blockquote>CHPASS(1) BSD General Commands Manual CHPASS(1)
+NAME
+chpass, chfn, chsh -- add or change user database information
+SYNOPSIS
+chpass [-l location] [-u authname] [-s newshell] [user]</blockquote>
+実際にやってみるとこんな感じ。
+<pre class="lang:sh decode:true ">$ sudo chsh -s /usr/local/bin/bash</pre>
+セキュリティ上の理由から、/bin/bashを直接シンボリックリンク等で上書きできないらしい。
+<h1>注意事項</h1>
+シェルスクリプトを書く際には、シェバンの指定に注意すること。常に
+<pre class="lang:default decode:true ">#!/usr/bin/env bash</pre>
+と書く癖がついてる人は問題ないけど、普段
+<pre class="lang:sh decode:true">#!/bin/bash</pre>
+と書いている人は、良い機会なので改めましょう。

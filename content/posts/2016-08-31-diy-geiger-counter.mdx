@@ -1,0 +1,64 @@
+---
+title: "DIYガイガーカウンタ製作日記その１。"
+description: "sparkfunにて購入。人生初の個人輸入です。ガイガーミュラー菅にLND-712を採用したやつになります。決済したあとで、sparkfunから調査というか、質..."
+tags:
+  - "放射能"
+  - "電子工作"
+categories:
+  - hobby
+image: /images/software-developer.jpg
+date: 2016-08-31T18:43:53.000Z
+author: takashi
+---
+
+
+sparkfunにて購入。人生初の個人輸入です。
+<img src="https://farm9.staticflickr.com/8247/28738730384_357f5e3289_z_d.jpg" alt="" />
+<a href="https://www.sparkfun.com/products/11345">ガイガーミュラー菅にLND-712を採用したやつ</a>になります。
+決済したあとで、sparkfunから調査というか、質問が飛んできました。
+「何の目的で本製品を購入したのか？」「自分以外の誰かに譲渡する予定はあるか？」なとなど。
+raspberry pi zeroを買ったときは何も聞かれませんでしたが、発生源ではないにせよ、放射線が絡むと輸出入の規制が厳しいのかな。
+で、無事届いた製品の外観がこれ。
+<img src="https://farm9.staticflickr.com/8543/28738740434_20e0599ce1_z_d.jpg" alt="" />
+自宅に定点観測所が欲しいと、かなり以前から考えていたこともあり・・・
+<ul>
+<li><a href="http://blog.rinka-blossom.com/rest-api-safecast/">空間放射線量データを公開しているSafecast。REST API経由で定点観測データを自動送信するには？</a></li>
+<li><a href="http://blog.rinka-blossom.com/raspberry-pi-zero-initial-setup/">Raspberry Pi Zeroセットアップでするべき事４つ。</a></li>
+<li><a href="http://blog.rinka-blossom.com/geiger-sen-11345/">SparkFunのSEN-11345をcpm単位で空間線量を返すように修正してみる。ついでに、OSXでmakeする環境整備も。</a></li>
+</ul>
+早速仮組みして、超簡易的にですが、完成してしまった。
+上の記事の通り、ガイガーカウンタにはcpm（カウント毎秒）単位で計測データを返すように修正したソフトを書き込み済みなので、USBシリアル経由で出力するその文字列をPythonで少し加工してuSv/h単位に変換してやる、というコードです。
+<pre><code class="python">from serial import Serial
+port = Serial("/dev/ttyUSB0", baudrate=19200)
+while True:
+    cpm = int(port.readline().decode("ascii").split()[0])
+    usv = cpm * 0.00812
+    print("{:.2f}[uSv/h]".format(usv))
+</code></pre>
+<code>port.readline()</code>は改行コードを読み取るまで処理をブロックします。ガイガーカウンターは<code>20 cpm n</code>のような文字列データを出力するようにしているので、それをbin形式からunicode文字列型に変換後、空白で<code>split()</code>して、cpm単位の値に係数を掛けてuSv/hに変換し、printします。
+結果は下記の通り。
+<pre><code>0.13[uSv/h]
+0.11[uSv/h]
+0.08[uSv/h]
+0.11[uSv/h]
+0.09[uSv/h]
+0.13[uSv/h]
+0.11[uSv/h]
+0.14[uSv/h]
+0.12[uSv/h]
+0.16[uSv/h]
+0.11[uSv/h]
+0.16[uSv/h]
+0.08[uSv/h]
+0.13[uSv/h]
+0.07[uSv/h]
+0.13[uSv/h]
+0.09[uSv/h]
+0.12[uSv/h]
+0.11[uSv/h]
+0.11[uSv/h]
+</code></pre>
+元々所有しているガイガーカウンタとほぼ同等の結果が得られました。
+あとはこれをデータベース化するなり、Tweetするなり、グラフ化するなり、好きなように料理すれば良いと。
+悩むのはソフトよりハードなんですけどね。これらを防水ケースに詰め込み、屋根代わりの太陽光パネル裏に貼り付け、半永久的にデータを送らせて…。
+またホームセンター巡りが始まるなぁ。

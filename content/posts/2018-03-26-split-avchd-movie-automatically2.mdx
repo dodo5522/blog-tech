@@ -1,0 +1,127 @@
+---
+title: "SONYハンディカムHDR-PJ760で撮影したAVCHD動画を自動的にチャプタ毎分割するには（２）"
+description: "[前回](http://tech.uribou.tokyo/split-avchd-movie-automatically/)の続き。tsMuxeRコマンドライ..."
+tags:
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2018-03-26T14:29:07.000Z
+author: takashi
+---
+
+
+
+[前回](http://tech.uribou.tokyo/split-avchd-movie-automatically/)の続き。
+tsMuxeRコマンドライン版は[ここ](https://code.launchpad.net/~robert-tari/tsmuxer/trunk)から入手できます。
+ソースを探していたのに、checkoutしてみたらバイナリのtar ballだったんですけどね・・・。
+```bash
+$ sudo apt install bzr
+$ bzr checkout https://launchpad.net/tsmuxer/trunk tsmuxer
+$ cd txmuxer
+$ tree
+.
+├── data
+│   └── usr
+│       ├── bin
+│       │   └── tsmuxer.tar.gz
+│       └── share
+│           ├── applications
+│           │   └── tsmuxer.desktop
+│           └── tsmuxer
+│               └── tsmuxer.svg
+└── debian
+    ├── changelog
+    ├── compat
+    ├── control
+    ├── copyright
+    ├── install
+    ├── postinst
+    ├── postrm
+    ├── rules
+    └── source
+        ├── format
+        └── include-binaries
+8 directories, 13 files
+```
+とりあえず、上記tar ballを解いて適当なbinディレクトリに放り込むか、PATHを通しましょう。
+tsMuxeRコマンドライン版のオンラインヘルプは[ここ](http://forum.doom9.org/showthread.php?t=142559)にありました。
+そこそこ文量があって読む気が萎えるんですが、要点は最初の数行に書いてあります。
+```
+How to use tsMuxeR from the command line:
+-----------------------------------------
+We need to create a file with the extension .meta. This file lists the files you want to multiplex.
+In the first line of meta file can be specified additional parameters that apply to all tracks. In this case the line should begin with the word MUXOPT.
+The following lines indicate a list of tracks and their parameters.
+The format is as follows:
+<code>, , 
+Parameters are comma separated. Each parameter indicates the name and value.
+Example META file:
+V_MPEG4/ISO/AVC, D:\media\test\stream.h264, fps=25
+A_AC3, D:\media\test\stream.ac3, timeshift=-10000ms
+In this example one AC3 audio stream and one H264 video stream are multiplexed.
+```
+映像や音声を別コーデックで再エンコードすることはできませんが、metaファイルに豊富なオプションを記載してやることで、MUXし直したり切り出したりすることが可能です。
+心配なのは、タイトルにもある通り、 **AVCHDの切り出しが自動的に行えるか否か** 。
+結論から言うと、簡単なスクリプトを書くことで実現できそうです。
+## tsMuxeRコマンドラインオプションを調べる
+なんでか知らんけど、txMuxeRコマンドは--helpオプションないんですね。
+```
+$ tsMuxeR --help
+Network Optix tsMuxeR.  Version 2.6.11. www.networkoptix.com
+```
+引数何も与えずに実行するとヘルプ表示します。
+```
+$ tsMuxeR
+Network Optix tsMuxeR.  Version 2.6.11. www.networkoptix.com
+tsMuxeR is  simple  program to  mux video to  TS/M2TS files or create BD disks.
+tsMuxeR does not use external filters (codecs).
+Examples:
+    tsMuxeR 
+    tsMuxeR  
+tsMuxeR can be run in track detection mode or muxing mode. If run tsMuxeR  with
+only  one argument  then tsMuxeR  display  input track information  required to
+construct  meta  file.  If run tsMuxeR  with two arguments tsMuxeR start muxing
+or demuxing process.
+```
+media file nameのみを引数に与えると、track detection modeで動作すると。
+media file nameと言うからにはMTSファイルを与えれば認識するんでしょうけど、ここで試しにPLAYLISTファイルを与えてみると・・・
+```
+$ tsMuxeR /media/sdcard/PRIVATE/AVCHD/BDMV/PLAYLIST/00000.MPL | grep -A 5 Track
+Track ID:    4113
+Stream type: H.264
+Stream ID:   V_MPEG4/ISO/AVC
+Stream info: Profile: High@4.2  Resolution: 1920:1080p  Frame rate: 59.9401
+Stream lang:
+Track ID:    4352
+Stream type: AC3
+Stream ID:   A_AC3
+Stream info: Bitrate: 448Kbps Sample Rate: 48KHz Channels: 5.1
+Stream lang:
+Track ID:    4608
+Stream type: PGS
+Stream ID:   S_HDMV/PGS
+Stream info: Presentation Graphic Stream #0 Resolution: 1920:1080 Frame rate: 59.9401
+Stream lang:
+```
+認識しましたね！
+プレイリスト中のチャプタらしい情報も取得できます。
+```
+$ tsMuxeR /media/sdcard/PRIVATE/AVCHD/BDMV/PLAYLIST/00000.MPL | grep -A 3 -B 1 Duration | head -n 20
+File #00000 name=/media/sdcard/PRIVATE/AVCHD/BDMV/STREAM/00003.MTS
+Duration: 00:00:45.545
+start-time: 45751
+Marks: 00:00:00.000
+File #00001 name=/media/sdcard/PRIVATE/AVCHD/BDMV/STREAM/00000.MTS
+Duration: 00:01:45.605
+start-time: 45751
+Marks: 00:00:45.545
+File #00002 name=/media/sdcard/PRIVATE/AVCHD/BDMV/STREAM/00001.MTS
+Duration: 00:00:29.028
+start-time: 45751
+Marks: 00:02:31.150
+File #00003 name=/media/sdcard/PRIVATE/AVCHD/BDMV/STREAM/00002.MTS
+Duration: 00:02:02.622
+start-time: 45751
+Marks: 00:03:00.179
+```
+再び、[次回](http://tech.uribou.tokyo/split-avchd-movie-automatically3/)に続きます。

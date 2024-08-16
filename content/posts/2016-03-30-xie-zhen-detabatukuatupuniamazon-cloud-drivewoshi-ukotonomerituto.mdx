@@ -1,0 +1,67 @@
+---
+title: "写真データバックアップにAmazon Cloud Driveを使うことのメリット"
+description: "AWS(Amazon Web Service)ではなく、　ACD(Amazon Cloud Drive)を使うことにしました。Amazon Prime会員になる..."
+tags:
+  - "写真"
+  - "自動化"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-03-30T15:40:16.000Z
+author: takashi
+---
+
+
+AWS(Amazon Web Service)ではなく、　<a href="http://www.amazon.co.jp/gp/feature.html?docId=3077664656">ACD(Amazon Cloud Drive)</a>を使うことにしました。Amazon Prime会員になるだけで、<strong>Rawデータを含む写真等の画像ファイルを無制限にアップロードできてしまうのです</strong>。
+必要な経費はPrime会員費のみなので、月あたり300円程度というコストパフォーマンス。
+日々増えていく写真データのバックアップ用途に最適ですね。
+バックエンドはAWSだろうから、信頼性も高いでしょう。…最安のオプションでしょうけど。
+以下はAmazonの触れ込み抜粋です。
+<pre><code>容量無制限のフォトストレージ
+Amazon プライム会員なら追加料金なしで写真を好きなだけ保存できます。
+カメラ・携帯にて撮った写真を何枚でも Cloud Drive に保存して、いつでもどこからでも見ることができます。
+RAWファイルについて
+RAWファイルは、カメラ―メーカーが独自に定めたファイル形式で、拡張子はカメラの機種によって異なります。
+Cloud Driveでは、特定のRAWファイルを写真として認識します。
+プライム会員であれば、写真ファイルはストレージスペースには影響しません。
+</code></pre>
+類似サービスにGoogle Photosがありますが、それとの違いは大きく３つあります。
+<ul>
+<li>Rawデータファイルを写真として認識し、無制限アップロード対象として扱う
+<ul>
+<li>Google Photosでも可能だが制限有り</li>
+</ul></li>
+<li>ホスト側の都合で勝手に写真を使うことがない
+<ul>
+<li>Google Photosに写真をアップすると、<a href="https://www.google.com/intl/ja/policies/terms/">Googleが全世界に配布を行うためのライセンスを付与する</a>ことになる</li>
+</ul></li>
+<li>個人的な利用に限られ、商用利用は不可
+<ul>
+<li>Google Photosには制限なし</li>
+</ul></li>
+</ul>
+基本的にはAmazon提供のGUIアプリやアップロード用Webアプリを使うことになりますが、<a href="https://github.com/yadayada/acd_cli">CUIでAmazon Cloud Drive操作を可能にするPythonライブラリ</a>があるので、ファイルサーバ上で自動バックアップスクリプトを走らせたり、Jenkinsで自動バックアップさせることも可能です。
+<pre><code class="shell">~ $ acdcli usage
+Documents:       0,    0.0 B
+Other:           0,    0.0 B
+Photos:       2469,   12.8 GiB
+Videos:          0,    0.0 B
+Total:        2469,   12.8 GiB
+</code></pre>
+素晴らしい。
+気になる通信速度は？
+<pre><code class="shell">$ acdcli ul 2015 /写真/
+16-03-26 13:00:29.073 [WARNING] [acd_cli] - Timeout while uploading "DSC_5779.NEF".
+16-03-26 13:40:20.479 [ERROR] [acd_cli] - Uploading "DSC_5977.NEF" failed. RequestError: 500, {"message":"Internal failure"}.
+16-03-26 13:44:03.712 [WARNING] [acd_cli] - Timeout while uploading "DSC_6013.JPG".
+...
+16-03-26 14:37:58.453 [WARNING] [acd_cli] - Timeout while uploading "IMG_7569.JPG".
+16-03-26 15:58:32.602 [WARNING] [acd_cli] - Timeout while uploading "DSC_7007.NEF".
+16-03-26 16:08:18.497 [WARNING] [acd_cli] - Timeout while uploading "IMG_7941.JPG".
+16-03-26 16:31:46.576 [WARNING] [acd_cli] - Timeout while uploading "DSC_7232.NEF".
+[######################## ] 100.0% of   28GiB  6483/6484  319.0KB/s      09s
+22 file(s) failed.
+</code></pre>
+計測サイトで20〜30mbps程度の速度が出るネット環境であるにも関わらず、これは遅い。
+が、バックアップ用途なら基本的に放置で良いので、あまり気になりません。
+とはいえ、Timeoutエラーは気にしないとな…。そのうち解決を図ります。

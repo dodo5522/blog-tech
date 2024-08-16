@@ -1,0 +1,73 @@
+---
+title: "機械学習ネタ。ピアソンの相関係数をヒートマップ化してプロットするには。"
+description: "Udemyのデータサイエンス講習は一通りやってしまったので、復習するのもいいけど何か新しいことをやりたいと思い…これを買ってしまいました。Python機械学習プ..."
+tags:
+  - "python"
+  - "プログラミング"
+  - "可視化"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-08-12T07:21:39.000Z
+author: takashi
+---
+
+
+<a href="http://blog.rinka-blossom.com/tag/detasaiensu/">Udemyのデータサイエンス講習</a>は一通りやってしまったので、復習するのもいいけど何か新しいことをやりたいと思い…
+これを買ってしまいました。
+<div class="cstmreba"><div class="booklink-box"><div class="booklink-image"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB01HGIPIAK%2Fref%3Dnosim" target="_blank" rel="noopener"><img src="http://ecx.images-amazon.com/images/I/611cFWZK1-L._SL160_.jpg" style="border: none" /></a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="booklink-info"><div class="booklink-name"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB01HGIPIAK%2Fref%3Dnosim" target="_blank" rel="noopener">Python機械学習プログラミング 達人データサイエンティストによる理論と実践 impress top gearシリーズ[Kindle版]</a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"><div class="booklink-powered-date">posted with <a href="http://yomereba.com" rel="nofollow noopener" target="_blank">ヨメレバ</a></div></div><div class="booklink-detail">Sebastian Raschka,株式会社クイープ,福島 真太朗 インプレス 2016-06-30    </div><div class="booklink-link2"><div class="shoplinkkindle"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB01HGIPIAK%2F" target="_blank" rel="noopener">Kindle</a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="shoplinkamazon"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2F4844380605%2F" target="_blank" rel="noopener">Amazon[書籍版]</a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div>                                                  </div></div><div class="booklink-footer"></div></div></div>
+大学数学から離れて１０年以上立つので正直きついですが、かなり掘り下げて解説してくれるので理解が深まります。
+その中でも、やってみて面白かったことを備忘録と練習を兼ねて、本書とは別のデータセット、irisデータを使い、特徴量同士の相関をヒートマップ化してみようと思います。
+まずは特徴量同士のpairplot出力を見てみます。
+<img src="https://farm9.staticflickr.com/8784/28316005554_b00027d7d8_z_d.jpg" alt="" />
+この図を出すには、以下のようにします。
+<pre><code class="python">import numpy as np
+import seaborn as sns
+import pandas as pd
+from sklearn.datasets import load_iris
+iris = load_iris()
+iris_df = pd.DataFrame(iris["data"], columns=iris["feature_names"])
+iris_df = pd.concat([iris_df, pd.DataFrame(iris["target"], columns=["target",])], axis=1)
+sns.pairplot(iris_df, hue="target")
+sns.plt.show()
+</code></pre>
+このpairplot、相関の有無やクラスタを見た目で判断できて便利なんですが、相関の強さを数値化できたら…　どのデータを重点的に見れば良いか分かるので、更に便利。なはず。
+ということで、各特徴量同士の<a href="https://ja.wikipedia.org/wiki/%E7%9B%B8%E9%96%A2%E4%BF%82%E6%95%B0">ピアソンの相関係数</a>を計算して、ヒートマップとしてプロットしてみます。値が大きいほど相関が強いということですね。
+<img src="https://farm9.staticflickr.com/8606/28858099011_3b0aa019fc_z_d.jpg" alt="" />
+この図を出すには、さっきのpairplot出力コードに続けて、以下のようにします。
+<pre><code class="python">hm = np.corrcoef(iris_df[iris_df.columns[:-1]].T)
+sns.heatmap(hm, annot=True, xticklabels=iris_df.columns[:-1], yticklabels=iris_df.columns[:-1])
+sns.plt.show()
+</code></pre>
+petal lengthとpetal widthが最も強い相関を示すのが、数値で示せましたね。pairplotでも見た目そうであることが分かりますが、こちらの方がより明確になりました。
+<h3>ちょっと解説</h3>
+sklearn.datasetsがload_iris()関数を提供してくれているので、こちらを使いました。<code>load_iris()["data"]</code>はnumpy.ndarray型のデータを返すので、columnsを設定したpandas.DataFrame型に変換してやると、後でデータを俯瞰する際に便利です。
+<pre><code class="python">iris = load_iris()
+iris.keys()
+dict_keys(['target_names', 'data', 'feature_names', 'target', 'DESCR'])
+iris.feature_names
+['sepal length (cm)',
+ 'sepal width (cm)',
+ 'petal length (cm)',
+ 'petal width (cm)']
+</code></pre>
+上記のデータを以下のコードでDataFrame形式に変換し、
+<pre><code class="python">iris_df = pd.DataFrame(iris["data"], columns=iris["feature_names"])
+</code></pre>
+以下のコードで目的変数も上記DataFrame形式データに連結しちゃったわけですね。
+<pre><code class="python">iris.target
+array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+       1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+       2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+       2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2])
+iris.target_names
+array(['setosa', 'versicolor', 'virginica'],
+      dtype='&lt;U10')
+iris_df = pd.concat([iris_df, pd.DataFrame(iris["target"], columns=["target",])], axis=1)
+</code></pre>
+こうしておくと、pairplotする際にhue指定してクラスタが見分けやすくなったりと、後々嬉しいことがたくさんあります。
+ということで、また<strong>Python機械学習プログラミング 達人データサイエンティストによる理論と実践</strong>を進めたら、何か練習用の課題を設定して公開しようと思います。
+それではまた。

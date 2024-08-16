@@ -1,0 +1,107 @@
+---
+title: "実践 Python データサイエンス@Udemy の理解度を試すために、使用電力量と電気代推移データを使って実践してみる"
+description: "現在、実践 Python データサイエンス講習を３分の１程度消化したところ。初学者でも分りやすい構成で、とても良いです。ただ、言われた通りに練習しているだけだと..."
+tags:
+  - "python"
+  - "udemy"
+  - "プログラミング"
+  - "可視化"
+  - "機械学習"
+categories:
+  - life
+image: /images/software-developer.jpg
+date: 2016-05-04T12:44:21.000Z
+author: takashi
+---
+
+
+現在、<a href="https://www.udemy.com/python-jp/learn/v4/overview">実践 Python データサイエンス</a>講習を３分の１程度消化したところ。
+初学者でも分りやすい構成で、とても良いです。
+ただ、言われた通りに練習しているだけだと身についた感じがしないので、これまでの「numpyを知ろう」「pandas入門」辺りの内容を組み合わせて、自前のデータを可視化してみます。
+使うのは以下のデータです。東電の電気家計簿から取得した、我が家の月ごとの消費電力量と電気代。
+
+これをexcelファイルとしてダウンロードしてDataFrame化した後、単純にbarplotしてみると、こうなります。
+<pre><code class="python">import pandas as pd
+import seaborn as sns
+data = pd.read_excel("Downloads/evaluation of solar power plant.xlsx",
+    sheetname="(log) tepco")
+sns.barplot(x="年月", y="使用量総計(kWh/月)", data=data)
+sns.plt.savefig("temp.png")
+</code></pre>
+<img src="https://farm2.staticflickr.com/1712/26203872212_9fd0183f6b_z_d.jpg" alt="" />
+だからどうしたって感じのグラフが出来上がりました。
+月ごとのデータを年ごとに並べて表示した方が、比較検討しやすいですよね。要するに東電の電気家計簿のグラフ表示形式なんですが…。
+そんな形でプロットしやすくするため、元データをちょっと加工します。
+まずは元データの中身を把握。
+<pre><code class="python">import pandas as pd
+import seaborn as sns
+from pandas import Series, DataFrame
+data = pd.read_excel("Downloads/evaluation of solar power plant.xlsx",
+    sheetname="(log) tepco")
+data.head(3)
+    契約種別  事業所コード      年月  使用日数(日間)  請求金額(円)  使用量総計(kWh/月)  使用量総計(kWh/日)  ?
+0  従量電灯B     603  Oct-13        30     8084           291            10
+1  従量電灯B     603  Nov-13        33     8648           312             9
+2  従量電灯B     603  Dec-13        29     9275           334            12
+data.tail(3)
+     契約種別  事業所コード         年月  使用日数(日間)  請求金額(円)  使用量総計(kWh/月)  使用量総計(kWh/日)  ?
+27  従量電灯B     603     Jan-16        33     6970           279             8
+28  従量電灯B     603     Feb-16        29     7560           304            10
+29  従量電灯B     603  3/16/2016        30     6836           280             9
+</code></pre>
+「年月」カラムを、「年」カラムと「月」カラムに分離します。
+<pre><code class="python">years = Series([date[-2:] for date in data["年月"]])
+months = Series([date[:3] for date in data["年月"]])
+</code></pre>
+でもここで問題が。
+data[29]の年月カラムだけ、文字列フォーマットが異なります。「3/1」になってるのは何故だ…。
+とりあえず他と揃えます。
+<pre><code class="python">months[29] = "Mar"
+months.tail(3)
+27    Jan
+28    Feb
+29    Mar
+dtype: object
+</code></pre>
+元のデータフレームに新しいカラムとして追加します。
+<pre><code class="python">data["年"] = years
+data["月"] = months
+data.tail(3)
+     契約種別  事業所コード         年月  使用日数(日間)  請求金額(円)  使用量総計(kWh/月)  使用量総計(kWh/日)  ?
+27  従量電灯B     603     Jan-16        33     6970           279             8
+28  従量電灯B     603     Feb-16        29     7560           304            10
+29  従量電灯B     603  3/16/2016        30     6836           280             9
+    単価(円/kWh)   備考   年    月
+27         25  NaN  16  Jan
+28         25  NaN  16  Feb
+29         24  NaN  16  Mar
+</code></pre>
+いい感じです。
+このデータを、hueオプションに年カラムを指定しつつ、barplotで描画します。
+<pre><code class="python">sns.barplot(x="月", y="使用量総計(kWh/月)", hue="年", data=data)
+sns.plt.savefig("temp2.png")
+</code></pre>
+<img src="https://farm2.staticflickr.com/1618/26296595915_4435771b72_z_d.jpg" alt="" />
+これでほぼ目的は達成できたんですが、2013年のデータが10月から始まっているせいで、スタート地点が中途半端です。
+思い切って2013年のデータは削除し、ついでに請求金額も描画してみます。
+<pre><code class="python">data2 = data.drop([0,1,2])
+data2.head(5)
+    契約種別  事業所コード      年月  使用日数(日間)  請求金額(円)  使用量総計(kWh/月)  使用量総計(kWh/日)  ?
+3  従量電灯B     603  Jan-14        33    13183           462            14
+4  従量電灯B     603  Feb-14        28    10432           372            13
+5  従量電灯B     603  Mar-14        29    12773           443            15
+6  従量電灯B     603  Apr-14        30    10227           356            12
+7  従量電灯B     603  May-14        29     8478           286            10
+sns.barplot(x="月", y="使用量総計(kWh/月)", hue="年", data=data2)
+sns.plt.savefig("temp3.png")
+sns.plt.close()
+sns.barplot(x="月", y="請求金額(円)", hue="年", data=data2)
+sns.plt.savefig("temp4.png")
+</code></pre>
+こうして出来上がったのが、以下の使用量総計推移グラフ。
+<img src="https://farm2.staticflickr.com/1678/26230420161_4f276e3d5e_z_d.jpg" alt="" />
+こちらは請求金額推移グラフ。
+<img src="https://farm2.staticflickr.com/1451/25693914683_d75959a858_z_d.jpg" alt="" />
+こうしてみると、2014年と比較して、2015,2016年は電力使用量がかなり減っているのがわかりますね。
+これまでに<a href="https://www.udemy.com/python-jp/learn/v4/overview">実践 Python データサイエンス@Udemy</a>講習で学んだことの１割程度しか活用できてませんが、この講習を受けると、こんなことがPythonで出来るようになりますよ、という宣伝でした。
+講師の方の回し者ではございませんが、とても分りやすい講習内容だと思うので、興味のある方は是非どうぞ。

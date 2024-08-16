@@ -1,0 +1,118 @@
+---
+title: "anyenvとは？"
+description: "発電状況監視システムのような、何か簡単なWebシステムを作りたくなった時、Ruby on railsがあると楽に組めるだろうか？rubyも勉強してみようか？なん..."
+tags:
+  - "python"
+  - "プログラミング"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-02-20T06:17:03.000Z
+author: takashi
+---
+
+
+
+<p><a href="http://grid.rinka-blossom.com/">発電状況監視システム</a>のような、何か簡単なWebシステムを作りたくなった時、Ruby on railsがあると楽に組めるだろうか？rubyも勉強してみようか？</p>
+
+
+
+<p>なんて考え始めると、複数バージョンのインタプリタを管理できるrbenvを入れておきたくなる。同様に、pythonはpyenv、nodejsはndenvがある。名前が似ているだけでなく、使い方もほぼ同じ。</p>
+
+
+
+<p>ということは、これらを一括管理する方法があるのでは？と思ってググったらありました。</p>
+
+
+
+<p class="has-medium-font-size"><a href="https://github.com/riywo/anyenv">anyenv</a>です。</p>
+
+
+
+<h2>インストール方法</h2>
+
+
+
+<p>homeディレクトリ下にanyenvコードをcloneします。</p>
+
+
+
+<pre class="EnlighterJSRAW" data-enlighter-language="generic" data-enlighter-theme="" data-enlighter-highlight="" data-enlighter-linenumbers="" data-enlighter-lineoffset="" data-enlighter-title="" data-enlighter-group="">$ git clone https://github.com/riywo/anyenv ~/.anyenv</pre>
+
+
+
+<h2>環境設定</h2>
+
+
+
+<p>homeディレクトリ下の.bash_profileにanyenv環境設定して、shellを再起動する。</p>
+
+
+
+<p>bash以外のshellを使う方は適宜読み替えてください。</p>
+
+
+
+<pre class="EnlighterJSRAW" data-enlighter-language="generic" data-enlighter-theme="" data-enlighter-highlight="" data-enlighter-linenumbers="" data-enlighter-lineoffset="" data-enlighter-title="" data-enlighter-group="">$ echo 'export PATH="$HOME/.anyenv/bin:$PATH"' &gt;&gt; ~/.bash_profile
+$ echo 'eval "$(anyenv init -)"' &gt;&gt; ~/.bash_profile
+$ exec $SHELL -l</pre>
+
+
+
+<h2>動作確認</h2>
+
+
+
+<p>以下のようにコマンドを実行すると、使用可能なenv系ツールをリストアップしてくれます。<br>…Go, Lua, Scalaにも同様のツールが存在することを、ここで初めて知りました。</p>
+
+
+
+<pre class="EnlighterJSRAW" data-enlighter-language="generic" data-enlighter-theme="" data-enlighter-highlight="" data-enlighter-linenumbers="" data-enlighter-lineoffset="" data-enlighter-title="" data-enlighter-group="">$ anyenv install -l
+Available **envs:
+   Renv
+   crenv
+   denv
+   erlenv
+   ...
+   goenv
+   luaenv
+   ...
+   ndenv
+   ...
+   pyenv
+   rbenv
+   ...
+   scalaenv
+</pre>
+
+
+
+<h2>anyenv環境下のpyenvにプラグイン追加</h2>
+
+
+
+<p>virtualenvプラグインも、以下のようにすれば導入できます。</p>
+
+
+
+<pre class="EnlighterJSRAW" data-enlighter-language="generic" data-enlighter-theme="" data-enlighter-highlight="" data-enlighter-linenumbers="" data-enlighter-lineoffset="" data-enlighter-title="" data-enlighter-group="">$ git clone https://github.com/yyuu/pyenv-virtualenv ~/.anyenv/envs/pyenv/plugins/pyenv-virtualenv</pre>
+
+
+
+<h2>トラブルシューティング</h2>
+
+
+
+<p>こんなに簡単な導入手順なのに、何故かハマりました。<br><code>pyenv global 3.5</code>のようにコマンド実行しても、pythonバージョンが切り替わらないのです。<br>いろいろググってみると、どうも事前にpyenvを導入してuninstallした際、pyenvの設定ファイルが中途半端にhome下に残っていたのが原因であることが判明しました。<sup><a href="#fn-1">1</a></sup></p>
+
+
+
+<blockquote class="wp-block-quote"><p>pyenvのバージョン選択はまず、pyenv shellで設定されるPYENV_VERSION環境変数。<br>次に、pyenv localで設定できる、カレントディレクトリにある.python-versionファイル。<br>次に、pyenv global で設定できる~/.pyenv/versionファイル。<br>全てがなかったらsystemのpython。</p></blockquote>
+
+
+
+<h2>まとめ（注意点）</h2>
+
+
+
+<p>既にpyenvインストール済みだった人は上記のファイルを全て削除しておきましょう。</p>

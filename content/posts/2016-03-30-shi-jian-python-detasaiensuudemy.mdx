@@ -1,0 +1,157 @@
+---
+title: "実践 Python データサイエンス@Udemy: Section3 numpyを知ろう: 12.アレイを使ったデータ処理"
+description: "子供が二人とも風邪っぴきで、家族そろって引きこもりの週末。ただ引きこもって子供の相手をしているのも勿体無い気がして、勉強しながら娘の遊び相手をするなんて無謀なこ..."
+tags:
+  - "python"
+  - "udemy"
+  - "プログラミング"
+  - "可視化"
+  - "機械学習"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-03-30T05:42:26.000Z
+author: takashi
+---
+
+
+子供が二人とも風邪っぴきで、家族そろって引きこもりの週末。
+ただ引きこもって子供の相手をしているのも勿体無い気がして、勉強しながら娘の遊び相手をするなんて無謀なことしてました。
+実際できたのは、<a href="https://www.udemy.com/python-jp/learn/v4/t/lecture/3829916?start=15">実践 Python データサイエンス 12.アレイを使ったデータ処理</a>で教わった内容を、手を動かして確認する程度でした…。
+Udemy動画でも突然出てくるmeshgrid関数。
+<pre><code class="python">In [20]: a, b = np.meshgrid([0,1,2,3,4], [5,6,7])
+In [21]: a
+Out[21]:
+array([[0, 1, 2, 3, 4],
+       [0, 1, 2, 3, 4],
+       [0, 1, 2, 3, 4]])
+In [22]: b
+Out[22]:
+array([[5, 5, 5, 5, 5],
+       [6, 6, 6, 6, 6],
+       [7, 7, 7, 7, 7]])
+</code></pre>
+返る結果を見れば内部処理もだいたい分かるでしょと言われればそれまでですが、<a href="http://kaisk.hatenadiary.com/entry/2014/11/05/041011">【Python】ふたつの配列からすべての組み合わせを評価</a>を参考にtile関数で同じことをやってみると更に納得感が得られます。
+meshgrid関数のヘルプを見ても何のことやらよくわからんのですが、
+<pre><code class="python">Signature: np.meshgrid(*xi, **kwargs)
+Docstring:
+Return coordinate matrices from coordinate vectors.
+Make N-D coordinate arrays for vectorized evaluations of
+N-D scalar/vector fields over N-D grids, given
+one-dimensional coordinate arrays x1, x2,..., xn.
+...
+</code></pre>
+meshgrid関数同等のことをtile関数で試してみるとよく分かります。
+<pre><code class="python">In [30]: np.tile([0,1,2,3,4], (len([5,6,7]), 1))
+Out[30]:
+array([[0, 1, 2, 3, 4],
+       [0, 1, 2, 3, 4],
+       [0, 1, 2, 3, 4]])
+In [31]: np.tile([5,6,7], (len([0,1,2,3,4]), 1))
+Out[31]:
+array([[5, 6, 7],
+       [5, 6, 7],
+       [5, 6, 7],
+       [5, 6, 7],
+       [5, 6, 7]])
+In [34]: np.tile([5,6,7], (len([0,1,2,3,4]), 1)).transpose()
+Out[34]:
+array([[5, 5, 5, 5, 5],
+       [6, 6, 6, 6, 6],
+       [7, 7, 7, 7, 7]])
+</code></pre>
+このmeshgrid関数を使って、以下のように適当なデータを用意して可視化するのが、Udemy動画のSection3 numpyを知ろう: 12.アレイを使ったデータ処理です。
+<pre><code class="python">In [1]: import numpy as np
+In [3]: import matplotlib.pyplot as plt
+In [4]: plt.show()
+In [6]: points = np.arange(-10,10,0.01)
+In [7]: dx, dy = np.meshgrid(points, points)
+In [8]: dx
+Out[8]:
+array([[-10.  ,  -9.99,  -9.98, ...,   9.97,   9.98,   9.99],
+       [-10.  ,  -9.99,  -9.98, ...,   9.97,   9.98,   9.99],
+       [-10.  ,  -9.99,  -9.98, ...,   9.97,   9.98,   9.99],
+       ...,
+       [-10.  ,  -9.99,  -9.98, ...,   9.97,   9.98,   9.99],
+       [-10.  ,  -9.99,  -9.98, ...,   9.97,   9.98,   9.99],
+       [-10.  ,  -9.99,  -9.98, ...,   9.97,   9.98,   9.99]])
+In [9]: dy
+Out[9]:
+array([[-10.  , -10.  , -10.  , ..., -10.  , -10.  , -10.  ],
+       [ -9.99,  -9.99,  -9.99, ...,  -9.99,  -9.99,  -9.99],
+       [ -9.98,  -9.98,  -9.98, ...,  -9.98,  -9.98,  -9.98],
+       ...,
+       [  9.97,   9.97,   9.97, ...,   9.97,   9.97,   9.97],
+       [  9.98,   9.98,   9.98, ...,   9.98,   9.98,   9.98],
+       [  9.99,   9.99,   9.99, ...,   9.99,   9.99,   9.99]])
+</code></pre>
+Udemy動画では、これらのデータをいきなり三角関数かまして可視化していくんですが、試しにこれらをそのまま可視化してみると、面白みに欠けるからそうしたんだな、ということが分かります。
+<pre><code class="python">In [60]: dx + dy
+Out[60]:
+array([[ -2.00000000e+01,  -1.99900000e+01,  -1.99800000e+01, ...,
+         -3.00000000e-02,  -2.00000000e-02,  -1.00000000e-02],
+       [ -1.99900000e+01,  -1.99800000e+01,  -1.99700000e+01, ...,
+         -2.00000000e-02,  -1.00000000e-02,  -4.24549285e-13],
+       [ -1.99800000e+01,  -1.99700000e+01,  -1.99600000e+01, ...,
+         -1.00000000e-02,  -4.26325641e-13,   1.00000000e-02],
+       ...,
+       [ -3.00000000e-02,  -2.00000000e-02,  -1.00000000e-02, ...,
+          1.99400000e+01,   1.99500000e+01,   1.99600000e+01],
+       [ -2.00000000e-02,  -1.00000000e-02,  -4.26325641e-13, ...,
+          1.99500000e+01,   1.99600000e+01,   1.99700000e+01],
+       [ -1.00000000e-02,  -4.24549285e-13,   1.00000000e-02, ...,
+          1.99600000e+01,   1.99700000e+01,   1.99800000e+01]])
+In [61]: plt.imshow(dx+dy)
+Out[61]: &lt;matplotlib.image.AxesImage at 0x1484a9be0&gt;
+In [62]: plt.colorbar()
+Out[62]: &lt;matplotlib.colorbar.Colorbar at 0x1484fa400&gt;
+In [63]: plt.savefig("dx+dy.png")
+</code></pre>
+<img src="https://farm2.staticflickr.com/1527/25987055852_258dcc7e94_z_d.jpg" alt="" />
+<pre><code class="python">In [64]: dx * dy
+Out[64]:
+array([[ 100.    ,   99.9   ,   99.8   , ...,  -99.7   ,  -99.8   ,  -99.9   ],
+       [  99.9   ,   99.8001,   99.7002, ...,  -99.6003,  -99.7002,
+         -99.8001],
+       [  99.8   ,   99.7002,   99.6004, ...,  -99.5006,  -99.6004,
+         -99.7002],
+       ...,
+       [ -99.7   ,  -99.6003,  -99.5006, ...,   99.4009,   99.5006,
+          99.6003],
+       [ -99.8   ,  -99.7002,  -99.6004, ...,   99.5006,   99.6004,
+          99.7002],
+       [ -99.9   ,  -99.8001,  -99.7002, ...,   99.6003,   99.7002,
+          99.8001]])
+In [67]: plt.imshow(dx*dy)
+Out[67]: &lt;matplotlib.image.AxesImage at 0x1500a8550&gt;
+In [68]: plt.colorbar()
+Out[68]: &lt;matplotlib.colorbar.Colorbar at 0x1500f1e10&gt;
+In [69]: plt.savefig("dxbydy.png")
+</code></pre>
+<img src="https://farm2.staticflickr.com/1639/26013247921_80762fe250_z_d.jpg" alt="" />
+そこで、Udemy動画のようにdx, dyに三角関数かますと、以下のように-1.0〜1.0間での周期的な変化となって…
+<pre><code class="python">In [71]: plt.imshow(np.sin(dx))
+Out[71]: &lt;matplotlib.image.AxesImage at 0x11217bf28&gt;
+In [72]: plt.colorbar()
+Out[72]: &lt;matplotlib.colorbar.Colorbar at 0x11259d780&gt;
+In [73]: plt.savefig("sin_dx.png")
+</code></pre>
+<img src="https://farm2.staticflickr.com/1615/25987337882_885a9ee34e_z_d.jpg" alt="" />
+<pre><code class="python">In [75]: plt.imshow(np.sin(dy))
+Out[75]: &lt;matplotlib.image.AxesImage at 0x1127f5f60&gt;
+In [76]: plt.colorbar()
+Out[76]: &lt;matplotlib.colorbar.Colorbar at 0x112846780&gt;
+In [77]: plt.savefig("sin_dy.png")
+</code></pre>
+<img src="https://farm2.staticflickr.com/1518/25475106574_d67ccde26d_z_d.jpg" alt="" />
+二次元平面上を周期的に変化するようになるので、それらの和や積を可視化してみると、Udemy動画の通り~~気持ち悪い~~面白い画になります。
+<pre><code class="python">In [15]: plt.imshow(np.sin(dx) + np.sin(dy))
+Out[15]: &lt;matplotlib.image.AxesImage at 0x129137c88&gt;
+In [16]: plt.savefig("sin+sin.png")
+</code></pre>
+<img src="https://farm2.staticflickr.com/1497/25987055982_73110001d5_z_d.jpg" alt="" />
+<pre><code class="python">In [10]: plt.imshow(np.sin(dx) * np.sin(dy))
+Out[10]: &lt;matplotlib.image.AxesImage at 0x112148b38&gt;
+In [11]: plt.savefig("sinxsin.png")
+</code></pre>
+<img src="https://farm2.staticflickr.com/1502/25476994193_4782a50c04_z_d.jpg" alt="" />

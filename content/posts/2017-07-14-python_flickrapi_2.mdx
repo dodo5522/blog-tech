@@ -1,0 +1,77 @@
+---
+title: "写真をflickrに自動アップロードして、月ごとにアルバムを自動作成する方法（実装編）"
+description: "[前回は、flickrに写真を自動アップロードするプログラムの概要](http://tech.uribou.tokyo/python_flickrapi_1/)..."
+tags:
+  - "flickr"
+  - "plantuml"
+  - "python"
+  - "自動化"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2017-07-14T22:37:13.000Z
+author: takashi
+---
+
+
+
+[前回は、flickrに写真を自動アップロードするプログラムの概要](http://tech.uribou.tokyo/python_flickrapi_1/)を紹介しました。
+今回はその実装編です。
+<blockquote class="twitter-tweet" data-lang="ja">
+<p dir="ltr" lang="ja">写真を <a href="https://twitter.com/hashtag/flickr?src=hash">#flickr</a> に自動アップロードして、月ごとにアルバムを自動作成するプログラムを <a href="https://twitter.com/hashtag/Python?src=hash">#Python</a> で書いてみます。<a href="https://t.co/EqojKkqMmD">https://t.co/EqojKkqMmD</a></p>
+— takashi ando (@takashi7ando) <a href="https://twitter.com/takashi7ando/status/886003060002050048">2017年7月14日</a></blockquote>
+
+## Pythonでflickr APIを使うまでの流れ
+[flickr API公式ページにAPI Kitsとして紹介](https://www.flickr.com/services/api/)されている[flickrapi](https://stuvel.eu/flickrapi-doc/2-calling.html)を使うと、flickr APIを使ったプログラムがPythonで簡単に書けてしまいます。
+ただし、API keyやSecret keyの取得など、初回のみブラウザとPythonコンソールとを行ったり来たりする必要があってややこしいので、全体の流れをアクティビティ図にしました。
+![](https://farm5.staticflickr.com/4236/35056866054_0662bd8c2c_o_d.png)
+この図に沿って説明していきます。
+### ブラウザ操作： API keyとSecret keyの取得
+flickrアカウントを持っているだけでは、APIを使うことができません。
+API keyとSecret keyを発行しましょう。
+[flickrのCreate an Appページ](https://www.flickr.com/services/apps/create/apply/)で必要事項を記入し、submitすることで、keyを発行することができます。
+NON-COMMERCIAL（非営利目的）であれば、難しい質問は特にないので迷うことはありません。
+発行したkeyは <del datetime="2017-07-19T11:40:42+00:00">どうせ覚えられないので</del> 忘れないようにメモを取っておきましょう。
+### Python操作： Read/Writeアクセストークンを取得する
+先ほど発行したAPI keyとSecret keyを使って、ReadまたはWriteアクセストークンを取得します。
+ReadとWrite、どちらの権限が必要かは、使用したいAPIによって異なります。
+例えば[flickr.contacts.getList](https://www.flickr.com/services/api/flickr.contacts.getList.html) APIは **This method requires authentication with 'read' permission.** という記載があり、Read権限が必要であることがわかります。
+そして[upload](https://www.flickr.com/services/api/upload.api.html) APIは **This method requires authentication with 'write' permission.** の通り、Write権限が必要であることがわかります。
+以下のように、api.auth_url()に与えるキーワード引数permsを必要に応じて指定してください。
+<code data-gist-id="73dc07a0fb71af75dc81c07984126179" data-gist-line="140-152" data-gist-highlight-line="145"></code>
+### Python操作： flickrに写真をアップロードする
+flickrに写真をアップロードしてみます。
+<code data-gist-id="73dc07a0fb71af75dc81c07984126179" data-gist-line="62-84"></code>
+たったこれだけのコードで、path_to_photoが示す写真をflickrにアップロードできてしまいます。
+各キーワード引数の意味は[flickrapi公式ドキュメントに記載されている通り](https://stuvel.eu/flickrapi-doc/4-uploading.html#flickr-upload)なんですが、一応説明しておくと、
+| キーワード引数 | 意味 |
+| ------------- | ------------- |
+| filename | アップロードしたい写真ファイルのパス。 |
+| title | アップロード後にflickr上に表示されるタイトル。ファイル名を指定しています。 |
+| is_private | 一般公開する写真はアップロード後に手動で選択することにしたため、Trueとします。 |
+他にもtagを指定できたりと色々あるんですが、ここでは必要最小限の設定でアップロードすることにしています。
+### Python操作： アップロードした写真をphotosetに追加する
+見苦しいコードですが… というか、ほとんどコメント。
+すでにphotosetタイトルが存在すれば、今回アップロードした写真をそこへ追加し、存在しなければ新規作成するようにしています。
+<code data-gist-id="73dc07a0fb71af75dc81c07984126179" data-gist-line="87-132"></code>
+flickr.photosets.create() や flickr.photosets.addPhoto() に与えるキーワード引数の意味は、[flick API公式ドキュメント](https://www.flickr.com/services/api/)を参照してください。
+例えば[flickr.photosets.create](https://www.flickr.com/services/api/flickr.photosets.create.html)であれば、以下の通りです。
+| キーワード引数 | 必須？ | 意味 |
+| --- |:---:| --- |
+| api_key | 必須だけど不要 | 最初に取得した API key を指定します。<br /> **必須と言いながら、Pythonのflickrapiを使っている場合は不要です。** |
+| title | 必須 | photoset タイトルを文字列で指定します。|
+| description | 必須ではない | photoset の概要を文字列で指定します。 |
+| primary_photo_id | 必須 | photoset の代表となる写真のIDを指定します。 |
+flickr.photosets.create() を呼ぶ祭、API keyが必要そうに見えるんですが、実は不要です。
+[Pythonのflickrapi公式ドキュメント](
+https://stuvel.eu/flickrapi-doc/2-calling.html?highlight=create#calling-api-functions)にも記載されている通り、FlickrAPIオブジェクトが既に内部に抱えているので、個別のAPIコール時に指定する必要ありません。
+これで無事、写真をflickrにアップロードしつつ、その写真の撮影日に応じてphotosetを自動生成した上で、そのphotosetに写真を追加することができました。
+## まとめ
+写真のアップロードまでは本当に簡単。
+photosetを作ってそこに写真を追加しようとすると、ちょっと面倒なことをするハメになって、意外と時間がかかってしまいました…。
+同じタイトルのphotosetを複数作ることが可能なため、flickr.photosets.createする前に同じタイトルのphotosetがないかチェックする必要があります。
+既存のphotosetがあるなら勝手にそこへaddPhotoしてくれると思っていたら、そうではないんですね。
+それと、後で気づきましたが、[flickrapiの戻り値を、扱いやすいjsonや、parse済みのPythonオブジェクトで返してくれる設定](https://stuvel.eu/flickrapi-doc/2-calling.html?highlight=create#response-format-json)があるんですね。
+そのうち直そう…。
+今回紹介したコードは[こちら](https://gist.github.com/dodo5522/73dc07a0fb71af75dc81c07984126179)にpush済みなので、ぜひ使ってみてください。
+[argparse](http://tech.uribou.tokyo/python-argparsenoshi-ifang/)を使っているので、その解説ページなんかも併せてどうぞ。

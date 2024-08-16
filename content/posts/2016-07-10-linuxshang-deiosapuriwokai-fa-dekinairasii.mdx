@@ -1,0 +1,69 @@
+---
+title: "LinuxでiOSアプリを開発できないらしい。"
+description: "「LinuxでiOSアプリを開発できるらしい」というのは、間違いでした…。少なくとも現時点では。とりあえず分かったことは以下の通り。Foundationライブラ..."
+tags:
+  - "iOS"
+  - "swift"
+  - "プログラミング"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-07-10T06:31:25.000Z
+author: takashi
+---
+
+
+<br />
+「<a href="http://blog.rinka-blossom.com/linuxshang-deswiftwoshi-i-iosapuriwokai-fa-dekiru/">LinuxでiOSアプリを開発できるらしい</a>」というのは、間違いでした…。少なくとも現時点では。
+とりあえず分かったことは以下の通り。
+<ul>
+<li>FoundationライブラリがOSS化された</li>
+<li>その上に乗るCocoaやUIKitはOSS化されていない</li>
+<li>Objective-C runtimeもOSS化されていない</li>
+</ul>
+そして、<strong>OSS化されたFoundationが<a href="https://github.com/apple/swift-corelibs-foundation">Githubに公開されている</a></strong>んですが、そのREADME.mdにも以下のように書いてあります。
+<blockquote>
+  <strong>Why not make the existing Objective-C implementation of Foundation open source?</strong><br />
+  Foundation on Darwin is written primarily in Objective-C, and the Objective-C runtime is not part of the Swift open source project. CoreFoundation, however, is a portable C library and does not require the Objective-C runtime. It contains much of the behavior that is exposed via the Foundation API. Therefore, it is used on all platforms including Linux.
+</blockquote>
+ということで、実際に試してみると、そもそもLinux版SwiftではUIKitやCocoa（お洒落なGUIが作れるライブラリですね）をimportできません。
+Linuxでおなじみ、Glibcはimportして使用することができるところをみると、SwiftインタフェースでLinux CUIアプリケーション作れる環境を用意した感じですかね。あくまでSwift言語の学習用ということか…。
+<h1>Linux版Swiftインストール手順</h1>
+せっかくなのでまとめておきます。
+基本的に、<a href="https://swift.org/download/#using-downloads">Swift公式ページ</a>に書かれている通りです。
+<pre><code class="bash">~$ wget https://swift.org/builds/swift-3.0-preview-2/ubuntu1404/swift-3.0-PREVIEW-2/swift-3.0-PREVIEW-2-ubuntu14.04.tar.gz
+~$ tar xzf swift-3.0-PREVIEW-2-ubuntu14.04.tar.gz
+~$ sudo mv sudo mv swift-3.0-PREVIEW-2-ubuntu14.04 /usr/local/
+~$ sudo bash -c "echo 'export=?${PATH}:/usr/local/swift-3.0-PREVIEW-2-ubuntu14.04/usr/bin' &gt; /etc/profile.d/swift_toolchain.sh"
+~$ exec -l ${SHELL}
+</code></pre>
+<h1>簡単にSwiftを触ってみる</h1>
+Swift言語をちゃんと勉強したわけではないので、本当に基本的なところだけ試してみました。Glibcがimportできるとあって、見慣れた関数が使えます。
+<pre><code class="swift">  3&gt; import Glibc
+  4&gt; print(sin(3.141592))
+6.53589793076242e-07
+  5&gt; print(cos(3.141592))
+-0.999999999999786
+  6&gt;
+  7&gt; func test() {
+  8.     print(1+2+3)
+  9. }
+ 10&gt;
+ 11&gt; test()
+6
+ 12&gt; print(rand())
+1804289383
+</code></pre>
+例えば、randと入力してTabキーを２回押すと、補完候補が出力されます。bashやipythonと同じで、何もしなくても最初からauto completionが効いていて、とても良い。
+<pre><code class="swift"> 15&gt; rand
+Available completions:
+        (): Int32
+        rand() -&gt; Int32
+        rand_r(__seed: UnsafeMutablePointer&lt;UInt32&gt;) -&gt; Int32
+        random() -&gt; Int
+        random_data
+        random_r(__buf: UnsafeMutablePointer&lt;random_data&gt;, __result: UnsafeMutablePointer&lt;Int32&gt;) -&gt; Int32
+</code></pre>
+<h1>感想</h1>
+あくまでSwift言語の勉強用と割り切って、Macを買う前にLinuxで触っておく、くらいですかね。使うメリットを見出すとすれば…。要望をコードでpushしてpull requestできるだけのスキルを持っていれば、また別のメリットもあるんでしょうけど…。
+既にMac持ってる人にとっては、XCode入れればもれなくターミナルからSwift使えるので、メリットは特にないのかな…。

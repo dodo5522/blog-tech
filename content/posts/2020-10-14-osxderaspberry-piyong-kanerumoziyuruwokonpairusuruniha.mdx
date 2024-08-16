@@ -1,0 +1,49 @@
+---
+title: "OSXでRaspberry Pi用カーネルモジュールをコンパイルするには。"
+description: "Raspberry Pi Zeroは、まだ届きません。待ち遠しい…。待ってる間に開発環境をOSXで整備しときます。Raspberry Pi (raspbian)..."
+tags:
+  - "RaspberryPi"
+  - "電子工作"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2020-10-14T02:38:23.000Z
+author: takashi
+---
+
+
+<p><a href="http://tech.blog.uribou.me/raspberry-pi-zero-in-stock/">Raspberry Pi Zero</a>は、まだ届きません。待ち遠しい…。
+待ってる間に開発環境をOSXで整備しときます。
+Raspberry Pi (raspbian)にはgccも含まれているので、実機上でカーネルもカーネルモジュールもコンパイルできてしまうんですけどね。</p>
+<pre><code class="bash">tmp $ gcc --version
+gcc (Debian 4.6.3-14+rpi1) 4.6.3
+Copyright (C) 2011 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+</code></pre>
+<p>が、もちろん非力なCPUとメモリなので、PC上でコンパイルしたい。
+で、調べたら<a href="http://www.welzels.de/blog/en/arm-cross-compiling-with-mac-os-x/comment-page-1/">ARM Cross Compiling with Mac OS X</a>にOSX用インストーラがアップされていました。linaroってあるけど、linaroがOSXバイナリも提供してるんだろうか…？</p>
+<h1>Raspberry Pi用toolchainのインストール</h1>
+<p>とりあえず、上記サイトから以下のいずれかをダウンロードして解凍します。</p>
+<ul>
+<li>arm-linux-gnueabihf-raspbian 4.8 2014.04 for Mac OS X (2308)</li>
+<li>arm-linux-gnueabihf-raspbian 4.9 2014.05 for Mac OS X (5485)</li>
+</ul>
+<p>すると、拡張子が.macのインストーラが生成されるので、ダブルクリックして実行します。
+その際、セキュリティ設定が開発元情報ないとインストール許しません状態になっている、セキュリティ意識の高い方は、今回に限り緩めてもらって、<strong>「このまま開く」</strong>ボタンを押してください。</p>
+<img src="https://farm9.staticflickr.com/8813/28758234530_ddaace103b_z_d.jpg" alt="" />
+<p>あとは「続ける」ボタンを連打するだけ。</p>
+<img src="https://farm9.staticflickr.com/8409/28939017062_df4bb53df0_z_d.jpg" alt="" />
+<p>インストールが完了したら、<code>~/.bash_profile</code>とか編集して<code>/usr/local/linaro/arm-linux-gnueabihf-raspbian/bin</code>にパスを通しましょう。</p>
+<pre><code class="bash">$ cat ~/.bash_profile
+export PATH="/usr/local/linaro/arm-linux-gnueabihf-raspbian/bin:$PATH"
+</code></pre>
+<h1>Raspberry Piカーネルソースの取得とコンパイル</h1>
+<p><a href="https://www.raspberrypi.org/documentation/linux/kernel/building.md">Raspberry Pi公式ページ</a>まんまですが、toolchainさえインストールしてパス通しちゃえば、以下のようにしてコンパイル可能です。</p>
+<pre><code class="bash">$ git clone --depth=1 https://github.com/raspberrypi/linux rpi_kernel
+$ cd rpi_kernel
+$ KERNEL=kernel
+$ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- bcmrpi_defconfig
+$ make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- zImage modules dtbs
+</code></pre>
+<p><a href="http://blog.ebiken.me/how-to-linux-char-dev/">http://blog.ebiken.me/how-to-linux-char-dev/</a></p>

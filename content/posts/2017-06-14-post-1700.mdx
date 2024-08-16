@@ -1,0 +1,43 @@
+---
+title: "GhostからWordpressへ （４） 〜リダイレクト用Webサーバ構築〜"
+description: "[TOC][前回](http://tech.uribou.tokyo/ghost_to_wordpress_plan/)も触れた通り、目的は **新ドメインへの..."
+tags:
+  - "flask"
+  - "ghost"
+  - "python"
+  - "サーバ"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2017-06-14T12:51:42.000Z
+author: takashi
+---
+
+
+[TOC]
+[前回](http://tech.uribou.tokyo/ghost_to_wordpress_plan/)も触れた通り、目的は **新ドメインへの移行** です。
+てことは、旧ドメインのブログにアクセスしたら新ドメインのブログに[301リダイレクト](https://www.seohacks.net/basic/terms/301_redirect/)すれば良いだけで、DNSサーバのTTLをいじる必要なんてないじゃん。
+&gt; 301リダイレクトは、URLが恒久的に変更された場合に用いられる転送処理のステータスコードです。転送のステータスコードとして他に302リダイレクトがありますが、302リダイレクトは「一時的な転送」を表すものであり、その意味が異なります。
+&gt;
+&gt; 301リダイレクトによって転送される場合、検索エンジンは転送前のURLが持っていた被リンク等の評価を、転送先のURLに引き継がせます。
+という指摘をもらいそうなので言い訳しておくと…。
+もちろん当初はそうしようとしたんですが、nodejsのGhostと、それを稼働させたVPS、管理者のスキル不足が重なり、そう簡単にはいかなかったんですね。
+リダイレクトするだけのWebサーバを立ち上げ、旧ドメインをそのWebサーバに向けることで、旧URLへのアクセスを新URLにリダイレクトさせることにしました。
+## wsgi.py
+```python
+#!/usr/bin/env python
+import os
+from flask import Flask, redirect
+REDIRECTING_URL = "http://tech.uribou.tokyo/"
+application = Flask("hoge")
+@application.route("//")
+def index1(slug):
+    return redirect(REDIRECTING_URL + slug, code=301)
+@application.route("/")
+def index2(slug):
+    return redirect(REDIRECTING_URL + slug, code=301)
+```
+## requirements.txt
+```
+flask
+```

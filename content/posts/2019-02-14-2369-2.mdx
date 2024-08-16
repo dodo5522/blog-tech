@@ -1,0 +1,118 @@
+---
+title: "フルコネクトのニューラルネットワーク"
+description: "https://keras.io/ja/getting-started/sequential-model-guide/#shape&nbsp;入力のshapeを..."
+tags:
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2019-02-14T21:27:01.000Z
+author: takashi
+---
+
+
+<div class="l-content--detail p-lesson">
+<div>
+https://keras.io/ja/getting-started/sequential-model-guide/#shape
+&nbsp;
+<h2 id="shape">入力のshapeを指定する</h2>
+モデルはどのような入力のshapeを想定しているのかを知る必要があります． このため， <code>Sequential</code> モデルの最初のレイヤーに入力のshapeについての情報を与える必要があります（最初のレイヤー以外は入力のshapeを推定できるため，指定する必要はありません）． 入力のshapeを指定する方法はいくつかあります:
+<ul>
+ 	<li>最初のレイヤーの <code>input_shape</code>引数を指定する．この引数にはshapeを示すタプルを与えます（このタプルの要素は整数か <code>None</code>を取ります．<code>None</code>は任意の正の整数を期待することを意味します）．</li>
+ 	<li><code>Dense</code> のような2次元の層では <code>input_dim</code>引数を指定することで入力のshapeを指定できます．同様に，3次元のレイヤーでは <code>input_dim</code>引数と <code>input_length</code>引数を指定することで入力のshapeを指定できます．</li>
+ 	<li>（stateful reccurent networkなどで）バッチサイズを指定したい場合， <code>batch_size</code>引数を指定することができます．もし， <code>batch_size=32</code>と <code>input_shape=(6, 8)</code>を同時に指定した場合，想定されるバッチごとの入力のshapeは <code>(32, 6, 8)</code>となります．</li>
+</ul>
+</div>
+<div>3-1-5. フルコネクトのニューラルネットワーク</div>
+<div class="l-content--detail p-lesson">
+<h4>フルコネクトのニューラルネットワーク</h4>
+それでは、このニューラルネットワークが、どのような構造になっているかを見ていきます。
+<pre><code class="python hljs">
+  <span class="hljs-keyword">from</span> keras.models <span class="hljs-keyword">import</span> Sequential
+  <span class="hljs-keyword">from</span> keras.layers <span class="hljs-keyword">import</span> Dense, Activation
+  model = Sequential()
+  model.add(Dense(<span class="hljs-number">1</span>, input_dim=<span class="hljs-number">784</span>))
+  model.add(Activation(<span class="hljs-string">'sigmoid'</span>))
+  model.compile(optimizer=<span class="hljs-string">'adam'</span>, loss=<span class="hljs-string">'binary_crossentropy'</span>, metrics=[<span class="hljs-string">'accuracy'</span>])
+</code></pre>
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/MNIST_4or9_logistic_regression_-_IBM_Watson-1.png" alt="" width="440" />まず、model = <a href="https://keras.io/ja/models/sequential/" target="_blank" rel="noopener noreferrer">Sequential()</a>という行は、Kerasでニューラルネットワークを組み立てる際に、最初に実行するものです。これから組み立てるニューラルネットワークがレイヤーを積み重ねたものであることを示します。Kerasでは、ここで作成したmodelに対して、model.add()を実行してレイヤーを追加していきます。（model = Sequential()の引数に、レイヤーの内容をリストで与えて、ニューラルネットワークを構築することも可能です。）
+最初のレイヤーは、Dense(1, input_dim=784) です。<a href="https://keras.io/ja/layers/core/#dense" target="_blank" rel="noopener noreferrer">Dense</a>は最も一般的なネットワークレイヤーです。入力値のニューロンと出力値のニューロンがすべてつながっています。「すべてつながっている」ことから、全結合層やフルコネクトなどと言われることもあります。
+Denseに2つの引数をセットしています。第1引数はこのレイヤーからの出力値となるニューロンの数（出力ユニット数）を示します。ここでは次のレイヤーがこのニューラルネットワークの出力であり、4か9（実装上は0か1）の2値であることから1を指定しています。第2引数はinput_dim=784としています。これは入力値が要素が784個の1次元配列であることを示します。
+＜参考＞
+<ul>
+ 	<li><a href="https://keras.io/ja/" target="_blank" rel="noopener noreferrer">Keras</a></li>
+</ul>
+</div>
+<a class="c-button--learn c-button--learn--completed"><i class="material-icons c-chapter__check-icon--checked">check_circle</i>習得済み</a>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-1-6. 活性化関数</div>
+<div class="l-content--detail p-lesson">
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/MNIST_4or9_logistic_regression_-_IBM_Watson-2.png" alt="" width="415" />次に、Activation('sigmoid')というレイヤーが追加されています。このモデルでは、ニューラルネットワークの組み立てはこれだけです。
+Activation('sigmoid')はDenseのようなネットワークではなく、直前の出力に適用する活性化関数です。<a href="https://keras.io/ja/layers/core/#activation" target="_blank" rel="noopener noreferrer">Activation</a>が活性化関数を指定することを示し、sigmoidはシグモイド関数を活性化関数として使用することを示します。Kerasでは活性化関数をレイヤーとしてではなく、Dense(1, input_dim=784, activation='sigmoid')のようにネットワークの追加でまとめて指定することもできます。（厳密に言えば、Dense()でactivationを指定しない場合、特別な活性化関数を適用しない「線形活性化」によって値を次のレイヤーに渡すことを示し、その後のActivation()レイヤーでDense()レイヤーの出力に活性化関数を適用することを示します。また、Dense()の中でactivationを指定すれば、そこで指定した活性化関数を適用した値を次のレイヤーに渡すことになるので、結果的には同じ値となります。）
+先ほど説明したように、ニューラルネットワークを構成する一つ一つのニューロンは、別のニューロンから入力された値を重み（ウエイト）に基づいて計算し、閾値（バイアス）を上回る場合に発火して、次のニューロンに値の入力を行います（この、重みと閾値のことをパラメータといいます）。その際、実際に入力値を集計した後で、どのようにバイアスを処理して値を出力するのかを導き出すのが活性化関数の役目です。ニューラルネットワークをはじめとする機械学習は、基本的にアルゴリズムを数式で示し、コンピュータが得意とする計算によって処理を進めていきます。そのため、このような関数が必要となるのです。
+活性化関数にはいくつかの種類があります。ここで用いたシグモイド関数は計算が容易であるためにニューラルネットワークで古くから使われてきた関数です。他には、tanhやランプ関数（ReLU）といった関数が用いられます。ニューラルネットワークの世界では、<a href="https://www.nature.com/articles/nature14539" target="_blank" rel="noopener noreferrer">2015年5月現在ReLUが最善であるとした論文</a>があります。
+＜参考＞
+<ul>
+ 	<li><a href="https://keras.io/ja/" target="_blank" rel="noopener noreferrer">Keras</a></li>
+</ul>
+</div>
+<a class="c-button--learn c-button--learn--completed"><i class="material-icons c-chapter__check-icon--checked">check_circle</i>習得済み</a>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-1-7. 最適化関数、損失関数、評価関数</div>
+<div class="l-content--detail p-lesson">
+<pre><code class="python hljs">
+  <span class="hljs-keyword">from</span> keras.models <span class="hljs-keyword">import</span> Sequential
+  <span class="hljs-keyword">from</span> keras.layers <span class="hljs-keyword">import</span> Dense, Activation
+  model = Sequential()
+  model.add(Dense(<span class="hljs-number">1</span>, input_dim=<span class="hljs-number">784</span>))
+  model.add(Activation(<span class="hljs-string">'sigmoid'</span>))
+  model.compile(optimizer=<span class="hljs-string">'adam'</span>, loss=<span class="hljs-string">'binary_crossentropy'</span>, metrics=[<span class="hljs-string">'accuracy'</span>])
+</code></pre>
+ニューラルネットワークの組み立てが終わったので、次にモデルをコンパイルします。コンパイルの際に、最適化関数（optimizer='adam'）と損失関数（loss='binary_crossentropy'）、評価関数（metrics=['accuracy']）の3つを指定しています。
+ニューラルネットワークにおける学習フェーズは、一つ一つのニューロンで、パラメータ（重みと閾値）を更新することです。同じ構造のニューラルネットワークに同じ入力値を与えても、それぞれのニューロンのパラメータが異なれば、出力値は異なるでしょう。つまり、パラメータが最適化されていれば、そのニューラルネットワークは高い精度の結果を出すことができます。
+では、パラメータはどのように調整されるのでしょうか。教師データが与えられる教師あり学習の場合、与えられた訓練データからニューラルネットワークが出力した値と、教師データの値が同じ、あるいは差が最小化していれば精度が高いといえますから、まずは差がどの程度出ているかを調べる必要があります。それを行うのが損失関数の役目です。このモデルでは、損失関数の一つである交差エントロピー（cross entropy）のうち、0か1のいずれかの値を求める場合に使用されるbinary_crossentropyを用いています。
+最適化関数は、損失関数によって計算された差を最小化するために、パラメータをどのように更新すれば良いかを計算します。代表的な考え方は勾配降下法であり、それを発展させたさまざまなアルゴリズムが提案されています。ここで使用しているadamもその1つです。
+最後に、評価関数は、学習モデルの作成時（学習フェーズ）に、モデルの精度を評価するために用いる関数です。一般的には`accuracy`を用います。
+</div>
+<div>3-1-8. バッチサイズとエポック</div>
+<div class="l-content--detail p-lesson">
+<pre><code class="python hljs">
+  <span class="hljs-keyword">from</span> keras.models <span class="hljs-keyword">import</span> Sequential
+  <span class="hljs-keyword">from</span> keras.layers <span class="hljs-keyword">import</span> Dense, Activation
+  model = Sequential()
+  model.add(Dense(<span class="hljs-number">1</span>, input_dim=<span class="hljs-number">784</span>))
+  model.add(Activation(<span class="hljs-string">'sigmoid'</span>))
+  model.compile(optimizer=<span class="hljs-string">'adam'</span>, loss=<span class="hljs-string">'binary_crossentropy'</span>, metrics=[<span class="hljs-string">'accuracy'</span>])
+</code></pre>
+モデルをコンパイルした後に、いよいよ説明変数（X）と、目的変数（y）を指定して、学習フェーズを実行します。ここでは、バッチサイズとエポックを指定しています。
+バッチサイズ（batch_size）は、訓練データの中から同時にどの程度のデータをニューラルネットワークに与えてパラメータを更新するかを示します。例えば、訓練データが100個あり、バッチサイズが10の場合は、10回の更新が行われるということになります。
+エポック（epochs）は、訓練データを使って何回反復した学習を行うかを指定します。上記の例で、訓練データが100個、バッチサイズが10で、エポックが5の場合は、100÷10×5＝50回の更新が行われます。
+</div>
+&nbsp;
+<div>畳み込みニューラルネットワーク（CNN）とは</div>
+<div class="l-content--detail p-lesson">
+Business編を受講された方は、この項は飛ばしても構いません。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/cnn_01.png" alt="" width="1203" />
+上図は畳み込みニューラルネットワーク（CNN：Convolution Neural Network）を図示したものです。
+CNNは大きく分けると特徴量の抽出を行う部分と、抽出された特徴量をもとに分類を行う部分に分けることができます。特徴量を抽出する部分は、畳み込み層とプーリング層で構成されます。分類を行う部分は前節で取り上げた多層パーセプトロンと同様のものです。この、特徴量抽出と分類を行う層が、CNNにおける隠れ層です。隠れ層が深く重ねられているため、ディープラーニングということができます。
+<h4>畳み込み層とプーリング層</h4>
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/cnn_02.png" alt="" width="326" />
+コンピュータで扱う画像は、上図のような構造となっていることをご存知でしょう。一つ一つのマス目をピクセル（画素）といい、上図は縦10ピクセル、横10ピクセルの100個のピクセルで示された画像です。ここでは白と黒の2値の画像を示しましたが、赤（Red）・緑（Green）・青（Blue）のそれぞれを0〜255の256段階で示せば、256×256×256で約1677万色を表現することができます。
+多くの画像では、隣り合ったピクセルは似たようなもので、時折、大きな違いが現れます。上図でいえば、白のピクセルと白のピクセル、黒のピクセルと黒のピクセルが隣り合っているケースが多く、時折、白のピクセルと黒のピクセルが隣り合います。
+CNNは、こうしたコンピュータが扱う画像の特徴を最大限に活用して設計されたニューラルネットワークといえます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/cnn_03.png" alt="" width="742" />
+畳み込み層では、上図のように、10×10ピクセルの画像に対して3×3ピクセル（赤枠）のフィルタを1ピクセルずつずらしながら、スキャンしていきます。フィルタは、縦方向の境界を見つけ出すもの、横方向の境界を見つけ出すものなど、様々な種類があります。
+フィルタにはピクセルごとに重みがあり、それと画像（2値の画像のため白を0、黒を1で示します）上の同じ位置の値を掛け合わせて、足し合わせたものを特徴マップに配置していきます。例えば、3×3ピクセルのフィルタで10×10ピクセルの画像全体をスキャンすると、8×8ピクセルの特徴マップを得ることができます。
+下図に示したフィルタでは、左右に走る境界を抽出することができます。特徴マップを見ると、たしかに手書きの「1」の書き出しの部分で左右に動いている境界のところで、0以外の値が現れています。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/cnn_04_1.png" alt="" width="1373" />
+特徴マップは、プーリング層によって縦横の両方を縮小します。プーリングの方法はいくつかありますが、下図は2×2の領域内で最大の値を選択するMaxPoolingという方法を表しています。
+畳み込み層で得た特徴マップは、「1」という文字には上部に斜め上方向に向いた線（境界）があるという特徴を示していますが、プーリング層で特徴マップを縮小したことにより、上部に横方向の線があるというように特徴を簡略化しています。プーリング層には、下記のような効果があります。
+<ul>
+ 	<li>画像内で多少、絵柄の位置が変動しても、それを吸収することができる</li>
+ 	<li>データ量が小さくなるため、計算が速くなる（学習にかかる時間を短くする）</li>
+</ul>
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/cnn_06.png" alt="" width="977" />
+CNNでは、縦横の境界線や色情報といった様々なフィルタを用いた畳み込み層と、プーリング層を、何層にも重ねることで、画像の様々な特徴を見つけ出してます。ここで重要なことは、あくまで画像を数値データとして処理していることです。縦横の境界線に現れる特徴の数値、色情報に現れる特徴の数値というように、畳み込みによって得られる画像の特徴は数値データとして示されます。
+</div>
+</div>

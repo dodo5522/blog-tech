@@ -1,0 +1,86 @@
+---
+title: "代表的な機械学習アルゴリズム４つの精度を不倫データで比較する。"
+description: "変なタイトル…。またも前回の続きですが、udemyで紹介される機械学習アルゴリズムは以下の４つ。というより、多すぎて試しきれず、以下の４つに絞ったというか。ロジ..."
+tags:
+  - "python"
+  - "udemy"
+  - "プログラミング"
+  - "可視化"
+  - "機械学習"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-06-08T13:00:04.000Z
+author: takashi
+---
+
+
+変なタイトル…。
+またも<a href="http://blog.rinka-blossom.com/bu-lun-detasetutonozhong-dezui-mowei-naiparameta3tu/">前回</a>の続きですが、udemyで紹介される機械学習アルゴリズムは以下の４つ。
+というより、多すぎて試しきれず、以下の４つに絞ったというか。
+<ul>
+<li>ロジスティック回帰</li>
+<li>k近傍法</li>
+<li>サポートベクトルマシン</li>
+<li>ナイーブベイズ分類</li>
+</ul>
+これらをデフォルトのまま使って予測精度を比較してみようかなと。
+まずは不倫データを整えます。前回までの記事にコードのコピペです。
+<pre><code class="python">import pandas as pd
+import numpy as np
+from pandas import DataFrame, Series
+import statsmodels.api as sm
+def is_affairs(affairs):
+        return 1 if affairs &gt; 0 else 0
+X = sm.datasets.fair.load_pandas().data
+Y = X.affairs.apply(is_affairs)
+X.drop("affairs", inplace=True, axis=1)
+occs = pd.get_dummies(X.occupation)
+occs.columns = Series(["occ" + str(num) for num in range(1,7)])
+occs.drop("occ1", axis=1, inplace=True)
+occs_husb = pd.get_dummies(X.occupation_husb)
+occs_husb.columns = Series(["occ_husb" + str(num) for num in range(1,7)])
+occs_husb.drop("occ_husb1", axis=1, inplace=True)
+X = pd.concat([X, occs, occs_husb], axis=1)
+X.drop(["occupation", "occupation_husb"], inplace=True, axis=1)
+</code></pre>
+ここからが本番。４つのアルゴリズムそれぞれに不倫データを適用してモデルを作り、予測、精度（スコア）を算出。
+<pre><code class="python">from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.naive_bayes import GaussianNB
+from sklearn.cross_validation import train_test_split
+classes = (LogisticRegression, KNeighborsClassifier, SVC, GaussianNB)
+results = DataFrame([[cls.__name__ for cls in classes], [.0 for _ in range(len(classes))]]).T
+results.columns = ["class", "score"]
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, train_size=0.9)
+scores = Series([.0 for _ in range(len(classes))])
+for n, cls in enumerate(classes):
+    obj = cls()
+    obj.fit(X_train, Y_train)
+    pred = obj.predict(X_test)
+    scores[n] = accuracy_score(Y_test, pred)
+results.score = scores
+</code></pre>
+その結果が以下。
+<pre><code class="python">                  class     score
+0    LogisticRegression  0.729984
+1  KNeighborsClassifier  0.682889
+2                   SVC  0.729984
+3            GaussianNB  0.690738
+</code></pre>
+うーん、アルゴリズムやデータによって多少変わるようです、としか言えない…。
+例えばSVCなら、コンストラクタに渡すパラメータkernelを他のアルゴリズムに変えるだけでも、精度に差が出てくるかもしれません。
+<pre><code class="python">kernel : string, optional (default='rbf')
+     Specifies the kernel type to be used in the algorithm.
+     It must be one of 'linear', 'poly', 'rbf', 'sigmoid', 'precomputed' or
+     a callable.
+     If none is given, 'rbf' will be used. If a callable is given it is
+     used to pre-compute the kernel matrix from data matrices; that matrix
+     should be an array of shape ``(n_samples, n_samples)``.
+</code></pre>
+udemyのpython機械学習講座もそろそろお終いなので、寂しい限り。
+とはいえ、まだ入り口に小指が入った程度だと自覚しているので、ここから更に薬指程度まで踏み込むにはどうしたものか、と次の題材を探しているところです。
+これ ↓ もいいんですけど、いきなり難しいんですよね…。それでも少しずつ進めてはいるんですが。
+
+そのうち紹介したいと思います。

@@ -1,0 +1,157 @@
+---
+title: "ちょっとしたコマンドラインツールをpythonで作る時に便利なargparseの使い方"
+description: "ちょっとしたコマンドラインツールを作るとき、欲しくなるのが以下のようなカッコイイオプション指定機能とヘルプ表示。$ python photosort.py -h..."
+tags:
+  - "python"
+  - "プログラミング"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-11-03T12:26:47.000Z
+author: takashi
+---
+
+
+<p>ちょっとしたコマンドラインツールを作るとき、欲しくなるのが以下のようなカッコイイオプション指定機能とヘルプ表示。</p>
+<pre class="lang:sh decode:true">$ python photosort.py -h
+usage: photosort.py [-h] [-d [PATH_ROOT_DST]]
+                    [-p SORT_PHOTO_EXTENTIONS [SORT_PHOTO_EXTENTIONS ...]]
+                    [-v SORT_VIDEO_EXTENTIONS [SORT_VIDEO_EXTENTIONS ...]]
+                    [-l DELIMITER] [--subdir-year] [--subdir-month] [--copy]
+                    [--callback-function CALLBACK_FUNCTION] [--debug DEBUG]
+                    path_root_src
+This script to make directory of date which the photo is taken, and move the
+photo into the directory.
+positional arguments:
+  path_root_src         Directory path where your taken photo files are
+                        located.
+optional arguments:
+  -h, --help            show this help message and exit
+  -d [PATH_ROOT_DST], --path-root-dst [PATH_ROOT_DST]
+                        Directory path where you want to create date folder
+                        and locate photo files. (default: same as source
+                        directory)
+  -p SORT_PHOTO_EXTENTIONS [SORT_PHOTO_EXTENTIONS ...], --sort-photo-extentions SORT_PHOTO_EXTENTIONS [SORT_PHOTO_EXTENTIONS ...]
+                        Extentions of photo file which you want to sort.
+                        (default: jpg)
+  -v SORT_VIDEO_EXTENTIONS [SORT_VIDEO_EXTENTIONS ...], --sort-video-extentions SORT_VIDEO_EXTENTIONS [SORT_VIDEO_EXTENTIONS ...]
+                        Extentions of video file which you want to sort.
+                        (default: jpg)
+  -l DELIMITER, --delimiter DELIMITER
+                        A character as delimiter which you want to set the
+                        name of date folder like "2014-05-01". (default: none)
+  --subdir-year         Generate sub directory of year if this is set.
+  --subdir-month        Generate sub directory of month if this is set.
+  --copy                Copy media files but not move.
+  --callback-function CALLBACK_FUNCTION
+                        Function to be callback when copying/moving a photo
+                        finished. The format is like "/User/takashi/flickr_upl
+                        oader/flickr_uploader:upload?key=xxx&amp;param=yyy". The
+                        "upload" function should have an argument
+                        "path_to_photo_uploading" as first and another args is
+                        passed to keyword arguments. (default: none)
+  --debug DEBUG         debug mode if this flag is set (default: info)
+</pre>
+<p>pythonなら、標準パッケージ<a href="http://docs.python.jp/2/library/argparse.html">argparse</a>を使うことで、簡単に実装できます。</p>
+<h1>スクリプトの引数仕様</h1>
+<p>例えば、とあるスクリプトの引数をこんな感じで指定できるようにしたい。</p>
+<ul>
+    <li>srcディレクトリパスの指定は必須</li>
+    <li>dstディレクトリパスの指定は必須ではない</li>
+    <li>対象とするファイルの拡張子を複数指定したい</li>
+    <li>debug用のprint文は普段はstdoutに出したくない</li>
+</ul>
+<h1>まずは初期化</h1>
+<p>ArgumentParserオブジェクトを生成します。
+その初期化パラメータは、description以外はデフォルトのままで問題ありません。add_help(-h/–help オプションをパーサーに追加する）等、便利な機能は予め有効になっています。</p>
+<pre class="lang:python decode:true ">import argparse
+parser = argparse.ArgumentParser(description='This script is ...')</pre>
+<h1>引数の追加</h1>
+<h2>その１</h2>
+<blockquote>
+<p>srcディレクトリパスの指定は必須
+add_argumentの第一引数にpath_root_srcを、nargsにNoneを指定します。この名前に、-や--を付けないのがミソです。
+こうすることで、-や--付オプション以外の引数がスクリプトに指定されないと、<code>too few argument</code>エラーとなってくれます。
+もしnargsを'?'にした場合は、引数の数0個を許可したことになるので、エラーになることなくスクリプトを実行できることになります。ただし、その際はdefaultやconstの設定が必要になります。詳しくは後ほど。</p>
+<pre class="lang:python decode:true">parser.add_argument(
+'path_root_src',
+action='store',
+nargs=None,
+const=None,
+default=None,
+type=str,
+choices=None,
+help='Directory path where your taken photo files are located.',
+metavar=None)</pre>
+<p>ここで指定した第一引数の文字列'path_root_src'は、最後の仕上げでコールする<code>args = parser.parse_args()</code>が返すNamespaceオブジェクトの属性名として使用されます。
+つまり、下記のように実行した場合、<code>args.path_root_src</code>に&quot;&quot;/Users/test/Pictures&quot;&quot;が格納されることになります。</p>
+<pre class="lang:sh decode:true ">$ ./photosort.py /Users/test/Pictures</pre>
+<h2>その２</h2>
+<p>dstディレクトリパスの指定は必須ではない
+add_argumentの第一引数に２種類のオプション文字列を、nargsに'?'を指定することで実現可能です。
+これにより、可能なら1つの引数がコマンドラインから取られ、<code>args = parser.parse_args()</code>が返すNamespaceオブジェクトの属性名'path_root_dst'として使用され、引数の値はその属性にセットされます。
+オプション引数そのものが存在しない（-d自体が指定されない）場合はdefaultの値が渡されます。
+それに対し、オプション引数が指定され、その後にコマンドライン引数が無い場合は、constの値が渡されます。
+下記の例の場合、どちらもNoneなので同じことですが…。</p>
+<pre class="lang:python decode:true ">parser.add_argument(
+　　　　'-d', '--path-root-dst',
+　　　　action='store',
+　　　　nargs='?',
+　　　　const=None,
+　　　　default=None,
+　　　　type=str,
+　　　　choices=None,
+　　　　help='Directory path where you want to create date folder and locate photo files. (default: same as source directory)',
+　　　　metavar=None)</pre>
+<h2>その３</h2>
+<p>対象とするファイルの拡張子を複数指定したい
+add_argumentの第一引数に２種類のオプション文字列を、nargsに'+'を指定することで実現可能です。
+nargsに'+'を指定すると、最低でも1つのコマンドライン引数が必要となり、条件を満たさない場合は<code>too few argument</code>エラーとなります。
+ただし、<code>too few argument</code>エラーとなるのは、オプションが指定されているのにコマンドライン引数が指定されていない場合のみです。
+オプション自体が指定されていない場合は、defaultに指定した<code>[&#039;jpg&#039;]</code>が使用され、エラーになりません。</p>
+<pre class="lang:python decode:true ">parser.add_argument(
+　　　　'-e', '--sort-files-extentions',
+　　　　action='store',
+　　　　nargs='+',
+　　　　const=None,
+　　　　default=['jpg'],
+　　　　type=str,
+　　　　choices=None,
+　　　　help='Extentions of file which you want to sort. (default: jpg)',
+　　　　metavar=None)
+</pre>
+<h2>その４</h2>
+<p>debug用のprint文は普段はstdoutに出したくない
+あるオプション引数が指定された場合、単純にTrueかFalseの値を持ちたい場合、actionに'store_true'や'store_false'を指定することで実現できます。
+このスクリプトが--debug付きで実行された場合は、最後の仕上げでコールする<code>args = parser.parse_args()</code>が返すNamespaceオブジェクトの属性名<code>args.debug</code>にTrueが格納されることになります。</p>
+<pre class="lang:python decode:true  ">parser.add_argument(
+'--debug',
+action='store_true',
+help='debug mode if this flag is set (default: False)')</pre>
+<h1>最後の仕上げ</h1>
+<p>以下のようにすると、これまでに指定した引数設定を元にして、コマンドラインで指定された引数をNamespaceオブジェクトの属性に変換して返します。</p>
+<pre class="lang:python decode:true ">import sys
+args = parser.parse_args(sys.argv[1:])</pre>
+<p>下記のようにparse_args()関数の引数を省略しても結果は同じです。</p>
+<pre class="lang:python decode:true ">args = parser.parse_args()</pre>
+<p>こうしてできたargsオブジェクトをダンプしてみると、以下のように属性値として格納されていることがわかります。</p>
+<pre class="lang:default decode:true ">(Pdb) b 112
+Breakpoint 1 at /Users/dodo5522/Development/manage_media_data/photosort.py:112
+(Pdb) c
+/Users/dodo5522/Development/manage_media_data/photosort.py(112)()
+-&gt; args = parser.parse_args()
+(Pdb) n
+(Pdb) dir(args)
+['__class__', '__contains__', '__delattr__', '__dict__', '__doc__', '__eq__', '__format__', '__getattribute__', '__hash__', '__init__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', '_get_args', '_get_kwargs', 'debug', 'path_root_dst', 'path_root_src', 'sort_files_extentions']
+(Pdb) args.debug
+(Pdb) print args.debug
+False
+(Pdb) print args.path_root_dst
+/Users/dodo5522/Public
+(Pdb) print args.path_root_src
+/Users/dodo5522/Pictures
+(Pdb) print args.sort_files_extentions
+['jpg', 'png', 'mov']
+(Pdb)</pre>
+<p>&nbsp;</p>
+</blockquote>

@@ -1,0 +1,27 @@
+---
+title: "ゼロから作るニューラルネットワーク@Udemy TensorFlow fast style transferを試してみた"
+description: "少しずつ進めている、[ゼロから作るニューラルネットワーク@Udemy](https://www.udemy.com/neuralnet/learn/v4/que..."
+tags:
+  - "python"
+  - "TensorFlow"
+  - "udemy"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2017-07-30T23:29:44.000Z
+author: takashi
+---
+
+
+少しずつ進めている、[ゼロから作るニューラルネットワーク@Udemy](https://www.udemy.com/neuralnet/learn/v4/questions/2614507?show_review_popup=true)。
+その中でも比較的すぐに試せる[Evaluating Style Transfer Networks](https://github.com/lengstrom/fast-style-transfer/blob/master/README.md#evaluating-style-transfer-networks)の実行結果をご紹介。
+```bash
+moca:fast-style-transfer $ time python evaluate.py --checkpoint ../wave.ckpt --in-path ~/Pictures/2017年賀状.png --out-path test.png
+2017-07-31 07:58:17.667412: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.2 instructions, but these are available on your machine and could speed up CPU computations.
+2017-07-31 07:58:17.667455: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX instructions, but these are available on your machine and could speed up CPU computations.
+real	16m22.815s
+user	3m20.612s
+sys	3m43.280s
+```
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/36141416921/in/photostream/" title="2017年賀状_元"><img src="https://farm5.staticflickr.com/4310/36141416921_0dddf953e2_z.jpg" width="433" height="640" alt="2017年賀状_元"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/36141418281/in/photostream/" title="2017年賀状_北斎風"><img src="https://farm5.staticflickr.com/4304/36141418281_03b0c334f7_z.jpg" width="434" height="640" alt="2017年賀状_北斎風"></a>

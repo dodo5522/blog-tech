@@ -1,0 +1,93 @@
+---
+title: "vimのテンプレート機能でコーディングを3倍楽にする方法。"
+description: "コードを書き始めるとき、毎回同じことを書くのは時間の無駄ですよね。典型例がソースコードのライセンス条文だったり、HTMLの雛形タグだったり、Markdownの章..."
+tags:
+  - "vim"
+  - "ツール"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-12-06T17:43:30.000Z
+author: takashi
+---
+
+
+コードを書き始めるとき、毎回同じことを書くのは時間の無駄ですよね。
+典型例がソースコードのライセンス条文だったり、HTMLの雛形タグだったり、Markdownの章立てだったりすると思います。
+<h1>.vimrcを設定する</h1>
+vimであれば、こんな風な設定を<code>.vimrc</code>に書いといて、テンプレートとなるファイルを<code>${HOME}/.vim/template</code>に置くだけで無駄を省くことができます。
+<pre><code class="vim">autocmd BufNewFile *.py 0r $HOME/.vim/template/python.txt
+autocmd BufNewFile *.md 0r $HOME/.vim/template/markdown.txt
+autocmd BufNewFile *.uml 0r $HOME/.vim/template/plantuml.txt
+</code></pre>
+<h1>plantumlソーステンプレートを作成する</h1>
+特にオススメなのが<a href="http://ja.plantuml.com/sequence.html">plantuml</a>ソースのテンプレート。
+こんな形で予め網羅的に書いといて、.vimrcと一緒に適当なVMSにpushしておくと良いです。
+<pre><code class="plantuml">' sequence diagram
+@startuml
+hide footbox
+actor Foo1
+boundary Foo2
+control Foo3
+entity Foo4
+database Foo5
+Foo1 -&gt; Foo2 : To boundary
+Foo1 -&gt; Foo3 : To control
+Foo1 -&gt; Foo4 : To entity
+Foo1 -&gt; Foo5 : To database
+@enduml
+' class diagram
+@startuml
+scale 800 width
+Class01 &lt;|-- Class02
+Class03 *-- Class04
+Class05 o-- Class06
+Class07 .. Class08
+Class09 -- Class10
+Class11 &lt;|.. Class12
+Class13 --&gt; Class14
+Class15 ..&gt; Class16
+Class17 ..|&gt; Class18
+Class19 &lt;--* Class20
+@enduml
+</code></pre>
+<h1>ソースファイルヘッダのライセンス条文をテンプレート化する</h1>
+以下はPythonの例ですが、予めライセンス条文を埋め込んでおくと楽ちんです。
+<code>setup.py</code>をclassifiers付きでテンプレート化しておくのもいいかもしれませんね。setup関数引数仕様は多すぎて覚えきれないので…。
+<pre><code class="python">#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+#   Copyright 2016 Takashi Ando - http://blog.rinka-blossom.com/
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+import os
+if __name__ == "__main__":
+    print(os.sys.path)
+</code></pre>
+<h1>Markdown章立てをテンプレート化する</h1>
+Markdownドキュメントの決まりきった構成を予め入れておけば、かなり楽になります。
+<pre><code># Description
+This is ...
+# System design
+* hoge
+    * detail
+* hogehoge
+    * detail
+# Directory structure
+* documents
+    * Overview, Schematics, etc.
+* code
+    * C/C++ source code working on Arduino.
+</code></pre>
+<h1>まとめ、その他</h1>
+他にもc/c++、html、css、jsや、PythonのMANIFEST.inなんかもテンプレート化しておくと、とても快適なのでオススメです。
+vim以外のエディタにも大抵備わっている機能だと思いますけどね^^;

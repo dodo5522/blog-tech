@@ -1,0 +1,161 @@
+---
+title: "データの可視化をseabornでお手軽に。"
+description: "文字化け解消法で紹介したmatplotlibですが、使いこなせる気が全くしないのが正直なところ。だってこのキーワード引数の多さったら…　覚えきれませんよ。plo..."
+tags:
+  - "python"
+  - "プログラミング"
+  - "可視化"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-03-12T05:36:28.000Z
+author: takashi
+---
+
+
+文字化け解消法で紹介した<a href="http://blog.rinka-blossom.com/matplotlibnohuontoshe-ding/">matplotlib</a>ですが、使いこなせる気が全くしないのが正直なところ。
+だってこのキーワード引数の多さったら…　覚えきれませんよ。
+plot関数だけでも指定可能な引数は３０以上かな。
+http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.plot
+<pre><code>Property    Description
+agg_filter  unknown
+alpha       float (0.0 transparent through 1.0 opaque)
+animated    [True | False]
+antialiased or aa   [True | False]
+axes        an Axes instance
+clip_box    a matplotlib.transforms.Bbox instance
+clip_on     [True | False]
+...
+</code></pre>
+それでいて出来上がるのはこんな~~ダサい~~グラフ。
+<img src="https://farm6.staticflickr.com/5703/23439509492_98fdb9472a_z_d.jpg" alt="" />
+頑張れば綺麗なグラフも描画できるみたいなんですけど、あまり学習意欲が湧きませんよね。
+そこで<a href="http://stanford.edu/~mwaskom/software/seaborn/examples/index.html">seaborn</a>の出番です。
+<pre><code>Seaborn is a Python visualization library based on matplotlib. It provides a high-level interface for drawing attractive statistical graphics.
+</code></pre>
+意訳すると、matplotlibのwrapperとしてより高レベルな（抽象化された）インタフェースを提供してくれるそうです。
+urllibに対するrequestsパッケージみたいな位置づけかな。
+インタフェースも大事ですが、こんなheatmapを10行程程度のコードで描画できてしまうなら、学習意欲が湧いてきますよね。
+<img src="http://stanford.edu/~mwaskom/software/seaborn/_images/structured_heatmap.png" alt="" />
+とは言え、いきなりheatmap描くような大そうなデータは持ち合わせていないので、我が家の家電製品の消費電力データを使って基本的なグラフを描画してみようと思います。
+<pre><code>$ cat 冷蔵庫.csv
+No.,DateTime,Watt,kWh
+    1,2015/03/02-23:25:44,58.9,0
+    2,2015/03/02-23:35:44,50.6,0.01
+    3,2015/03/02-23:45:44,50.3,0.02
+    4,2015/03/02-23:55:44,61.7,0.02
+    5,2015/03/03-00:05:44,72.4,0.03
+    6,2015/03/03-00:15:44,51.3,0.04
+    7,2015/03/03-00:25:44,47.7,0.05
+    8,2015/03/03-00:35:44,47.6,0.06
+    9,2015/03/03-00:45:44,20.2,0.06
+   10,2015/03/03-00:55:44,40.5,0.06
+</code></pre>
+これはサンワサプライ製TAP-TST10で取得したログです。リアルタイムにロギングできないのが欠点ですが…まぁ安いので。
+
+これをpandasでDataFrame化するとこうなります。
+<pre><code class="python">import pandas as pd
+data = pd.read_csv("冷蔵庫.csv")
+print(data)
+       No.             DateTime  Watt    kWh
+0        1  2015/03/02-23:25:44  58.9   0.00
+1        2  2015/03/02-23:35:44  50.6   0.01
+2        3  2015/03/02-23:45:44  50.3   0.02
+3        4  2015/03/02-23:55:44  61.7   0.02
+4        5  2015/03/03-00:05:44  72.4   0.03
+5        6  2015/03/03-00:15:44  51.3   0.04
+6        7  2015/03/03-00:25:44  47.7   0.05
+7        8  2015/03/03-00:35:44  47.6   0.06
+8        9  2015/03/03-00:45:44  20.2   0.06
+9       10  2015/03/03-00:55:44  40.5   0.06
+10      11  2015/03/03-01:05:44  59.4   0.07
+...
+[1441 rows x 4 columns]
+print(data.DateTime)
+0       2015/03/02-23:25:44
+1       2015/03/02-23:35:44
+2       2015/03/02-23:45:44
+3       2015/03/02-23:55:44
+4       2015/03/03-00:05:44
+5       2015/03/03-00:15:44
+6       2015/03/03-00:25:44
+7       2015/03/03-00:35:44
+8       2015/03/03-00:45:44
+9       2015/03/03-00:55:44
+10      2015/03/03-01:05:44
+...
+Name: DateTime, dtype: object
+print(data['Watt'])
+0       58.9
+1       50.6
+2       50.3
+3       61.7
+4       72.4
+5       51.3
+6       47.7
+7       47.6
+8       20.2
+9       40.5
+10      59.4
+Name: Watt, dtype: float64
+</code></pre>
+これをseabornで可視化するコードはこうなります。
+<pre><code class="python">import seaborn as sns
+import pandas as pd
+data = pd.read_csv("冷蔵庫.csv")
+# 比較的簡単なpointplotを使う
+ax = sns.pointplot(
+    x='DateTime',   # x軸にDateTime
+    y='Watt',       # y軸にWatt
+    data=data,      # DataFrameを指定
+    markers=[''])   # dataをplotするマーカーを非表示に
+# x軸方向のデータが多すぎるので1日毎にラベルを間引く（データは間引かない）
+xlabels = [datetime.split('-')[0]
+    if list(data.DateTime).index(datetime) % 144 is 0 else ''
+    for datetime in data.DateTime]
+# x軸ラベルを設定＆ラベル表示を90度回転
+ax.set_xticklabels(xlabels, rotation='vertical')
+# pngファイルに書き出す
+sns.plt.savefig('冷蔵庫.png')
+</code></pre>
+データが詰まりすぎてますね…。
+<img src="https://farm2.staticflickr.com/1676/25041526554_79e0a9d504_z_d.jpg" alt="" />
+以下のようにちょっと間引きます。
+<pre><code class="python">data = pd.read_csv("冷蔵庫.csv")[:360]
+</code></pre>
+今度はいい感じになりました。
+<img src="https://farm2.staticflickr.com/1508/25041526534_c69459ff72_z_d.jpg" alt="" />
+冷蔵庫の定格消費電力は約110Wと表記されているので、ピーク値が114.0Wなのをみると、大体スペック通りですね。
+<pre><code class="python">data.Watt.mean()
+44.557499999999997
+data.Watt.min()
+2.2999999999999998
+data.Watt.max()
+114.0
+</code></pre>
+消費電力量は？
+<pre><code class="python">import seaborn as sns
+import pandas as pd
+data = pd.read_csv("冷蔵庫.csv")
+# 比較的簡単なpointplotを使う
+ax = sns.pointplot(
+    x='DateTime',   # x軸にDateTime
+    y='kWh',        # y軸にkWh（積算消費電力量）
+    data=data,      # DataFrameを指定
+    markers=[''])   # dataをplotするマーカーを非表示に
+# x軸方向のデータが多すぎるので1日毎にラベルを間引く（データは間引かない）
+xlabels = [datetime.split('-')[0]
+    if list(data.DateTime).index(datetime) % 144 is 0 else ''
+    for datetime in data.DateTime]
+# x軸ラベルを設定＆ラベル表示を90度回転
+ax.set_xticklabels(xlabels, rotation='vertical')
+# pngファイルに書き出す
+sns.plt.savefig('冷蔵庫kWh.png')
+</code></pre>
+<img src="https://farm2.staticflickr.com/1522/25553923552_93778735e6_z_d.jpg" alt="" />
+1kWh/日程度の消費電力量なことが分かります。
+<pre><code class="python">data.kWh.max() / 10.0
+1.0589999999999999
+</code></pre>
+<a href="http://stanford.edu/~mwaskom/software/seaborn/api.html">seabornのAPI reference</a>や<a href="http://stanford.edu/~mwaskom/software/seaborn/examples/index.html">gallery</a>を見ると、テンション高くなりますね。
+まずは道具を使いこなせるようにならねば。

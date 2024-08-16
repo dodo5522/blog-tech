@@ -1,0 +1,48 @@
+---
+title: "GhostからWordpressへ （１） 〜引越しプランを練る〜"
+description: "Ghostをご存知でしょうか。[The Simple Alternative to WordPress](https://ghost.org/vs/wordpr..."
+tags:
+  - "ghost"
+  - "Wordpress"
+  - "ソフトウェア"
+  - "プラグイン"
+  - "ブログ"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2017-06-11T23:45:09.000Z
+author: takashi
+---
+
+
+Ghostをご存知でしょうか。
+[The Simple Alternative to WordPress](https://ghost.org/vs/wordpress/)を謳う、nodejsで書かれたブログシステムです。
+管理画面はこんな感じ。
+![](https://farm5.staticflickr.com/4240/35125189872_52de4e8123_z_d.jpg)
+ブログを始めるにあたって、jsもあまり触ったことがないくせに無謀にもGhostを選択してしまい、管理コストが膨れ上がってきた次第…。
+ということで、巷にノウハウ溢れるWordpressに移行しました。
+## Ghost to Wordpress移行手順の概略
+この手の情報は先駆者がいるもんなので、ありがたく参考にしよう…
+と思ったら、ヒットする記事のほとんどが、WorpressからGhostへの移行記事。
+GhostからWordpressに移行するのにトライした記事は意外と少なく、そのものズバリな記事は海外のものでした。
+もちろん英語。
+* [Migrating from Ghost to WordPress Step by Step](http://ahmed.amayem.com/moving-from-ghost-to-wordpress-step-by-step/)
+要するに、
+1. *Ghostからデータをjsonで抜き出し*
+2. *jsonをCVS変換し*
+3. *Markdownを解釈可能な状態のWordpressにインポートする*
+というのが手順の概略。
+この流れに沿っていれば、基本的にどのツールを使っても問題なし。
+## Ghost to Wordpressプランを練る
+ブログシステム移行のついでにドメインも変えたくなったので、進め方を考えます。
+ドメインを変える＝URLが変わるので、検索上位にランクされている記事があっても、変えた瞬間にリセットされてしまう…。
+そんな事態は避けたいので、このようにしました。
+1. *旧ドメインのTTL（Time To Live）を最少にして、各地に散らばったDNSキャッシュ書き換え間隔が置き換わるのを待つ*
+1. *Ghostデータをjson形式でエクスポート、CSVに変換*
+1. *WordpressプラグインReally Simple CSV Importer仕様のカラムを指定、slugをGhost時と同一にする*
+1. *Wordpressを立ち上げ、パーマリンク設定をGhostと同一にした上で、CSV形式データをインポート*
+1. *DNSキャッシュ書き換え間隔が置き換わったであろう時間経過後、新ドメインURLへ301リダイレクトするWebサーバを、旧ドメインのGhostブログサーバと置き換える*
+最後のステップ、この形に落ち着くまでが手こずった…。
+[Ghostにリダイレクト機能が追加されたのはかなり最近のことで](http://qiita.com/7pepper/items/8387197e424630099227)、自分が使用していたバージョンは対応しておらず…。
+ブログ移行のために今後使うことのないGhostをバックポートとかしたくないので、他の方法を取ることにしたのでした。
+[次回](http://tech.uribou.tokyo/ghost_to_wordpress_switching_domain/)に続く。

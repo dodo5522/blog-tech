@@ -1,0 +1,22 @@
+---
+title: "動作不能に陥っていたacdcliが再び使用可能に。"
+description: "写真ならRawデータも容量無制限でアップロード可能なAmazon Cloud Drive。コマンドラインでアクセス可能な`acdcli`が[動作不能に陥ってしま..."
+tags:
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2017-07-08T20:59:44.000Z
+author: takashi
+---
+
+
+写真ならRawデータも容量無制限でアップロード可能なAmazon Cloud Drive。
+コマンドラインでアクセス可能な`acdcli`が[動作不能に陥ってしまい](http://tech.uribou.tokyo/acdcli_404_error/)、途方にくれながら[github](https://github.com/yadayada/acd_cli/issues/572#issuecomment-306607038)のコメントを眺めていたら、**works very well**の文字が。
+![](https://farm5.staticflickr.com/4289/35634387492_7b05f04a88_z_d.jpg)
+半信半疑ながらも、とりあえず試してみる。
+この部分。
+&gt; I just re-created a new oauth.json token with https://drivesink.appspot.com/config And pasted it ~/.cache/acd_cli/
+![](https://farm5.staticflickr.com/4231/35763167596_9ba85e2962_z_d.jpg)
+https://drivesink.appspot.com/
+https://github.com/caseymrm/drivesink
+https://www.antun.net/tips/api/amazonDrive.html

@@ -1,0 +1,50 @@
+---
+title: "Ubuntu Server起動不良の原因を探る"
+description: "HDD(rootfs)がマウントできていないっぽい。rescueモードで解決を図る。`/dev/mapper/espresso--vg-root`をマウント、ロ..."
+tags:
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2017-08-26T23:29:16.000Z
+author: takashi
+---
+
+
+
+HDD(rootfs)がマウントできていないっぽい。
+rescueモードで解決を図る。
+`/dev/mapper/espresso--vg-root`をマウント、ログイン後に各パーティションをマウントする。
+```bash
+mount /dev/mapper/espresso--vg-home /home
+mount /dev/mapper/espresso--vg-var /var
+```
+aptを使えるようにするため、`nameserver`を設定する。
+```bash
+resolvconf -u
+```
+生成された`resolv.conf`を編集
+```bash
+echo "nameserver 8.8.8.8" &gt; /run/resolvconf/resolv.conf
+```
+apt
+```bash
+apt-get update
+apt-get upgrade
+apt-get dist-upgrade
+apt-get install --reinstall ubuntu-server
+```
+`update-initramfs`で警告が出ていたような。
+```bash
+update-initramfs -u
+```
+おお、動き出した。
+でもやっぱりFAILEDがいくつか。
+## “Enabling additional executable binary formats” fails
+[reinstalling binfmt-support fixed this issue. Thanks.](https://unix.stackexchange.com/questions/136970/enabling-additional-executable-binary-formats-fails)とあるので、再びrescue modeで試してみる。
+`binfmt-support`とは？
+&gt; The binfmt_misc kernel module, contained in versions 2.1.43 and later of the Linux kernel, allows system administrators to register interpreters for various binary formats based on a magic number or their file extension, and cause the appropriate interpreter to be invoked whenever a matching file is executed. Think of it as a more flexible version of the #! executable interpreter mechanism.
+&gt;
+&gt; binfmt-support provides an update-binfmts script with which package maintainers can register interpreters to be used with this module without having to worry about writing their own init.d scripts, and which sysadmins can use for a slightly higher-level interface to this module.
+apt-get install --reinstall binfmt-support
+## Failed to start Create Volatile Files and Directories.
+[Solved by removing /var/log/journal folder. (you should mv it to journal.bak to be safe)](https://bbs.archlinux.org/viewtopic.php?id=196341)とあるので、再びrescue modeで試してみる。

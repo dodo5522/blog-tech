@@ -1,0 +1,70 @@
+---
+title: "賃貸アパートでオフグリッドしよう。チャージコントローラの選びかた。"
+description: "こちらで紹介している、賃貸アパートの庭に作ったオフグリッドシステム。オフグリッドシステム制作にあたって、重要な部品は以下の4点です。太陽光パネルチャージコントロ..."
+tags:
+  - "DIY"
+  - "オフグリッド"
+  - "電子工作"
+categories:
+  - hobby
+image: /images/software-developer.jpg
+date: 2017-04-09T05:00:51.000Z
+author: takashi
+---
+
+
+<p><a href="http://tech.blog.uribou.me/how_to_make_diy_offgrid/">こちら</a>で紹介している、賃貸アパートの庭に作ったオフグリッドシステム。
+<a data-flickr-embed="true" href="https://www.flickr.com/gp/29110932@N07/d62W0t" title="IMG_6866"><img src="https://c1.staticflickr.com/1/591/22619744243_069a6bfac8.jpg" width="500" height="375" alt="IMG_6866"></a>
+オフグリッドシステム制作にあたって、重要な部品は以下の4点です。</p>
+<ul>
+<li>太陽光パネル</li>
+<li>チャージコントローラ</li>
+<li>蓄電池</li>
+<li>直流-&gt;交流インバータ または直流-&gt;直流コンバータ</li>
+</ul>
+<h1>チャージコントローラとは？</h1>
+<p>その中でも中核を担うチャージコントーラという機器。
+太陽光パネルが発電した電力を効率的に充電し、パネル側の高い電圧を電流に変換してより効率的に働き、蓄電池が満充電近くになれば流す電流を弱める、などの制御をしてくれる、大変ありがたいものです。
+<a href="https://www.google.co.jp/webhp?sourceid=chrome-instant&amp;rlz=1C5CHFA_enJP716JP716&amp;ion=1&amp;espv=2&amp;ie=UTF-8#q=MPPT+%E3%83%81%E3%83%A3%E3%83%BC%E3%82%B8%E3%82%B3%E3%83%B3%E3%83%88%E3%83%AD%E3%83%BC%E3%83%A9">ググるとわかります</a>が、結構な種類が販売されているので、どれにするかとても悩みます。</p>
+<h1>Tristar社製TS-MPPT-60という製品</h1>
+<div class="kaerebalink-box" style="text-align:left;padding-bottom:20px;font-size:small;overflow: hidden"><div class="kaerebalink-image" style="float:left;margin:0 15px 10px 0"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB0041O2KPY%2Fref%3Dnosim" target="_blank" rel="noopener"><img src="https://images-fe.ssl-images-amazon.com/images/I/31bdqgXUG2L._SL160_.jpg" style="border: none" /></a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="kaerebalink-info" style="line-height:120%;overflow: hidden"><div class="kaerebalink-name" style="margin-bottom:10px;line-height:120%"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB0041O2KPY%2Fref%3Dnosim" target="_blank" rel="noopener">ソーラーチャージコントローラー TS-MPPT-60 Morningstar社　桐生保証有　日本語取扱い説明書付き</a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"><div class="kaerebalink-powered-date" style="font-size:8pt;margin-top:5px;font-family:verdana;line-height:120%">posted with <a href="http://kaereba.com" rel="nofollow noopener" target="_blank">カエレバ</a></div></div><div class="kaerebalink-detail" style="margin-bottom:5px"> Morningstar社     </div><div class="kaerebalink-link1" style="margin-top:10px"><div class="shoplinkamazon" style="margin:5px 0"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fgp%2Fsearch%3Fkeywords%3DTS-MPPT-60%26__mk_ja_JP%3D%25E3%2582%25AB%25E3%2582%25BF%25E3%2582%25AB%25E3%2583%258A" target="_blank" rel="noopener">Amazon</a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="shoplinkrakuten" style="margin:5px 0"><a href="//af.moshimo.com/af/c/click?a_id=602828&amp;p_id=54&amp;pc_id=54&amp;pl_id=616&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fsearch.rakuten.co.jp%2Fsearch%2Fmall%2FTS-MPPT-60%2F-%2Ff.1-p.1-s.1-sf.0-st.A-v.2%3Fx%3D0" target="_blank" rel="noopener">楽天市場</a><img src="//i.moshimo.com/af/i/impression?a_id=602828&amp;p_id=54&amp;pc_id=54&amp;pl_id=616" width="1" height="1" style="border:none"></div></div></div><div class="booklink-footer" style="clear: left"></div></div>
+<p>我が家の場合は <strong>Ethernet経由で発電状況などの情報を取得できるか？</strong> が重要だったので、選択肢はとても少ないんですが、それを抜きにしてもTS-MPPTシリーズが謳う97%という高い充電効率は魅力でした。
+個人でも手が出る価格帯の太陽光チャージコントローラの中で、この情報取得機能について明記している機種って、意外と少ないんですよね…。
+自分で電流電圧センサー付けてゴリゴリ作る選択肢も、あるにはあるんですが、正直めんどくさい。
+HTTP経由で、さらに贅沢言えば何かしらのAPIを介して情報取得できるとなお良し。
+という厳しい条件をクリアしたチャージコントローラが、TS-MPPT-60です。
+日本で買うと、為替レートや中間マージンのせいか、10万は軽く超えちゃうんですが、US Amazonで直接買うと$539です。意外と安い。</p>
+<h1>どんな情報を見ることができるか？</h1>
+<p>TS-MPPT-60のIPを直接ブラウザでアクセスすると、特に何も設定しなくても以下のような情報が見ることができます。
+太陽光パネルの電圧、電流量、温度、蓄電池の電圧… などなど。
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/21084348354/in/photolist-CL3zyx-CcvcJD-BNuqff-CAsaUh-CxtY59-CxtXYC-CEHXvh-AY6TH1-z1bEKN-CH2B1k-CmFNjJ-BhzG4u-BhzG4E-AWJfMt-Bs1xBS-BLBX74-BAGPD4-BBWRry-AF8vJc-AF2jAd-BvfFKk-AF2joE-B531Kt-BvfFGK-BvfFBe-AF2j9m-AEa1Kn-BzauU3-BrNAYs-B61UQE-AYDeoF-BoR1wC-AsQ6Up-BqfarD-AM3iJR-AJJ5aH-AJHS4t-B4Wf7y-AQ6io9-zUoNJp-yMASPQ-z5cuqn-z5ZNJF-yMz7HN-y89Ncu-y6sNuu-wKrseb-wv9kkw-wvgGtv-vQJMrb" title="TS-MPPT_browser"><img src="https://c1.staticflickr.com/1/639/21084348354_7f6ebd887a_c.jpg" width="800" height="570" alt="TS-MPPT_browser"></a>
+過去84日分の履歴も。
+<a data-flickr-embed="true" href="https://www.flickr.com/gp/29110932@N07/8mr18V" title="TS-MPPT-60 履歴情報"><img src="https://c1.staticflickr.com/3/2887/33085381264_139a838af7_c.jpg" width="800" height="577" alt="TS-MPPT-60 履歴情報"></a>
+ただ、肝心のAPIに関する情報が見当たりません。説明書にも…。</p>
+<h1>APIはどこへ？</h1>
+<p>TS-MPPT-60が提供するAPIはどうなっているのか？
+残念ながら、一朝一夕にはいきませんでした。
+TS-MPPT-60は、その情報を表示するためのHTMやjsをブラウザに送りつけてくるので、それを解析することで、とあるcgiをインタフェースに情報取得していることがわかるんですね。
+ただそのインタフェースが返す情報が非常にlow levelなので、仕様をある程度理解した上で計算してやる必要がありました。
+その計算を勝手にしてくれるPythonパッケージを<a href="https://github.com/dodo5522/tsmppt60_driver">github</a>や<a href="https://pypi.python.org/pypi/tsmppt60-driver">PyPI</a>に公開しているので、興味のある方はご参考に。
+例えば以下のように実行することで、TS-MPPT-60の充電状況、ヒートシンクの温度等を取得できます。</p>
+<pre><code class="python">from tsmppt60_driver import SystemStatus
+print(SystemStatus("192.168.1.20").get())
+{'Amp Hours': {'group': 'Counter', 'unit': 'Ah', 'value': 18097.9},
+ 'Array Current': {'group': 'Array', 'unit': 'A', 'value': 1.4},
+ 'Array Voltage': {'group': 'Array', 'unit': 'V', 'value': 53.41},
+ 'Battery Voltage': {'group': 'Battery', 'unit': 'V', 'value': 23.93},
+ 'Charge Current': {'group': 'Battery', 'unit': 'A', 'value': 3.2},
+ 'Heat Sink Temperature': {'group': 'Temperature', 'unit': 'C', ...},
+ 'Kilowatt Hours': {'group': 'Counter', 'unit': 'kWh', 'value': 237.0},
+ 'Target Voltage': {'group': 'Battery', 'unit': 'V', 'value': 28.6}}
+</code></pre>
+<h1>まとめ</h1>
+<p>APIとして情報取得する必要のない方にも、TS-MPPT-60はお勧めです。
+巨大なヒートシンクを備えた、でかい図体にビビりますが、それも高効率な電圧→電流変換の際に生じる熱を発散するためです。
+最大60Aもの大電流を得ることができるため、TS-MPPT-<strong>60</strong>という名が付いているわけで、そこまでの電流いらないって方は、TS-MPPT-30や45といった下位機種も出ているので、そちらをチェック。
+価格もより手頃になりますしね。</p>
+<div class="kaerebalink-box" style="text-align:left;padding-bottom:20px;font-size:small;overflow: hidden"><div class="kaerebalink-image" style="float:left;margin:0 15px 10px 0"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB00KSZZMXC%2Fref%3Dnosim" target="_blank" rel="noopener"><img src="https://images-fe.ssl-images-amazon.com/images/I/51p3qjpwj1L._SL160_.jpg" style="border: none" /></a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="kaerebalink-info" style="line-height:120%;overflow: hidden"><div class="kaerebalink-name" style="margin-bottom:10px;line-height:120%"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB00KSZZMXC%2Fref%3Dnosim" target="_blank" rel="noopener">ソーラーチャージコントローラー　TS-MPPT-30　桐生保証有　日本語取扱い説明書付</a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"><div class="kaerebalink-powered-date" style="font-size:8pt;margin-top:5px;font-family:verdana;line-height:120%">posted with <a href="http://kaereba.com" rel="nofollow noopener" target="_blank">カエレバ</a></div></div><div class="kaerebalink-detail" style="margin-bottom:5px"> Morningstar     </div><div class="kaerebalink-link1" style="margin-top:10px"><div class="shoplinkamazon" style="margin:5px 0"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fgp%2Fsearch%3Fkeywords%3DTS-MPPT-30%26__mk_ja_JP%3D%25E3%2582%25AB%25E3%2582%25BF%25E3%2582%25AB%25E3%2583%258A" target="_blank" rel="noopener">Amazon</a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="shoplinkrakuten" style="margin:5px 0"><a href="//af.moshimo.com/af/c/click?a_id=602828&amp;p_id=54&amp;pc_id=54&amp;pl_id=616&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fsearch.rakuten.co.jp%2Fsearch%2Fmall%2FTS-MPPT-30%2F-%2Ff.1-p.1-s.1-sf.0-st.A-v.2%3Fx%3D0" target="_blank" rel="noopener">楽天市場</a><img src="//i.moshimo.com/af/i/impression?a_id=602828&amp;p_id=54&amp;pc_id=54&amp;pl_id=616" width="1" height="1" style="border:none"></div></div></div><div class="booklink-footer" style="clear: left"></div></div>
+<div class="kaerebalink-box" style="text-align:left;padding-bottom:20px;font-size:small;overflow: hidden"><div class="kaerebalink-image" style="float:left;margin:0 15px 10px 0"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB0041NSXM4%2Fref%3Dnosim" target="_blank" rel="noopener"><img src="https://images-fe.ssl-images-amazon.com/images/I/31bdqgXUG2L._SL160_.jpg" style="border: none" /></a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="kaerebalink-info" style="line-height:120%;overflow: hidden"><div class="kaerebalink-name" style="margin-bottom:10px;line-height:120%"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB0041NSXM4%2Fref%3Dnosim" target="_blank" rel="noopener">ソーラーチャージコントローラー TS-MPPT-45 Morningstar社 桐生保証有　日本語取扱い説明書付き</a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"><div class="kaerebalink-powered-date" style="font-size:8pt;margin-top:5px;font-family:verdana;line-height:120%">posted with <a href="http://kaereba.com" rel="nofollow noopener" target="_blank">カエレバ</a></div></div><div class="kaerebalink-detail" style="margin-bottom:5px"> Morningstar社（アメリカ）     </div><div class="kaerebalink-link1" style="margin-top:10px"><div class="shoplinkamazon" style="margin:5px 0"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fgp%2Fsearch%3Fkeywords%3DTS-MPPT-45%26__mk_ja_JP%3D%25E3%2582%25AB%25E3%2582%25BF%25E3%2582%25AB%25E3%2583%258A" target="_blank" rel="noopener">Amazon</a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="shoplinkrakuten" style="margin:5px 0"><a href="//af.moshimo.com/af/c/click?a_id=602828&amp;p_id=54&amp;pc_id=54&amp;pl_id=616&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fsearch.rakuten.co.jp%2Fsearch%2Fmall%2FTS-MPPT-45%2F-%2Ff.1-p.1-s.1-sf.0-st.A-v.2%3Fx%3D0" target="_blank" rel="noopener">楽天市場</a><img src="//i.moshimo.com/af/i/impression?a_id=602828&amp;p_id=54&amp;pc_id=54&amp;pl_id=616" width="1" height="1" style="border:none"></div></div></div><div class="booklink-footer" style="clear: left"></div></div>
+<p>ただし、TS-MPPT-30/45にはEthernet端子が付いていない、つまり先ほど述べたような情報取得や表示機能を備えていないので、ご注意を。
+次回は太陽光パネルについて書こうと思います。</p>

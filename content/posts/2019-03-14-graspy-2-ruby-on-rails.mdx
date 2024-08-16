@@ -1,0 +1,1380 @@
+---
+title: "Graspy 2. ruby on rails"
+description: "2.Ruby on Railsこのレッスンでは、Ruby on Railsを使って簡単なWebアプリケーションを作成します。2-1. Webアプリケーションの仕..."
+tags:
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2019-03-14T16:03:01.000Z
+author: takashi
+---
+
+
+<h1 class="c-title--primary">2.Ruby on Rails</h1>
+<div class="l-content--detail p-lesson">
+このレッスンでは、Ruby on Railsを使って簡単なWebアプリケーションを作成します。
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-1. Webアプリケーションの仕組み</div>
+<div class="l-content--detail p-lesson">
+Webアプリケーションは、皆さんがブラウザなどからリクエスト(URLなど)を送信し、それに応じたレスポンス(画面、処理結果)を返します。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/%E3%82%B5%E3%83%BC%E3%83%8F%E3%82%99%E3%83%BC%E3%82%AF%E3%83%A9%E3%82%A4%E3%82%A2%E3%83%B3%E3%83%88.png" alt="%e3%82%b5%e3%83%bc%e3%83%8f%e3%82%99%e3%83%bc%e3%82%af%e3%83%a9%e3%82%a4%e3%82%a2%e3%83%b3%e3%83%88" width="376" height="110" />Webアプリケーションを動かしているコンピューターをサーバーと呼びます。ブラウザなどをクライアントと呼びます。
+例えば、Googleで「rails」を検索する場合、
+<ol>
+ 	<li>ブラウザに表示されているGoogleの検索フォームに「rails」を入力して検索ボタンをクリックし、検索リクエストを送信します。</li>
+ 	<li>Googleのサーバーはそのリクエストを受け、「rails」というキーワードに基づいて検索を実行します。</li>
+ 	<li>検索が終わったら、その結果をレスポンスとしてブラウザに返します。</li>
+ 	<li>ブラウザはその内容を解析し、画面に表示します。</li>
+</ol>
+このレッスンで作成するWebアプリケーションでは、サーバーをRailsサーバーと呼びます。
+クライアントはCloud9の内部ブラウザまたはGoogle Chromeになります。
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-2. Ruby on Railsとは</div>
+<div class="l-content--detail p-lesson">
+Ruby on Rails (以下、Rails)は、Rubyで書かれたWebアプリケーションフレームワークです。フレームワークとは、開発に必要なクラスやメソッドを再利用可能な形にまとめた枠組みのことです。RailsはWebアプリケーション開発に特化したフレームワークです。Railsで定められた手順や規約にしたがって開発することで、短期間で効率良くWebアプリケーションを開発することができます。
+このレッスンでは簡単なWebアプリケーションとして簡易ブログを作成しつつ、Railsのルールを１つ１つ説明していきます。
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-3. Railsのインストール</div>
+<div class="l-content--detail p-lesson">
+Cloud9にRailsをインストールします。Cloud9のターミナルで
+<pre><code class="hljs">workspace</code></pre>
+ディレクトリで
+<pre><code class="hljs sql">gem <span class="hljs-keyword">install</span> rails -v<span class="hljs-string">'5.0.1'</span></code></pre>
+コマンドを実行します。
+<pre><code class="ruby hljs">$ gem install rails -v<span class="hljs-string">'5.0.1'</span>
+</code></pre>
+以下、実行例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/gem-install-rails.png" alt="gem-install-rails" width="391" height="371" />
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-4. Railsアプリケーションの作成</div>
+<div class="l-content--detail p-lesson">
+RailsでWebアプリケーションを作成します。Railsアプリケーションの作成には
+<pre><code class="hljs java">rails <span class="hljs-keyword">new</span> アプリケーション名</code></pre>
+コマンドを使います。Cloud9のターミナルで
+<pre><code class="hljs css"><span class="hljs-selector-tag">rails</span> _5<span class="hljs-selector-class">.0</span><span class="hljs-selector-class">.1_</span> <span class="hljs-selector-tag">new</span> <span class="hljs-selector-tag">my-blog</span></code></pre>
+コマンドを実行し、my-blogアプリケーションを作成しましょう。
+<pre><code class="ruby hljs">$ rails _5.<span class="hljs-number">0</span>.<span class="hljs-number">1_</span> new my-blog
+</code></pre>
+Railsアプリケーションが正常に作成されるとCloud9左のディレクトリツリーにmy-blogというディレクトリが以下の内容で作成されます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/my-blog%E3%83%86%E3%82%99%E3%82%A3%E3%83%AC%E3%82%AF%E3%83%88%E3%83%AA.png" alt="my-blog%e3%83%86%e3%82%99%e3%82%a3%e3%83%ac%e3%82%af%e3%83%88%e3%83%aa" width="183" height="323" />各ディレクトリ/ファイルの内容は以下のとおりです。
+<table>
+<tbody>
+<tr>
+<td>ディレクトリ/ファイル</td>
+<td>内容</td>
+</tr>
+<tr>
+<td>/app</td>
+<td> アプリケーション本体(models, controllers, viewsの各ディレクトリを含む)</td>
+</tr>
+<tr>
+<td>/bin</td>
+<td>サーバーの実行に必要なスクリプトの格納場所</td>
+</tr>
+<tr>
+<td>/config</td>
+<td> 設定ファイルの格納場所</td>
+</tr>
+<tr>
+<td>/db</td>
+<td>データベース関連ファイルの格納場所</td>
+</tr>
+<tr>
+<td>/lib</td>
+<td>自作ライブラリなどの格納場所</td>
+</tr>
+<tr>
+<td>/log</td>
+<td>ログの格納場所</td>
+</tr>
+<tr>
+<td>/public</td>
+<td>公開ディレクトリ</td>
+</tr>
+<tr>
+<td>/test</td>
+<td>テスト関連ファイルの格納場所</td>
+</tr>
+<tr>
+<td>/tmp</td>
+<td>一時ファイルの格納場所</td>
+</tr>
+<tr>
+<td>/vendor</td>
+<td>サードパーティのライブラリなどの格納場所</td>
+</tr>
+<tr>
+<td>config.ru</td>
+<td>サーバー起動に使用するファイル</td>
+</tr>
+<tr>
+<td>Gemfile</td>
+<td>gem(Railsのライブラリ) の定義ファイル</td>
+</tr>
+<tr>
+<td>Gemfile.lock</td>
+<td> gem(Railsのライブラリ) の定義ファイル</td>
+</tr>
+<tr>
+<td>Rakefile</td>
+<td> 実行可能なタスク定義ファイル</td>
+</tr>
+<tr>
+<td>README.md</td>
+<td>readmeファイル</td>
+</tr>
+</tbody>
+</table>
+※ 内容は今覚える必要はありません。開発しながら徐々に理解していきましょう。
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-5. Railsサーバーの起動</div>
+<div class="l-content--detail p-lesson">
+Railsサーバーを起動します。
+<pre><code class="hljs">cd 移動先のディレクトリ</code></pre>
+コマンドで起動したいRailsアプリケーションディレクトリに移動します。Cloud9のターミナルで以下のようにcdコマンドを実行し、my-blogディレクトリに移動しましょう。
+<pre><code class="hljs ruby">$ cd my-blog</code></pre>
+以下、実行例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/cd-my-blog.png" alt="cd-my-blog" width="345" height="36" />Railsサーバーは
+<pre><code class="hljs">rails s</code></pre>
+コマンドで起動できます。Cloud9では以下のようにターミナルで
+<pre><code class="hljs php">-p $PORT -b $IP</code></pre>
+オプションをつけて実行しましょう。
+<pre><code class="hljs ruby">$ rails s -p $PORT -b $IP</code></pre>
+以下、実行例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/rails-s.png" alt="rails-s" width="561" height="193" />※Railsサーバー起動中はこのターミナルのタブは消さないようにしてください。もしRailsサーバーを起動したままこのターミナルのタブを消してしまった場合、Railsサーバーが起動したままになってしまいます。誤ってタブを消してしまった時は、別のターミナルで「killall ruby」コマンドを実行しRailsサーバー停止しましょう。
+これでRailsサーバーが起動できました。さっそく、ブラウザでRailsアプリケーションにアクセスしてみましょう。
+Cloud9のメニューから
+<pre><code class="hljs">Preview→Preview Running Application</code></pre>
+を選択しましょう。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/Preview.png" alt="preview" width="205" height="77" />以下のようにCloud9の内部ブラウザでRailsの初期画面が表示されればOKです。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/rails%E7%94%BB%E9%9D%A2-1024x650.png" alt="rails%e7%94%bb%e9%9d%a2" width="840" height="533" />※上記画面のアドレスバーの右側の以下のボタンをクリックするとGoogle Chromeの新規タブで画面を表示することができます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/%E6%8B%A1%E5%A4%A7%E3%83%9B%E3%82%99%E3%82%BF%E3%83%B3.png" alt="%e6%8b%a1%e5%a4%a7%e3%83%9b%e3%82%99%e3%82%bf%e3%83%b3" width="38" height="34" />
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-6. Railsサーバーの停止</div>
+<div class="l-content--detail p-lesson">
+Railsサーバーを停止する場合は、Railsサーバーを起動したターミナルを選択し、
+<pre><code class="hljs">Ctrl + C</code></pre>
+を実行します。※ Railsサーバーを起動したターミナルには、Railsのログが表示されます。ログはRailsアプリケーションの画面にアクセスしたり内部の処理を実行する度に出力されます。
+<pre><code class="hljs">Ctrl + C</code></pre>
+でRailsサーバーを停止すると元のコマンド入力の表示に戻ります。以下、実行例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/rails%E3%82%B5%E3%83%BC%E3%83%8F%E3%82%99%E3%83%BC%E5%81%9C%E6%AD%A2.png" alt="rails%e3%82%b5%e3%83%bc%e3%83%8f%e3%82%99%e3%83%bc%e5%81%9c%e6%ad%a2" width="883" height="190" />※もし、Railsサーバーを起動したターミナルを閉じてしまうなどして、上記の手順でRailsサーバーを停止できない場合、別のターミナルを開いて
+<pre><code class="hljs">killall ruby</code></pre>
+コマンドを実行してRailsを強制終了してください。
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-7. GitHubのリポジトリ作成</div>
+<div class="l-content--detail p-lesson">
+作成したRailsアプリケーションをGitHubで管理するために、GitHubで「MyBlog」という新しいリポジトリを作成します。 GitHubページを開き、右上の「＋」から
+<pre><code class="hljs php"><span class="hljs-keyword">New</span> repository</code></pre>
+を選択します。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/Github-select-create-repository.png" alt="github-select-create-repository" width="254" height="291" />Repository nameに
+<pre><code class="hljs">MyBlog</code></pre>
+を入力して
+<pre><code class="hljs sql"><span class="hljs-keyword">Create</span> repository</code></pre>
+ボタンをクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/myblog-repository.png" alt="myblog-repository" width="787" height="573" />リポジトリが正常に作成されたら、以下の画面になります。これでリポジトリの作成は完了です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/new-repository.png" alt="new-repository" width="776" height="638" />
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-8. GitHubへpush</div>
+<div class="l-content--detail p-lesson">
+<pre><code class="hljs">git init</code></pre>
+コマンドでCloud9上にGitリポジトリを作成しましょう。 ターミナルで下記のコマンドを実行してください。
+<pre><code class="ruby hljs">$ git init
+</code></pre>
+これでCloud9上にGitリポジトリが作成されました。次にRailsアプリケーションをCloud9上のGitリポジトリにコミットします。 ターミナルで下記のコマンドを実行してください。
+※ push したソースコードは GitHub のサイト上で一般公開されます。ソースコードやREADME.md などに個人情報やID・パスワードなどを記述してしまうと、それが一般公開されてしまいますので、注意が必要です。もし誤って push してしまった場合は、リポジトリを一度削除するなどして対応して下さい。
+<pre><code class="ruby hljs">$ git add .
+$ git commit -m <span class="hljs-string">"first commit"</span>
+</code></pre>
+以下、実行例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/git-init.png" alt="git-init" width="552" height="324" />新しく作成したmy-blog内のファイルがコミットされました。最後にCloud9上のGitリポジトリにコミットした内容をGitHubにpushします。 ターミナルで下記のコマンドを実行してください。
+<pre><code class="ruby hljs">$ git remote add origin <span class="hljs-symbol">https:</span>/<span class="hljs-regexp">/github.com/</span>GitHubのユーザ名/MyBlog.git
+$ git remote -v
+$ git push origin master</code></pre>
+以下、実行例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/git-push.png" alt="git-push" width="802" height="334" />
+<pre><code class="hljs">git push origin master</code></pre>
+コマンド実行後、GitHubのユーザー名とパスワードを要求されます。パスワードは入力しても表示されないようになっています。もし、ユーザー名やパスワードを間違えた場合、fatal: Authentication failed for ...と表示されますので、
+<pre><code class="hljs">git push origin master</code></pre>
+コマンドを再度実行し、正しいユーザー名とパスワードを入力しなおしましょう。GitHubへのpushが正常終了したら、GitHubのMyBlogリポジトリにRailsアプリケーションのファイルが正しく反映されていることを確認しましょう。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/MyBlog.png" alt="myblog" width="758" height="761" />
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-9. 投稿画面の作成</div>
+<div class="l-content--detail p-lesson">
+Railsは非常に強力なWebアプリケーションフレームワークです。
+<pre><code class="hljs">rails g scaffold</code></pre>
+コマンドを使うだけで、一覧画面、登録画面、編集画面を作成できます。
+scaffoldコマンドの書式は以下のとおりです。
+<pre><code class="hljs">rails g scaffold モデル名 フィールド名1:型1 フィールド名2:型2 ... 
+</code></pre>
+Cloud9のターミナルで以下のコマンドを実行しましょう。
+<pre><code class="hljs ruby">$ rails g scaffold Message <span class="hljs-symbol">title:</span>string <span class="hljs-symbol">message:</span>string 
+</code></pre>
+以下、実行例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/rails-scaffold.png" alt="rails-scaffold" width="715" height="583" />このように様々なファイルが自動的に生成されます。ここでは各ファイルの内容の説明は後にし、まずはWebアプリケーションとして表示するところまで進めます。
+作成したMessageモデルをデータベースに反映させるために、
+<pre><code class="hljs css"><span class="hljs-selector-tag">rails</span> <span class="hljs-selector-tag">db</span><span class="hljs-selector-pseudo">:migrate</span></code></pre>
+コマンドを実行します。Cloud9のターミナルで以下のコマンドを実行しましょう。
+<pre><code class="hljs ruby">$ rails <span class="hljs-symbol">db:</span>migrate
+</code></pre>
+以下、実行例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/rails-db-migrate.png" alt="rails-db-migrate" width="591" height="118" />これで準備が整いました。「Railsサーバーの起動」でやったように
+<pre><code class="hljs php">rails s -p $PORT -b $IP</code></pre>
+コマンドを実行し、railsサーバーを起動して画面を確認してみましょう。
+先ほどと同じように以下の画面が表示されます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/rails%E7%94%BB%E9%9D%A2-1024x650.png" alt="rails%e7%94%bb%e9%9d%a2" width="840" height="533" />ここでさらにアドレスバーのURLに/messagesと追記してEnterキーを押してみてください。以下の画面が表示されるはずです。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/messages-1024x409.png" alt="messages" width="840" height="336" />画面上の
+<pre><code class="hljs php"><span class="hljs-keyword">New</span> Message</code></pre>
+リンクをクリックすると新規Message登録画面が表示されます。
+Titleに「テスト」、Messageに「Hello World!」を入力し、
+<pre><code class="hljs sql"><span class="hljs-keyword">Create</span> Message</code></pre>
+ボタンをクリックしましょう。以下のようにメッセージの登録成功画面が表示されます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/confirm.png" alt="confirm" width="311" height="208" />さらに
+<pre><code class="hljs">Back</code></pre>
+リンクをクリックするとメッセージの一覧画面に戻り、登録したメッセージが表示されます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/%E4%B8%80%E8%A6%A7.png" alt="%e4%b8%80%e8%a6%a7" width="326" height="169" />メッセージの詳細を見たければ
+<pre><code class="hljs sql"><span class="hljs-keyword">Show</span></code></pre>
+リンク、編集したい場合は
+<pre><code class="hljs">Edit</code></pre>
+リンクをクリックすれば各画面に遷移します。
+<pre><code class="hljs">Destroy</code></pre>
+リンクをクリックすることで削除もできます。
+このようにRuby on Railsを使うと簡単なアプリケーションであればいくつかのコマンドを実行するだけで、ほとんどプログラムを書かずにあっと言う間に作成できてしまいます。
+次章以降で１つ１つ確認していく前に、今までの変更をGitHubに登録しておきましょう。
+新しくCloud9のターミナルを開き（タブの+から）以下の3つのコマンドを実行しましょう。
+<pre><code class="ruby hljs">$ git add .
+$ git commit -m <span class="hljs-string">"Add message"</span>
+$ git push origin master</code></pre>
+GitHubにアクセスしてMyBlogリポジトリに内容が反映されていればOKです。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/git-add-message.png" alt="git-add-message" width="743" height="766" />
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-10. Ruby on Railsの仕組み</div>
+<div class="l-content--detail p-lesson">
+RailsはMVCモデルに基づいたWebアプリケーションフレームワークです。MVCモデルは、Webアプリケーションに必要な機能をModel、View、Controllerの役割に分けて管理します。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2017/04/MVC2.png" alt="mvc" width="663" height="376" />Modelはデータを扱い、Viewは表示、Controllerはデータや表示の制御を担当します。
+クライアントからリクエストが送られてくるとRailsサーバー内では、以下の流れでレスポンスを返します。
+<ol>
+ 	<li>クライアントがリクエストを送信</li>
+ 	<li>Routerがリクエスト内容に応じて、適切なControllerを呼び出す</li>
+ 	<li>Controller内で処理を開始</li>
+ 	<li>処理に必要であればControllerはModelを介してデータを処理</li>
+ 	<li>処理を終えたらControllerはViewを呼び出す</li>
+ 	<li>Viewは表示内容をControllerに返す</li>
+ 	<li>Controllerは処理結果をRouterを経由してクライアントにレスポンスとして返す</li>
+</ol>
+上記のMVCモデルの図とRails内の主なディレクトリ/ファイルを対応させると以下のようになります。
+<table>
+<tbody>
+<tr>
+<td>図</td>
+<td>ディレクトリ/ファイル</td>
+</tr>
+<tr>
+<td>Router</td>
+<td>config/routes.rb</td>
+</tr>
+<tr>
+<td>Model</td>
+<td>app/models/</td>
+</tr>
+<tr>
+<td>View</td>
+<td>app/views/</td>
+</tr>
+<tr>
+<td>Controller</td>
+<td>app/controllers/</td>
+</tr>
+<tr>
+<td>DB</td>
+<td>db/database.yml</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-11. Router</div>
+<div class="l-content--detail p-lesson">
+Routerについて詳しくみていきましょう。Routerはクライアントのリクエストを解析し、その内容に応じて適切なControllerを呼び出します。これをルーティングと呼びます。Webアプリケーションでは、クライアントのリクエストはHTTPプロトコル(方式)に従い、以下の4種類に分類できます。
+<table>
+<tbody>
+<tr>
+<td>HTTPメソッド</td>
+<td>意味</td>
+<td>対応するMyBlogの例</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>データの取得</td>
+<td>メッセージ一覧画面の表示</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>データの送信</td>
+<td>メッセージの新規作成</td>
+</tr>
+<tr>
+<td>PATCH/PUT</td>
+<td>データの更新</td>
+<td>メッセージの更新</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td>データの削除</td>
+<td>メッセージの削除</td>
+</tr>
+</tbody>
+</table>
+実際にMyblogのconfig/routes.rbを確認してみましょう。
+config/routes.rb
+<pre><code class="ruby hljs">Rails.application.routes.draw <span class="hljs-keyword">do</span>
+ resources <span class="hljs-symbol">:messages</span>
+ <span class="hljs-comment"># For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html</span>
+<span class="hljs-keyword">end</span></code></pre>
+<pre><code class="hljs css"><span class="hljs-selector-tag">resources</span> <span class="hljs-selector-pseudo">:messages</span></code></pre>
+と記述されているのがわかります。resourcesを記述すると上記のHTTPメソッドGET、POST、PATCH/PUT、DELETEの全てに対する操作を定義したことになります。
+<pre><code class="hljs">rails routes</code></pre>
+コマンドを実行すると、Routerに定義されている内容をみることができます。Cloud9のターミナルで以下のコマンドを実行しましょう。
+<pre><code class="ruby hljs">$ rails routes
+</code></pre>
+以下、実行例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/rails-routes.png" alt="rails-routes" width="490" height="176" />これは以下のような意味になります。
+<table>
+<tbody>
+<tr>
+<td>Verb (HTTPメソッド)</td>
+<td>URI Pattern (URL)</td>
+<td>Controller#Action (MessagesControllerのアクション名)</td>
+<td>説明</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/messages</td>
+<td>index</td>
+<td>一覧画面</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>/messages</td>
+<td>create</td>
+<td>登録処理</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/messages/new</td>
+<td>new</td>
+<td>新規登録画面</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/messages/:id/edit</td>
+<td>edit</td>
+<td>編集画面</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/messages/:id</td>
+<td>show</td>
+<td>詳細画面</td>
+</tr>
+<tr>
+<td>PATCH</td>
+<td>/messages/:id</td>
+<td>update</td>
+<td>更新処理</td>
+</tr>
+<tr>
+<td>PUT</td>
+<td>/messages/:id</td>
+<td>update</td>
+<td>更新処理</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td>/messages/:id</td>
+<td>destroy</td>
+<td>削除処理</td>
+</tr>
+</tbody>
+</table>
+一覧画面を表示する時にアドレスバーに、
+<pre><code class="hljs">/messages</code></pre>
+を追記してアクセスしました。このように、基準となるアドレス(ルートアドレス
+<pre><code class="hljs">/</code></pre>
+)にURI Patternを追記してアクセスするとGETメソッドとしてリクエストが送信され、対応する画面が表示されます。例えば、
+<pre><code class="hljs java">/messages/<span class="hljs-keyword">new</span></code></pre>
+と追記してアクセスすると新規登録画面が表示されます。
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-12. トップ画面の変更</div>
+<div class="l-content--detail p-lesson">
+MyBlogのトップ画面はRailsアプリケーションのデフォルトの画面が表示されていました。Routerにルートアドレスに対するリクエストがきたら、メッセージ一覧画面を表示するように修正しましょう。
+config/routes.rbに以下のように
+<pre><code class="ruby hljs">root <span class="hljs-string">'messages#index'</span>
+</code></pre>
+を追記して保存しましょう。
+config/routes.rb
+<pre><code class="ruby hljs">Rails.application.routes.draw <span class="hljs-keyword">do</span>
+ root <span class="hljs-string">'messages#index'</span>
+ resources <span class="hljs-symbol">:messages</span>
+ <span class="hljs-comment"># For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html</span>
+<span class="hljs-keyword">end</span></code></pre>
+<pre><code class="hljs">root</code></pre>
+はルートアドレス
+<pre><code class="hljs">/</code></pre>
+に対するGETメソッドを意味します。修正後、ターミナルで
+<pre><code class="hljs">rails routes</code></pre>
+コマンドを実行しましょう。
+<pre><code class="ruby hljs">$ rails routes
+</code></pre>
+以下、実行例です。ルートアドレス
+<pre><code class="hljs">/</code></pre>
+に対して、MessagesControllerのindexアクションを呼び出す１行が追加されているはずです。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/root.png" alt="root" width="508" height="196" />これでルートアドレスでアクセスした場合も一覧画面が表示されるようになりました。Railsサーバーを起動してアクセスして確認してみてください。
+今までの変更をGitHubに登録しておきましょう。Coud9のターミナルで以下の3つのコマンドを実行しましょう。
+<pre><code class="ruby hljs">$ git add .
+$ git commit -m <span class="hljs-string">"Add root"</span>
+$ git push origin master</code></pre>
+GitHubにアクセスしてMyBlogリポジトリに内容が反映されていればOKです。
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-13. 【課題１】新しいアプリを作成しよう！</div>
+<div class="l-content--detail p-lesson">
+条件１：my-blogとは別のアプリケーションを作成すること
+条件２：scaffoldコマンドで、Messageとは別のモデル名、フィールド名を使うこと
+条件３：トップページが一覧画面になっていること
+条件４：GitHubにmy-blogとは別のリポジトリで登録されていること
+ヒント１：作業ブランチ名を変更する
+git にはブランチというものが存在します。これは「作業履歴を枝分かれで記録していくためのもの」になります。 現在 git コマンドで master という指定をしている箇所がありますが、これは master という名前のブランチで作業していることを表しています。
+<pre><code class="hljs">git init</code></pre>
+を実施した場合、最初に作成されるブランチは master のみとなります。 例えば master には含めるかどうか分からないが、一時的に変更を試したいため commit したいという事があると仮定します。この場合 master に commit してしまうと、やっぱりその commit は必要がなかった、という時に commit を取り消す必要が生じます。しかし、一度 commit したものを取り消す作業は、複数人で同じ git リポジトリを操作している場合、ファイルの競合が発生するため、好ましくありません。 ブランチ名を変更する場合、その変更が何を意味しているのかわかりやすい英名を設定すると良いです。「新しいテキストファイルを1つ追加する」というような変更の場合は
+<pre><code class="hljs java"><span class="hljs-keyword">new</span>-text</code></pre>
+といったようなブランチ名を指定します。
+<pre><code class="hljs java">
+  master
+* <span class="hljs-keyword">new</span>-text (master のコピー)
+</code></pre>
+この場合、ブランチ名を変更することで「 master のコピー」を作成したことになります。一時的な変更を試したい人は master ブランチのコピーである new-text で作業し、そこに commit しておくことで、本来の master ブランチに commit しなくても、作業履歴を残すことができます。
+ヒント２：gitコマンド
+<pre><code class="hljs ruby">$ git status</code></pre>
+現在自分がどのブランチ名を利用しているかは
+<pre><code class="hljs ruby">$ git status</code></pre>
+で調べられます。
+<pre><code class="hljs ruby">$ git branch</code></pre>
+どのようなブランチ名があるかは
+<pre><code class="hljs ruby">$ git branch</code></pre>
+で調べられます。
+<pre><code class="hljs java">$ git checkout -b <span class="hljs-keyword">new</span>-text</code></pre>
+ブランチ名を変更する際、そのブランチ名がまだ作成されていない（初めて変更する）場合は
+<pre><code class="hljs">git checkout -b (ブランチ名)</code></pre>
+$ を実行します。上記の例は
+<pre><code class="hljs java"><span class="hljs-keyword">new</span>-text</code></pre>
+というブランチ名に変更されます。
+<pre><code class="hljs ruby">$ git checkout master</code></pre>
+ブランチ名を変更する際、そのブランチ名が既に作成済みである場合は
+<pre><code class="hljs ruby">$ git checkout (ブランチ名)</code></pre>
+を実行します。上記の例は `master` ブランチ名に戻ります。
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-14. ControllerとModel</div>
+<div class="l-content--detail p-lesson">
+ControllerとModelについて詳しくみていきましょう。ルートアドレス、または/messagesでアクセスすると、MessagesControllerのindexアクション(メソッド)が呼ばれます。app/controllers/messages_controller.rbのindexメソッドを確認しましょう。
+app/controllers/messages_controller.rb
+<pre><code class="ruby hljs"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MessagesController</span> &lt; ApplicationController</span>
+ before_action <span class="hljs-symbol">:set_message</span>, <span class="hljs-symbol">only:</span> [<span class="hljs-symbol">:show</span>, <span class="hljs-symbol">:edit</span>, <span class="hljs-symbol">:update</span>, <span class="hljs-symbol">:destroy</span>]
+ <span class="hljs-comment"># GET /messages</span>
+ <span class="hljs-comment"># GET /messages.json</span>
+ <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">index</span></span>
+   @messages = Message.all
+ <span class="hljs-keyword">end</span>
+以下、略
+...</code></pre>
+MessagesControllerのindexメソッド内には、以下の処理が１行だけ記述されています。
+<pre><code class="ruby hljs">@messages = Message.all</code></pre>
+@messagesはインスタンス変数です。Message.allのMessageは、Messageモデルのことです。Messageモデルはapp/models/message.rbで定義されています。
+app/models/message.rb
+<pre><code class="ruby hljs"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Message</span> &lt; ApplicationRecord</span>
+<span class="hljs-keyword">end</span></code></pre>
+Message内には何も定義されていませんが、ApplicationRecordを継承することでデータベースと結びついています。Messageモデルに対応するmessagesテーブルは、db/migrate/xxxxxxxxxxxxxx_create_messages.rbに定義されています。
+db/migrate/xxxxxxxxxxxxxx_create_messages.rb
+<pre><code class="ruby hljs"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">CreateMessages</span> &lt; ActiveRecord::Migration[5.0]</span>
+ <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">change</span></span>
+   create_table <span class="hljs-symbol">:messages</span> <span class="hljs-keyword">do</span> <span class="hljs-params">|t|</span>
+     t.string <span class="hljs-symbol">:title</span>
+     t.string <span class="hljs-symbol">:message</span>
+     t.timestamps
+   <span class="hljs-keyword">end</span>
+ <span class="hljs-keyword">end</span>
+<span class="hljs-keyword">end</span></code></pre>
+<pre><code class="hljs css"><span class="hljs-selector-tag">rails</span> <span class="hljs-selector-tag">g</span> <span class="hljs-selector-tag">scaffold</span> <span class="hljs-selector-tag">Message</span> <span class="hljs-selector-tag">title</span><span class="hljs-selector-pseudo">:string</span> <span class="hljs-selector-tag">message</span><span class="hljs-selector-pseudo">:string</span></code></pre>
+で生成したように、Messageモデルには、titleとmessageがカラムとして設定されていることがわかります。このファイルの内容を
+<pre><code class="hljs css"><span class="hljs-selector-tag">rails</span> <span class="hljs-selector-tag">db</span><span class="hljs-selector-pseudo">:migrate</span></code></pre>
+コマンドを実行することでデータベースにマイグレーションし、messagesテーブルを作成しています。
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-15. マイグレーション</div>
+<div class="l-content--detail p-lesson">
+マイグレーションは、データベースのテーブルの生成や内容の変更時に使うRailsの機能です。db/migrate内のマイグレーションファイルにテーブルの生成・変更内容を記述することで、SQL文を記述することなくデータベースのスキーマを変更することが可能です。マイグレーションファイルは、
+<pre><code class="hljs">rails g scaffold</code></pre>
+<pre><code class="hljs">rails generate model</code></pre>
+<pre><code class="hljs">rails generate migration</code></pre>
+の各コマンドを実行した時に生成されます。
+マイグレーションファイルに記述した内容は、
+<pre><code class="hljs css"><span class="hljs-selector-tag">rails</span> <span class="hljs-selector-tag">db</span><span class="hljs-selector-pseudo">:migrate</span></code></pre>
+コマンドを実行することでデータベースに反映されます。
+<pre><code class="hljs css"><span class="hljs-selector-tag">rails</span> <span class="hljs-selector-tag">db</span><span class="hljs-selector-pseudo">:migrate</span><span class="hljs-selector-pseudo">:status</span></code></pre>
+コマンドを実行するとどのマイグレーションファイルがマイグレーション済みかまだマイグレーションしていないかがわかります。Statusがupであればマイグレーション済み、downであればまだマイグレーションしていません。rails db:migrate:status実行例
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/rails-db-migrate-status.png" alt="rails-db-migrate-status" width="503" height="145" />マイグレーションすると、データベースのスキーマ情報が記述されているdb/schema.rbが書き換えられます。
+すなわち、db/schema.rbに記述されている内容がデータベースに反映済みの内容になります。db/schema.rbは自動で更新されるので自分で編集しないようにしましょう。
+db/schema.rb
+<pre><code class="ruby hljs">ActiveRecord::Schema.define(<span class="hljs-symbol">version:</span> <span class="hljs-number">20161225053940</span>) <span class="hljs-keyword">do</span>
+ create_table <span class="hljs-string">"messages"</span>, <span class="hljs-symbol">force:</span> <span class="hljs-symbol">:cascade</span> <span class="hljs-keyword">do</span> <span class="hljs-params">|t|</span>
+   t.string <span class="hljs-string">"title"</span>
+   t.string <span class="hljs-string">"message"</span>
+   t.datetime <span class="hljs-string">"created_at"</span>, <span class="hljs-symbol">null:</span> <span class="hljs-literal">false</span>
+   t.datetime <span class="hljs-string">"updated_at"</span>, <span class="hljs-symbol">null:</span> <span class="hljs-literal">false</span>
+ <span class="hljs-keyword">end</span>
+<span class="hljs-keyword">end</span></code></pre>
+現時点では、messagesテーブルに、title、messageというカラムが文字列型として生成されていることがわかります。created_atには、Messageモデルのデータ生成時の日時が記録され、updated_atには、Messageモデルのデータが更新された時の日時が記録されます。
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-16. データベースの確認</div>
+<div class="l-content--detail p-lesson">
+RailsではSQLiteが標準のデータベースになっています。db/development.sqlite3がそのデータベースファイルです。
+<pre><code class="hljs">rails db</code></pre>
+コマンドでデータベースのコンソールを使うことができます。ターミナルで
+<pre><code class="hljs">rails db</code></pre>
+コマンドを実行しましょう。
+<pre><code class="ruby hljs">$ rails db</code></pre>
+以下、実行例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/rails-db.png" alt="rails-db" width="433" height="94" />.schemaコマンドでデータベースに登録されているスキーマを確認することができます。
+<pre><code class="ruby hljs">sqlite&gt; .schema</code></pre>
+以下、実行例です。messagesテーブルの定義が参照できます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/schema-1024x61.png" alt="schema" width="840" height="50" />このカリキュラムではSQLiteの操作については詳しく解説しませんが、「SQLite コマンド」などで検索すると参考サイトが数多くありますので、そちらをご覧ください。
+<pre><code class="hljs css"><span class="hljs-selector-class">.q</span></code></pre>
+でSQLiteのコンソールを終了します。
+<pre><code class="ruby hljs">sqlite&gt; .q</code></pre>
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-17. カラムの追加</div>
+<div class="l-content--detail p-lesson">
+Messageモデルに名前(name)を追加してみましょう。rails g migrationコマンドを使ってmessagesテーブルにnameカラムを追加します。
+ターミナルで以下のコマンドを実行しましょう。
+<pre><code class="ruby hljs">$ rails g migration AddNameToMessages <span class="hljs-symbol">name:</span>string</code></pre>
+以下、実行例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/rails-g-migration.png" alt="rails-g-migration" width="699" height="100" />db/migrate/xxxxxxxxxxxxx_add_name_to_messages.rbというファイルが生成されたはずです。
+rails db:migrate:statusコマンドを実行してみましょう。まだマイグレーションしていませんので、上記のファイルはdown状態になっていることがわかります。
+<pre><code class="ruby hljs">$ rails <span class="hljs-symbol">db:</span><span class="hljs-symbol">migrate:</span>status</code></pre>
+以下、実行例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/rails-g-migrate-status-2.png" alt="rails-g-migrate-status-2" width="505" height="162" />データベースに反映するために、ターミナルでrails db:migrateコマンドを実行しましょう。
+<pre><code class="ruby hljs">$ rails <span class="hljs-symbol">db:</span>migrate</code></pre>
+以下、実行例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/db-migrate.png" alt="db-migrate" width="584" height="116" />db/schema.rbファイルを確認すると
+<pre><code class="hljs java">t.string   <span class="hljs-string">"name"</span></code></pre>
+が追加されているのがわかります。
+db/schema.rb
+<pre><code class="ruby hljs">ActiveRecord::Schema.define(<span class="hljs-symbol">version:</span> <span class="hljs-number">20161225091257</span>) <span class="hljs-keyword">do</span>
+ create_table <span class="hljs-string">"messages"</span>, <span class="hljs-symbol">force:</span> <span class="hljs-symbol">:cascade</span> <span class="hljs-keyword">do</span> <span class="hljs-params">|t|</span>
+   t.string <span class="hljs-string">"title"</span>
+   t.string <span class="hljs-string">"message"</span>
+   t.datetime <span class="hljs-string">"created_at"</span>, <span class="hljs-symbol">null:</span> <span class="hljs-literal">false</span>
+   t.datetime <span class="hljs-string">"updated_at"</span>, <span class="hljs-symbol">null:</span> <span class="hljs-literal">false</span>
+   t.string <span class="hljs-string">"name"</span>
+ <span class="hljs-keyword">end</span>
+<span class="hljs-keyword">end</span></code></pre>
+今までの変更を保存しておきましょう。ターミナルで以下の3つのコマンドを実行します。
+<pre><code class="ruby hljs">$ git add .
+$ git commit -m <span class="hljs-string">"Add name"</span>
+$ git push origin master</code></pre>
+GitHubにアクセスしてMyBlogリポジトリに内容が反映されていればOKです。
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-18. Modelの操作</div>
+<div class="l-content--detail p-lesson">
+Modelについて詳しくみていくために、railsコンソールを使います。railsコンソールはirbに似た働きを持つ機能で、railsで作成したモデルなどの動作確認やデバッグに役立ちます。irbでは任意のソースコードを load "greeting.rb" で逐一読み込んでいましたが、railsコンソールではrailsのファイルを読み込むための動作がすべて自動化されています。
+<pre><code class="hljs">rails c</code></pre>
+コマンドでrailsコンソールを開くことができます。ターミナルで
+<pre><code class="hljs">rails c</code></pre>
+コマンドを実行しましょう。
+<pre><code class="ruby hljs">$ rails c</code></pre>
+以下、実行例です。
+<pre><code class="ruby hljs">itpro-<span class="hljs-symbol">college:</span>~<span class="hljs-regexp">/workspace/my</span>-blog $ rails c
+Running via Spring preloader <span class="hljs-keyword">in</span> process <span class="hljs-number">16180</span>
+Loading development environment (Rails <span class="hljs-number">5.0</span>.<span class="hljs-number">2</span>)
+<span class="hljs-meta">2.3.0 :001 &gt;</span> </code></pre>
+railsコンソールで
+<pre><code class="hljs css"><span class="hljs-selector-tag">Message</span><span class="hljs-selector-class">.column_names</span></code></pre>
+を実行すると、Messageモデルに定義されているカラムを確認することができます。
+<pre><code class="ruby hljs">&gt; Message.column_names</code></pre>
+以下、実行例です。
+<pre><code class="ruby hljs"><span class="hljs-meta">2.3.0 :001 &gt;</span>  Message.column_names
+ =&gt; [<span class="hljs-string">"id"</span>, <span class="hljs-string">"title"</span>, <span class="hljs-string">"message"</span>, <span class="hljs-string">"created_at"</span>, <span class="hljs-string">"updated_at"</span>, <span class="hljs-string">"name"</span>]
+<span class="hljs-meta">2.3.0 :002 &gt;</span> </code></pre>
+Message.allを実行すると、Messageモデルに登録されている全てのデータを参照することができます。
+<pre><code class="ruby hljs">&gt; Message.all</code></pre>
+以下、実行例です。
+<pre><code class="ruby hljs">
+<span class="hljs-meta">2.3.0 :002 &gt;</span> Message.all
+Message Load (<span class="hljs-number">0</span>.<span class="hljs-number">4</span>ms)  SELECT <span class="hljs-string">"messages"</span>.* FROM <span class="hljs-string">"messages"</span>
+=&gt; #&lt;ActiveRecord::Relation [#&lt;Message id: 1, title: "テスト", message: "Hello World!", created_at: "2017-03-26 04:52:46", updated_at: "2017-03-26 04:52:46", name: nil&gt;]&gt;
+<span class="hljs-number">2.3</span>.<span class="hljs-number">0</span> <span class="hljs-symbol">:</span><span class="hljs-number">003</span> &gt;
+</code></pre>
+つまり、app/controllers/messages_controller.rbのindexメソッドに記述されているMessage.allは、全てのMessageデータの取得をおこなっているのです。
+Messageにデータを追加してみましょう。Message.newでインスタンスを生成し、saveメソッドでデータを保存します。以下のように実行しましょう。
+<pre><code class="ruby hljs">&gt;  msg = Message.new(<span class="hljs-symbol">title:</span> <span class="hljs-string">"Hello"</span>, <span class="hljs-symbol">message:</span> <span class="hljs-string">"Hello World!"</span>, <span class="hljs-symbol">name:</span> <span class="hljs-string">"James"</span>)
+&gt; msg.save</code></pre>
+以下、実行例です。
+<pre><code class="ruby hljs"><span class="hljs-meta">2.3.0 :003 &gt;</span> msg = Message.new(<span class="hljs-symbol">title:</span> <span class="hljs-string">"Hello"</span>, <span class="hljs-symbol">message:</span> <span class="hljs-string">"Hello World!"</span>, <span class="hljs-symbol">name:</span> <span class="hljs-string">"James"</span>)
+ =&gt; <span class="hljs-comment">#</span>
+<span class="hljs-meta">2.3.0 :004 &gt;</span> msg.save
+   (<span class="hljs-number">0</span>.<span class="hljs-number">3</span>ms)  <span class="hljs-keyword">begin</span> transaction
+  SQL (<span class="hljs-number">0</span>.<span class="hljs-number">7</span>ms)  INSERT INTO <span class="hljs-string">"messages"</span> (<span class="hljs-string">"title"</span>, <span class="hljs-string">"message"</span>, <span class="hljs-string">"created_at"</span>, <span class="hljs-string">"updated_at"</span>, <span class="hljs-string">"name"</span>) VALUES (?, ?, ?, ?, ?)  [[<span class="hljs-string">"title"</span>, <span class="hljs-string">"Hello"</span>], [<span class="hljs-string">"message"</span>, <span class="hljs-string">"Hello World!"</span>], [<span class="hljs-string">"created_at"</span>, <span class="hljs-number">2017</span>-<span class="hljs-number">03</span>-<span class="hljs-number">26</span> <span class="hljs-number">04</span><span class="hljs-symbol">:</span><span class="hljs-number">54</span><span class="hljs-symbol">:</span>09 UTC], [<span class="hljs-string">"updated_at"</span>, <span class="hljs-number">2017</span>-<span class="hljs-number">03</span>-<span class="hljs-number">26</span> <span class="hljs-number">04</span><span class="hljs-symbol">:</span><span class="hljs-number">54</span><span class="hljs-symbol">:</span>09 UTC], [<span class="hljs-string">"name"</span>, <span class="hljs-string">"James"</span>]]
+   (<span class="hljs-number">13.4</span>ms)  commit transaction
+ =&gt; true
+<span class="hljs-meta">2.3.0 :005 &gt;</span> </code></pre>
+再度、Message.allを実行してデータが追加されていることを確認しましょう。
+以下、実行例です。
+<pre><code class="ruby hljs">
+<span class="hljs-meta">2.3.0 :005 &gt;</span> Message.all
+Message Load (<span class="hljs-number">0</span>.<span class="hljs-number">3</span>ms)  SELECT <span class="hljs-string">"messages"</span>.* FROM <span class="hljs-string">"messages"</span>
+=&gt; #&lt;ActiveRecord::Relation [#&lt;Message id: 1, title: "テスト", message: "Hello World!", created_at: "2017-03-26 04:52:46", updated_at: "2017-03-26 04:52:46", name: nil&gt;, #&lt;Message id: 2, title: "Hello", message: "Hello World!", created_at: "2017-03-26 04:54:09", updated_at: "2017-03-26 04:54:09", name: "James"&gt;]&gt;
+<span class="hljs-number">2.3</span>.<span class="hljs-number">0</span> <span class="hljs-symbol">:</span><span class="hljs-number">006</span> &gt;
+</code></pre>
+特定のidのデータのみを取得するには、findメソッドを使います。idが1のMessageを取得してみましょう。
+<pre><code class="ruby hljs">&gt; Message.find(<span class="hljs-number">1</span>)</code></pre>
+以下、実行例です。
+<pre><code class="ruby hljs">
+<span class="hljs-meta">2.3.0 :006 &gt;</span> Message.find(<span class="hljs-number">1</span>)
+Message Load (<span class="hljs-number">0</span>.<span class="hljs-number">7</span>ms)  SELECT  <span class="hljs-string">"messages"</span>.* FROM <span class="hljs-string">"messages"</span> WHERE <span class="hljs-string">"messages"</span>.<span class="hljs-string">"id"</span> = ? LIMIT ?  [[<span class="hljs-string">"id"</span>, <span class="hljs-number">1</span>], [<span class="hljs-string">"LIMIT"</span>, <span class="hljs-number">1</span>]]
+=&gt; #&lt;Message id: 1, title: "テスト", message: "Hello World!", created_at: "2017-03-26 04:52:46", updated_at: "2017-03-26 04:52:46", name: nil&gt;
+<span class="hljs-meta">2.3.0 :007 &gt;</span> </code></pre>
+id以外のカラムをキーにして取得する場合は、find_byメソッドを使います。nameがJamesのMessageを取得してみましょう。
+<pre><code class="ruby hljs">&gt; Message.find_by(<span class="hljs-symbol">name:</span> <span class="hljs-string">"James"</span>)</code></pre>
+以下、実行例です。
+<pre><code class="ruby hljs">
+<span class="hljs-meta">2.3.0 :007 &gt;</span> Message.find_by(<span class="hljs-symbol">name:</span> <span class="hljs-string">"James"</span>)
+Message Load (<span class="hljs-number">0</span>.<span class="hljs-number">4</span>ms)  SELECT  <span class="hljs-string">"messages"</span>.* FROM <span class="hljs-string">"messages"</span> WHERE <span class="hljs-string">"messages"</span>.<span class="hljs-string">"name"</span> = ? LIMIT ?  [[<span class="hljs-string">"name"</span>, <span class="hljs-string">"James"</span>], [<span class="hljs-string">"LIMIT"</span>, <span class="hljs-number">1</span>]]
+=&gt; #&lt;Message id: 2, title: "Hello", message: "Hello World!", created_at: "2017-03-26 04:54:09", updated_at: "2017-03-26 04:54:09", name: "James"&gt;
+<span class="hljs-meta">2.3.0 :008 &gt;</span>
+</code></pre>
+whereメソッドを使って条件に一致した複数のデータを取得することもできます。whereメソッドを使ってnameがJamesのMessageを取得してみましょう。
+<pre><code class="ruby hljs">&gt; Message.where(<span class="hljs-symbol">name:</span> <span class="hljs-string">"James"</span>)</code></pre>
+以下、実行例です。
+<pre><code class="ruby hljs">
+<span class="hljs-meta">2.3.0 :008 &gt;</span> Message.where(<span class="hljs-symbol">name:</span> <span class="hljs-string">"James"</span>)
+Message Load (<span class="hljs-number">0</span>.<span class="hljs-number">4</span>ms)  SELECT <span class="hljs-string">"messages"</span>.* FROM <span class="hljs-string">"messages"</span> WHERE <span class="hljs-string">"messages"</span>.<span class="hljs-string">"name"</span> = ?  [[<span class="hljs-string">"name"</span>, <span class="hljs-string">"James"</span>]]
+=&gt; #&lt;ActiveRecord::Relation [#&lt;Message id: 2, title: "Hello", message: "Hello World!", created_at: "2017-03-26 04:54:09", updated_at: "2017-03-26 04:54:09", name: "James"&gt;]&gt;
+<span class="hljs-number">2.3</span>.<span class="hljs-number">0</span> <span class="hljs-symbol">:</span><span class="hljs-number">00</span>9 &gt;
+</code></pre>
+whereで返されるデータはfind系メソッドと違い、[]でくくられており、配列になっていることに注意してください。
+最後にdestroyメソッドを使って、データを削除してみましょう。
+<pre><code class="ruby hljs">&gt; msg = Message.find_by(<span class="hljs-symbol">name:</span> <span class="hljs-string">"James"</span>)
+&gt; msg.destroy</code></pre>
+以下、実行例です。
+<pre><code class="ruby hljs">
+<span class="hljs-meta">2.3.0 :009 &gt;</span> msg = Message.find_by(<span class="hljs-symbol">name:</span> <span class="hljs-string">"James"</span>)
+ Message Load (<span class="hljs-number">0</span>.<span class="hljs-number">2</span>ms)  SELECT  <span class="hljs-string">"messages"</span>.* FROM <span class="hljs-string">"messages"</span> WHERE <span class="hljs-string">"messages"</span>.<span class="hljs-string">"name"</span> = ? LIMIT ?  [[<span class="hljs-string">"name"</span>, <span class="hljs-string">"James"</span>], [<span class="hljs-string">"LIMIT"</span>, <span class="hljs-number">1</span>]]
+=&gt; #&lt;Message id: 2, title: "Hello", message: "Hello World!", created_at: "2017-03-26 04:54:09", updated_at: "2017-03-26 04:54:09", name: "James"&gt;
+<span class="hljs-meta">2.3.0 :010 &gt;</span> msg.destroy
+ (<span class="hljs-number">0</span>.<span class="hljs-number">2</span>ms)  <span class="hljs-keyword">begin</span> transaction
+ SQL (<span class="hljs-number">0</span>.<span class="hljs-number">4</span>ms)  DELETE FROM <span class="hljs-string">"messages"</span> WHERE <span class="hljs-string">"messages"</span>.<span class="hljs-string">"id"</span> = ?  [[<span class="hljs-string">"id"</span>, <span class="hljs-number">2</span>]]
+ (<span class="hljs-number">14.6</span>ms)  commit transaction
+=&gt; #&lt;Message id: 2, title: "Hello", message: "Hello World!", created_at: "2017-03-26 04:54:09", updated_at: "2017-03-26 04:54:09", name: "James"&gt;
+<span class="hljs-meta">2.3.0 :011 &gt;</span>
+</code></pre>
+destroy_allメソッドを使って、全てのデータを削除することもできます。
+<pre><code class="ruby hljs">&gt; Message.destroy_all</code></pre>
+以下、実行例です。
+<pre><code class="ruby hljs">
+<span class="hljs-meta">2.3.0 :011 &gt;</span> msg = Message.new(<span class="hljs-symbol">title:</span> <span class="hljs-string">"Hello"</span>, <span class="hljs-symbol">message:</span> <span class="hljs-string">"Hello World!"</span>, <span class="hljs-symbol">name:</span> <span class="hljs-string">"James"</span>)
+=&gt; #&lt;Message id: nil, title: "Hello", message: "Hello World!", created_at: nil, updated_at: nil, name: "James"&gt;
+<span class="hljs-meta">2.3.0 :012 &gt;</span> msg.save
+  (<span class="hljs-number">0</span>.<span class="hljs-number">2</span>ms)  <span class="hljs-keyword">begin</span> transaction
+  SQL (<span class="hljs-number">0</span>.<span class="hljs-number">5</span>ms)  INSERT INTO <span class="hljs-string">"messages"</span> (<span class="hljs-string">"title"</span>, <span class="hljs-string">"message"</span>, <span class="hljs-string">"created_at"</span>, <span class="hljs-string">"updated_at"</span>, <span class="hljs-string">"name"</span>) VALUES (?, ?, ?, ?, ?)  [[<span class="hljs-string">"title"</span>, <span class="hljs-string">"Hello"</span>], [<span class="hljs-string">"message"</span>, <span class="hljs-string">"Hello World!"</span>], [<span class="hljs-string">"created_at"</span>, <span class="hljs-number">2017</span>-<span class="hljs-number">03</span>-<span class="hljs-number">26</span> <span class="hljs-number">04</span><span class="hljs-symbol">:</span><span class="hljs-number">59</span><span class="hljs-symbol">:</span><span class="hljs-number">10</span> UTC], [<span class="hljs-string">"updated_at"</span>, <span class="hljs-number">2017</span>-<span class="hljs-number">03</span>-<span class="hljs-number">26</span> <span class="hljs-number">04</span><span class="hljs-symbol">:</span><span class="hljs-number">59</span><span class="hljs-symbol">:</span><span class="hljs-number">10</span> UTC], [<span class="hljs-string">"name"</span>, <span class="hljs-string">"James"</span>]]
+  (<span class="hljs-number">14.1</span>ms)  commit transaction
+=&gt; true
+<span class="hljs-meta">2.3.0 :013 &gt;</span> Message.destroy_all
+  Message Load (<span class="hljs-number">0</span>.<span class="hljs-number">3</span>ms)  SELECT <span class="hljs-string">"messages"</span>.* FROM <span class="hljs-string">"messages"</span>
+  (<span class="hljs-number">0</span>.<span class="hljs-number">2</span>ms)  <span class="hljs-keyword">begin</span> transaction
+  SQL (<span class="hljs-number">0</span>.<span class="hljs-number">4</span>ms)  DELETE FROM <span class="hljs-string">"messages"</span> WHERE <span class="hljs-string">"messages"</span>.<span class="hljs-string">"id"</span> = ?  [[<span class="hljs-string">"id"</span>, <span class="hljs-number">1</span>]]
+  (<span class="hljs-number">13.5</span>ms)  commit transaction
+  (<span class="hljs-number">0</span>.<span class="hljs-number">1</span>ms)  <span class="hljs-keyword">begin</span> transaction
+  SQL (<span class="hljs-number">0</span>.<span class="hljs-number">3</span>ms)  DELETE FROM <span class="hljs-string">"messages"</span> WHERE <span class="hljs-string">"messages"</span>.<span class="hljs-string">"id"</span> = ?  [[<span class="hljs-string">"id"</span>, <span class="hljs-number">3</span>]]
+  (<span class="hljs-number">141.7</span>ms)  commit transaction
+=&gt; [#&lt;Message id: 1, title: "テスト", message: "Hello World!", created_at: "2017-03-26 04:52:46", updated_at: "2017-03-26 04:52:46", name: nil&gt;, #&lt;Message id: 3, title: "Hello", message: "Hello World!", created_at: "2017-03-26 04:59:10", updated_at: "2017-03-26 04:59:10", name: "James"&gt;]
+<span class="hljs-meta">2.3.0 :014 &gt;</span>
+</code></pre>
+※ この後のレッスンではいくつかデータを入れておいたほうがわかりやすいので、いくつかMessageにデータを入れておきましょう。
+<pre><code class="ruby hljs">&gt;  msg = Message.new(<span class="hljs-symbol">title:</span> <span class="hljs-string">"Hello"</span>, <span class="hljs-symbol">message:</span> <span class="hljs-string">"Hello World!"</span>, <span class="hljs-symbol">name:</span> <span class="hljs-string">"James"</span>)
+&gt; msg.save</code></pre>
+railsコンソールはexitコマンドで終了します。
+<pre><code class="ruby hljs">&gt; exit</code></pre>
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-19. View</div>
+<div class="l-content--detail p-lesson">
+Viewについて詳しくみていきます。
+Railsのデフォルトでは、ViewのテンプレートとしてERBファイルが使われます。ERBファイルには通常のHTMLを記述する他、Rubyスクリプトを埋め込むことができます。これにより、動的に値を表示することが可能になります。
+<table>
+<tbody>
+<tr>
+<td>書き方</td>
+<td>意味</td>
+</tr>
+<tr>
+<td>&lt;%= ... %&gt;</td>
+<td>...の実行結果を文字列として埋め込む</td>
+</tr>
+<tr>
+<td>&lt;% ... %&gt;</td>
+<td>...を実行する。結果は埋め込まない</td>
+</tr>
+<tr>
+<td>&lt;%# ... %&gt;</td>
+<td>コメント</td>
+</tr>
+</tbody>
+</table>
+app/controllers/messages_controller.rbのindexメソッドの実行が終わるとRailsは自動的にviews/messages/index.html.erbを呼び出します。
+views/messages/index.html.erb
+<pre><code class="ruby hljs">
+&lt;p id=<span class="hljs-string">"notice"</span>&gt;&lt;%= notice %&gt;&lt;<span class="hljs-regexp">/p&gt;
+&lt;h1&gt;Messages&lt;/h</span>1&gt;
+&lt;table&gt;
+ &lt;thead&gt;
+ &lt;tr&gt;
+ &lt;th&gt;Title&lt;<span class="hljs-regexp">/th&gt;
+ &lt;th&gt;Message&lt;/th</span>&gt;
+ &lt;th colspan=<span class="hljs-string">"3"</span>&gt;&lt;<span class="hljs-regexp">/th&gt;
+ &lt;/tr</span>&gt;
+ &lt;<span class="hljs-regexp">/thead&gt;
+&lt;tbody&gt;
+ &lt;% @messages.each do |message| %&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;%= message.title %&gt;&lt;/td</span>&gt;
+ &lt;td&gt;&lt;%= message.message %&gt;&lt;<span class="hljs-regexp">/td&gt;
+ &lt;td&gt;&lt;%= link_to 'Show', message %&gt;&lt;/td</span>&gt;
+ &lt;td&gt;&lt;%= link_to <span class="hljs-string">'Edit'</span>, edit_message_path(message) %&gt;&lt;<span class="hljs-regexp">/td&gt;
+ &lt;td&gt;&lt;%= link_to 'Destroy', message, method: :delete, data: { confirm: 'Are you sure?' } %&gt;&lt;/td</span>&gt;
+ &lt;<span class="hljs-regexp">/tr&gt;
+ &lt;% end %&gt;
+ &lt;/tbody</span>&gt;
+&lt;<span class="hljs-regexp">/table&gt;
+&lt;br&gt;
+&lt;%= link_to 'New Message', new_message_path %&gt;
+</span></code></pre>
+@messagesは、Message.allが入っています。つまりMessageデータの全てを参照しています。&lt;% @messages.each do |message| %&gt;で、Messageデータを１つ１つ取り出し、messageという変数に格納して処理を行います。
+&lt;%= message.title %&gt;、&lt;%= message.message %&gt;で、messageのtitleやmessageをHTMLに埋め込んでいます。
+ここで、先ほどMessageモデルにnameを追加しましたので、nameも表示してみましょう。
+<pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">th</span>&gt;</span>Name<span class="hljs-tag">&lt;/<span class="hljs-name">th</span>&gt;</span></code></pre>
+上記の行を
+<pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">th</span>&gt;</span>Message<span class="hljs-tag">&lt;/<span class="hljs-name">th</span>&gt;</span></code></pre>
+の下に追記しましょう。
+<pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">%=</span> <span class="hljs-attr">message.name</span> %&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span></code></pre>
+また、上記の行を
+<pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">%=</span> <span class="hljs-attr">message.message</span> %&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span></code></pre>
+の下に追記しましょう。
+画面をリロードすると、以下のようにNameが表示されます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/name-300x136.png" alt="name" width="300" height="136" />今までの変更を保存しておきましょう。ターミナルで以下の3つのコマンドを実行します。
+<pre><code class="ruby hljs">$ git add .
+$ git commit -m <span class="hljs-string">"Add name to view"</span>
+$ git push origin master</code></pre>
+GitHubにアクセスしてMyBlogリポジトリに内容が反映されていればOKです。
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-20. link_toメソッド</div>
+<div class="l-content--detail p-lesson">
+Show、 Edit、Destroyの各リンクにはRailsのヘルパメソッドであるlink_toメソッドが使われています。link_toメソッドはRails内で変換されて、&lt;a&gt;タグを出力します。link_toメソッドは以下の書式で使うことができます。
+<pre><code class="ruby hljs">link_to リンク名, パス</code></pre>
+パスには、rails routesコマンドで表示される
+<pre><code class="hljs">prefix + _path</code></pre>
+と記述することで、&lt;a&gt;タグの中では対応するURLが出力されます。/へのパスであれば、Prefixがrootなので、root_pathになります。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/root.png" alt="root" width="508" height="196" />実際にRailsサーバーを起動し、Message一覧をGoogle Chromeのタブで表示してHTMLにどのように記述されているか確認しましょう。
+※ HTMLソースを表示しても良いですが、Google Chromeのデベロッパー・ツールを利用すると便利です。使ったことがなければ、「デベロッパー・ツール」で検索し、使い方を覚えておくと良いでしょう。
+link_toを使っている箇所は以下のように&lt;a&gt;タグに変換されているのがわかります。
+<pre><code class="ruby hljs">
+&lt;td&gt;&lt;a href=<span class="hljs-string">"/messages/4"</span>&gt;Show&lt;<span class="hljs-regexp">/a&gt;&lt;/td</span>&gt;
+&lt;td&gt;&lt;a href=<span class="hljs-string">"/messages/4/edit"</span>&gt;Edit&lt;<span class="hljs-regexp">/a&gt;&lt;/td</span>&gt;
+&lt;td&gt;&lt;a data-confirm=<span class="hljs-string">"Are you sure?"</span> rel=<span class="hljs-string">"nofollow"</span> data-method=<span class="hljs-string">"delete"</span> href=<span class="hljs-string">"/messages/4"</span>&gt;Destroy&lt;<span class="hljs-regexp">/a&gt;&lt;/td</span>&gt;
+...
+&lt;a href=<span class="hljs-string">"/messages/new"</span>&gt;New Message&lt;<span class="hljs-regexp">/a&gt;
+</span></code></pre>
+例えば、「New Message」リンクをクリックすると、/messages/newにGETでアクセスします。rails routesを見るとこれはMessagesControllerのnewメソッドを呼び出すことになり、Viewとしてはviews/messages/new.html.erbの内容、つまり、New Message画面が表示されます。
+<pre><code class="ruby hljs">new_message GET    /messages/new(.<span class="hljs-symbol">:format</span>)      messages<span class="hljs-comment">#new</span></code></pre>
+New MessageリンクをクリックしてからNew Message画面が表示されるまでの流れをまとめると以下のようになります。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2017/04/New-Message2.png" alt="new-message" width="539" height="306" />
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-21. 部分テンプレート</div>
+<div class="l-content--detail p-lesson">
+Railsでは、共通する記述を部分テンプレートとして別ファイルに記述して呼び出すことができるパーシャルという機能があります。
+New Message画面とEdit Message画面の各ファイルを開いてみましょう。
+views/messages/new.html.erb
+<pre><code class="ruby hljs">&lt;h1&gt;New Message&lt;<span class="hljs-regexp">/h1&gt;
+&lt;%= render 'form', message: @message %&gt;
+&lt;%= link_to 'Back', messages_path %&gt;</span></code></pre>
+views/messages/edit.html.erb
+<pre><code class="ruby hljs">&lt;h1&gt;Editing Message&lt;<span class="hljs-regexp">/h1&gt;
+&lt;%= render 'form', message: @message %&gt;
+&lt;%= link_to 'Show', @message %&gt; |
+&lt;%= link_to 'Back', messages_path %&gt;</span></code></pre>
+どちら画面の内容として共通している部分を部分テンプレート_form.html.erbに記述し、それをrenderメソッドで呼び出しています。
+renderメソッドは以下の書式で使うことができます。
+<pre><code class="ruby hljs">render 部分テンプレート名, 変数: 値</code></pre>
+部分テンプレートファイルは、_form.html.erbのように、ファイル名を
+<pre><code class="hljs css">_ + 部分テンプレート名<span class="hljs-selector-class">.html</span><span class="hljs-selector-class">.erb</span></code></pre>
+とします。_form.htm.erbをみてみましょう。
+_form.html.erb
+<pre><code class="ruby hljs">&lt;%= form_for(message) <span class="hljs-keyword">do</span> <span class="hljs-params">|f|</span> %&gt;
+ &lt;% <span class="hljs-keyword">if</span> message.errors.any? %&gt;
+  &lt;div id=<span class="hljs-string">"error_explanation"</span>&gt;
+   &lt;h2&gt;&lt;%= pluralize(message.errors.count, <span class="hljs-string">"error"</span>) %&gt; prohibited this message from being <span class="hljs-symbol">saved:</span>&lt;<span class="hljs-regexp">/h2&gt;
+   &lt;ul&gt;
+    &lt;% message.errors.full_messages.each do |message| %&gt;
+     &lt;li&gt;&lt;%= message %&gt;&lt;/li</span>&gt;
+    &lt;% <span class="hljs-keyword">end</span> %&gt;
+   &lt;<span class="hljs-regexp">/ul&gt;
+  &lt;/div</span>&gt;
+ &lt;% <span class="hljs-keyword">end</span> %&gt;
+ &lt;div <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">field</span>"&gt;</span>
+  &lt;%= f.label <span class="hljs-symbol">:title</span> %&gt;
+  &lt;%= f.text_field <span class="hljs-symbol">:title</span> %&gt;
+ &lt;<span class="hljs-regexp">/div&gt;
+ &lt;div class="field"&gt;
+  &lt;%= f.label :message %&gt;
+  &lt;%= f.text_field :message %&gt;
+ &lt;/div</span>&gt;
+ &lt;div <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">actions</span>"&gt;</span>
+  &lt;%= f.submit %&gt;
+ &lt;<span class="hljs-regexp">/div&gt;
+&lt;% end %&gt;</span></code></pre>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-22. フォームヘルパ</div>
+<div class="l-content--detail p-lesson">
+form_forは、フォームヘルパと呼ばれ、設定したモデルの作成・編集フォームを生成します。New Message画面のHTMLを確認してみましょう。HTMLでは、以下のように&lt;form&gt;タグとして出力されていることがわかります。
+<pre><code class="ruby hljs">&lt;form <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">new_message</span>" <span class="hljs-title">id</span>="<span class="hljs-title">new_message</span>" <span class="hljs-title">action</span>="/<span class="hljs-title">messages</span>" <span class="hljs-title">accept</span>-<span class="hljs-title">charset</span>="<span class="hljs-title">UTF</span>-8" <span class="hljs-title">method</span>="<span class="hljs-title">post</span>"&gt;</span></code></pre>
+actionに/messages、methodにpostが設定されています。これはmessages_pathにPOSTでアクセスすることを意味しています。rails routesで確認するとmessagesにPOSTでアクセスすると、messages#create、つまり、MessagesControllerのcreateメソッドが呼び出されることがわかります。
+<pre><code class="ruby hljs"> messages GET /messages(.<span class="hljs-symbol">:format</span>) messages<span class="hljs-comment">#index</span>
+          POST /messages(.<span class="hljs-symbol">:format</span>) messages<span class="hljs-comment">#create</span></code></pre>
+form_forに設定しているmessageは、
+<pre><code class="ruby hljs">&lt;%= render <span class="hljs-string">'form'</span>, <span class="hljs-symbol">message:</span> @message %&gt;</code></pre>
+で部分テンプレートを呼び出すときに設定した変数messageです。ここには@messageが設定されています。@messageは、MessagesControllerのnewまたはeditメソッドで定義している値が入っています。newメソッド内では、以下のようにMessageモデルの新規インスタンスが設定されています。
+<pre><code class="ruby hljs">@message = Message.new</code></pre>
+次にEdit Message画面のHTMLを確認してみましょう。こちらも以下のように&lt;form&gt;タグが出力されていることがわかります。
+<pre><code class="ruby hljs">
+&lt;form <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">edit_message</span>" <span class="hljs-title">id</span>="<span class="hljs-title">edit_message_4</span>" <span class="hljs-title">action</span>="/<span class="hljs-title">messages</span>/4" <span class="hljs-title">accept</span>-<span class="hljs-title">charset</span>="<span class="hljs-title">UTF</span>-8" <span class="hljs-title">method</span>="<span class="hljs-title">post</span>"&gt;</span>
+...
+&lt;input type=<span class="hljs-string">"hidden"</span> name=<span class="hljs-string">"_method"</span> value=<span class="hljs-string">"patch"</span> /&gt;
+</code></pre>
+しかし、New Message画面とは違い、actionに/messages/:idが設定されています。
+※ :idは、Messageモデルのidです。上記の例ではidが4のものが表示されています。
+また、form_forは、hiddenパラメーターとして_methodをpatchで指定することで情報の更新時にはPOSTではなく、PATCHメソッドを送信するようにしています。
+rails routesで確認するとmessages/:idにPATCHでアクセスすると、messages#update、つまり、MessagesControllerのupdateメソッドが呼び出されることがわかります。
+<pre><code class="ruby hljs">message GET /messages/<span class="hljs-symbol">:id</span>(.<span class="hljs-symbol">:format</span>) messages<span class="hljs-comment">#show</span>
+        PATCH /messages/<span class="hljs-symbol">:id</span>(.<span class="hljs-symbol">:format</span>) messages<span class="hljs-comment">#update</span>
+        PUT /messages/<span class="hljs-symbol">:id</span>(.<span class="hljs-symbol">:format</span>) messages<span class="hljs-comment">#update</span></code></pre>
+部分テンプレート内では、new.html.erbもedit.html.erbも
+<pre><code class="ruby hljs">&lt;%= form_for(message) <span class="hljs-keyword">do</span> <span class="hljs-params">|f|</span> %&gt;</code></pre>
+のように同じform_forを呼び出していましたが、出力されているactionが異なっています。これは、form_forの引数として設定したmessageに設定されている値によって、form_forが異なる結果を返しているためです。それでは、edit.html.erbのmessageには何が設定されているのでしょうか。MessagesControllerのeditメソッドの中身は空ですが、MessagesControllerにはbefore_actionとしてeditメソッドを実行するまえにset_messageメソッドを実行するように記述されています。
+<pre><code class="ruby hljs">before_action <span class="hljs-symbol">:set_message</span>, <span class="hljs-symbol">only:</span> [<span class="hljs-symbol">:show</span>, <span class="hljs-symbol">:edit</span>, <span class="hljs-symbol">:update</span>, <span class="hljs-symbol">:destroy</span>]</code></pre>
+このようにbefore_actionを使うと、onlyで指定したメソッドの実行前に、設定したメソッドを実行させることができます。
+editメソッドが呼び出される前にset_messageメソッドが実行されていますので、@messageにはset_message内のMessage.find(params[:id])が設定されています。つまり、編集対象のMessageモデルのインスタンスが設定されています。
+<pre><code class="ruby hljs"> @message = Message.find(params[<span class="hljs-symbol">:id</span>])</code></pre>
+new.html.erbのform_for(message)のmessageには、Messageモデルの新規インスタンスが設定されているので&lt;form&gt;タグのactionにidは設定されず、action="/messages"となります。そして、New Message画面でsubmitボタンをクリックするとMessagesControllerのcreateメソッドが呼び出されます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/create.png" alt="create" width="551" height="314" />edit.html.erbのform_for(message)のmessageには、編集対象のMessageモデルのインスタンスが設定されているのでactionにはそのidが設定され、action="/messages/:id"と出力されます。
+そして、Edit Message画面でsubmitボタンをクリックするとMessagesControllerのupdateメソッドが呼び出されます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/patch.png" alt="patch" width="536" height="319" />
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-23. Viewの修正</div>
+<div class="l-content--detail p-lesson">
+フォームヘルパ内のf.text_fieldについて見ていきましょう。
+<pre><code class="ruby hljs">&lt;%= f.text_field <span class="hljs-symbol">:title</span> %&gt;</code></pre>
+この部分はHTMLでは、以下のように
+<pre><code class="ruby hljs">&lt;input&gt;</code></pre>
+タグが出力され、画面上は入力欄が表示されます。
+<pre><code class="html hljs xml">
+<span class="hljs-tag">&lt;&lt;<span class="hljs-attr">span</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"start-tag"</span>&gt;</span>input<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span> <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"attribute-name"</span>&gt;</span>type<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>="<span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"attribute-value"</span>&gt;</span>text<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>" <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"attribute-name"</span>&gt;</span>name<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>="<span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"attribute-value"</span>&gt;</span>message[title]<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>" <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"attribute-name"</span>&gt;</span>id<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>="<span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"attribute-value"</span>&gt;</span>message_title<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>" /&gt;
+</code></pre>
+<pre><code class="ruby hljs">&lt;%= f.text_field <span class="hljs-symbol">:message</span> %&gt;</code></pre>
+も同様に
+<pre><code class="ruby hljs">&lt;input&gt;</code></pre>
+タグが出力されます。しかし、このmessageには文章を入力可能とするために
+<pre><code class="ruby hljs">&lt;input&gt;</code></pre>
+タグではなく、
+<pre><code class="ruby hljs">&lt;textarea&gt;</code></pre>
+タグで表示するように修正しましょう。
+views/messages/_form.html.erbの
+<pre><code class="ruby hljs">&lt;%= f.text_field <span class="hljs-symbol">:message</span> %&gt;</code></pre>
+を以下のようにf.text_areaに修正しましょう。
+<pre><code class="ruby hljs">&lt;%= f.text_area <span class="hljs-symbol">:message</span> %&gt;</code></pre>
+画面をリロードして表示を確認してみてください。
+以下、表示例です。
+<img class="aligncenter wp-image-944 size-full" src="https://writing.itprocollege.com/wp-content/uploads/2016/12/text_area.png" alt="text_area" width="224" height="218" />HTMLも以下のように
+<pre><code class="ruby hljs">&lt;input&gt;</code></pre>
+タグではなく、
+<pre><code class="ruby hljs">&lt;textarea&gt;</code></pre>
+タグが出力されているのが確認できるはずです。
+<pre><code class="ruby hljs">&lt;span <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">start</span>-<span class="hljs-title">tag</span>"&gt;<span class="hljs-title">textarea</span>&lt;/<span class="hljs-title">span</span>&gt; &lt;span <span class="hljs-title">class</span>="<span class="hljs-title">attribute</span>-<span class="hljs-title">name</span>"&gt;<span class="hljs-title">name</span>&lt;/<span class="hljs-title">span</span>&gt;="&lt;a <span class="hljs-title">class</span>="<span class="hljs-title">attribute</span>-<span class="hljs-title">value</span>"&gt;<span class="hljs-title">message</span>[<span class="hljs-title">message</span>]&lt;/<span class="hljs-title">a</span>&gt;" &lt;span <span class="hljs-title">class</span>="<span class="hljs-title">attribute</span>-<span class="hljs-title">name</span>"&gt;<span class="hljs-title">id</span>&lt;/<span class="hljs-title">span</span>&gt;="&lt;a <span class="hljs-title">class</span>="<span class="hljs-title">attribute</span>-<span class="hljs-title">value</span>"&gt;<span class="hljs-title">message_message</span>&lt;/<span class="hljs-title">a</span>&gt;"&gt;</span></code></pre>
+nameも入力できるようにしましょう。nameは複数行入力できる必要はありませんから、f.text_fieldで
+<pre><code class="ruby hljs">&lt;input&gt;</code></pre>
+タグを出力するようにしましょう。views/messages/_form.html.erbは以下のようになります。
+views/messages/_form.html.erb
+<pre><code class="ruby hljs">
+&lt;%= form_for(message) <span class="hljs-keyword">do</span> <span class="hljs-params">|f|</span> %&gt;
+&lt;% <span class="hljs-keyword">if</span> message.errors.any? %&gt;
+  &lt;div id=<span class="hljs-string">"error_explanation"</span>&gt;
+  &lt;h2&gt;&lt;%= pluralize(message.errors.count, <span class="hljs-string">"error"</span>) %&gt; prohibited this message from being <span class="hljs-symbol">saved:</span>&lt;<span class="hljs-regexp">/h2&gt;
+  &lt;ul&gt;
+    &lt;% message.errors.full_messages.each do |message| %&gt;
+    &lt;li&gt;&lt;%= message %&gt;&lt;/li</span>&gt;
+    &lt;% <span class="hljs-keyword">end</span> %&gt;
+  &lt;<span class="hljs-regexp">/ul&gt;
+  &lt;/div</span>&gt;
+&lt;% <span class="hljs-keyword">end</span> %&gt;
+&lt;div <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">field</span>"&gt;</span>
+  &lt;%= f.label <span class="hljs-symbol">:title</span> %&gt;
+  &lt;%= f.text_field <span class="hljs-symbol">:title</span> %&gt;
+&lt;<span class="hljs-regexp">/div&gt;
+&lt;div class="field"&gt;
+  &lt;%= f.label :message %&gt;
+  &lt;%= f.text_area :message %&gt;
+&lt;/div</span>&gt;
+&lt;div <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">field</span>"&gt;</span>
+  &lt;%= f.label <span class="hljs-symbol">:name</span> %&gt;
+  &lt;%= f.text_field <span class="hljs-symbol">:name</span> %&gt;
+&lt;<span class="hljs-regexp">/div&gt;
+&lt;div class="actions"&gt;
+  &lt;%= f.submit %&gt;
+&lt;/div</span>&gt;
+&lt;% <span class="hljs-keyword">end</span> %&gt;
+</code></pre>
+画面をリロードして表示を確認してみてください。
+以下、表示例です。
+<img class="size-full wp-image-945 aligncenter" src="https://writing.itprocollege.com/wp-content/uploads/2016/12/add-name.png" alt="add-name" width="247" height="274" />今までの変更を保存しておきましょう。ターミナルで以下の3つのコマンドを実行します。
+<pre><code class="ruby hljs">$ git add .
+  $ git commit -m <span class="hljs-string">"Modify template"</span>
+  $ git push origin master</code></pre>
+GitHubにアクセスしてMyBlogリポジトリに内容が反映されていればOKです。
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-24. ストロングパラメーター</div>
+<div class="l-content--detail p-lesson">
+New Message画面で値を入れてCreate Messageボタンをクリックしてみてください。Railsサーバーを起動しているターミナルに以下のようにPOSTメソッドで送信されたパラメーターが表示されているのがわかります。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/send-post-1024x146.png" alt="send-post" width="840" height="120" />
+<pre><code class="ruby hljs"><span class="hljs-symbol">Parameters:</span> {<span class="hljs-string">"utf8"</span>=&gt;<span class="hljs-string">"✓"</span>, <span class="hljs-string">"authenticity_token"</span>=&gt;<span class="hljs-string">"KXT5Ye5EfD6yZBVYD/bdCgphzemWhqwhMUq7hbP8WNd1m75JvXXgJ3HRpRMzZ+47fK8/ELnXBDk7mwiPxwSyvQ=="</span>, <span class="hljs-string">"message"</span>=&gt;{<span class="hljs-string">"title"</span>=&gt;<span class="hljs-string">"Hello"</span>, <span class="hljs-string">"message"</span>=&gt;<span class="hljs-string">"Hello\r\nWorld!"</span>, <span class="hljs-string">"name"</span>=&gt;<span class="hljs-string">"James"</span>}, <span class="hljs-string">"commit"</span>=&gt;<span class="hljs-string">"Create Message"</span>}</code></pre>
+先ほど追加したnameも送信されています。しかし、その次の行に以下のようにnameが許可されていないという表示が出ています。
+<pre><code class="ruby hljs">Unpermitted <span class="hljs-symbol">parameter:</span> name</code></pre>
+railsコンソールで新規に追加されているデータの内容を確認してもnameだけ値が設定されておらず、nilになっています。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/rails-c-1-1024x116.png" alt="rails-c" width="840" height="95" />Railsには不正な操作を防ぐために、画面から送られてくるパラメーターを検証する仕組みが備わっています。許可されたパラメーターだけを受け取る仕組みをストロングパラメーターと言い、MessagesControllerではmessage_paramsメソッド内で設定しています。
+<pre><code class="ruby hljs"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">message_params</span></span>
+ params.<span class="hljs-keyword">require</span>(<span class="hljs-symbol">:message</span>).permit(<span class="hljs-symbol">:title</span>, <span class="hljs-symbol">:message</span>)
+<span class="hljs-keyword">end</span></code></pre>
+paramsにmessagesというパラメーターが送られてきていることを確認し、その内、titleとmessageのみを許可しています。そのため、nameが許可されず、処理の対象から外されていたのです。
+このストロングパラメーターに以下のようにnameを追加しましょう。
+<pre><code class="ruby hljs"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">message_params</span></span>
+ params.<span class="hljs-keyword">require</span>(<span class="hljs-symbol">:message</span>).permit(<span class="hljs-symbol">:title</span>, <span class="hljs-symbol">:message</span>, <span class="hljs-symbol">:name</span>)
+<span class="hljs-keyword">end</span></code></pre>
+また、結果画面(views/messages/show.html.erb)にもnameを追加しましょう。
+views/messages/show.html.erb
+<pre><code class="ruby hljs">&lt;p id=<span class="hljs-string">"notice"</span>&gt;&lt;%= notice %&gt;&lt;<span class="hljs-regexp">/p&gt;
+&lt;p&gt;
+ &lt;strong&gt;Title:&lt;/strong</span>&gt;
+ &lt;%= @message.title %&gt;
+&lt;<span class="hljs-regexp">/p&gt;
+&lt;p&gt;
+ &lt;strong&gt;Message:&lt;/strong</span>&gt;
+ &lt;%= @message.message %&gt;
+&lt;<span class="hljs-regexp">/p&gt;
+&lt;p&gt;
+ &lt;strong&gt;Name:&lt;/strong</span>&gt;
+ &lt;%= @message.name %&gt;
+&lt;<span class="hljs-regexp">/p&gt;
+&lt;%= link_to 'Edit', edit_message_path(@message) %&gt; |
+&lt;%= link_to 'Back', messages_path %&gt;</span></code></pre>
+再度New Message画面で値を入れてCreate Messageボタンをクリックしてみてください。nameに設定した内容が正しく保存されていることが確認できます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/resultin.png" alt="resultin" width="299" height="237" />
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-25. バリデーション</div>
+<div class="l-content--detail p-lesson">
+データを保存・更新する前に、そのデータが正しいかを検証する機能をバリデーションと呼びます。例えば、入力が必須な項目に値を入れずにデータを送信した場合、エラーを返すことができます。
+バリデーションはモデルの定義内に以下の書式で記述します。
+<pre><code class="ruby hljs">validates フィールド名, 条件</code></pre>
+models/message.rbにバリデーションを追加しましょう。
+models/message.rb
+<pre><code class="ruby hljs"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Message</span> &lt; ApplicationRecord</span>
+ validates <span class="hljs-symbol">:title</span> , <span class="hljs-symbol">length:</span> { <span class="hljs-symbol">maximum:</span> <span class="hljs-number">32</span> } , <span class="hljs-symbol">presence:</span> <span class="hljs-literal">true</span>
+ validates <span class="hljs-symbol">:message</span> , <span class="hljs-symbol">length:</span> { <span class="hljs-symbol">maximum:</span> <span class="hljs-number">256</span> } , <span class="hljs-symbol">presence:</span> <span class="hljs-literal">true</span>
+ validates <span class="hljs-symbol">:name</span> , <span class="hljs-symbol">length:</span> { <span class="hljs-symbol">maximum:</span> <span class="hljs-number">32</span> }
+<span class="hljs-keyword">end</span></code></pre>
+length: { maximum: 32 }は、最大文字列長32文字まで入力を許可します。presence: trueを設定すると、入力必須項目となります。
+New Message画面でtitle、messageを空欄のままにし、nameに32文字より長い文字列を入力して、Create Messageボタンをクリックしてみましょう。
+不正なデータとしてバリデーションにひっかかり、以下のようなエラーメッセージが表示され、データが保存できないようになります。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/%E3%82%A8%E3%83%A9%E3%83%BC.png" alt="%e3%82%a8%e3%83%a9%e3%83%bc" width="534" height="460" />様々なバリデーションの条件を設定することができますので、「rails バリデーション」などで検索し、理解を深めておきましょう。
+今までの変更を保存しておきましょう。ターミナルで以下の3つのコマンドを実行します。
+<pre><code class="ruby hljs">$ git add .
+$ git commit -m <span class="hljs-string">"Add validation"</span>
+$ git push origin master</code></pre>
+GitHubにアクセスしてMyBlogリポジトリに内容が反映されていればOKです。
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-26. エラーメッセージ</div>
+<div class="l-content--detail p-lesson">
+バリデーションエラーで、エラーメッセージが表示されましたが、これはviews/messages/_form.html.erbに記述されている以下の部分です。
+<pre><code class="ruby hljs">...
+&lt;% <span class="hljs-keyword">if</span> message.errors.any? %&gt;
+ &lt;div id=<span class="hljs-string">"error_explanation"</span>&gt;
+  &lt;h2&gt;&lt;%= pluralize(message.errors.count, <span class="hljs-string">"error"</span>) %&gt; prohibited this message from being <span class="hljs-symbol">saved:</span>&lt;<span class="hljs-regexp">/h2&gt;
+  &lt;ul&gt;
+   &lt;% message.errors.full_messages.each do |message| %&gt;
+    &lt;li&gt;&lt;%= message %&gt;&lt;/li</span>&gt;
+   &lt;% <span class="hljs-keyword">end</span> %&gt;
+  &lt;<span class="hljs-regexp">/ul&gt;
+ &lt;/div</span>&gt;
+&lt;% <span class="hljs-keyword">end</span> %&gt;
+...</code></pre>
+エラーがある場合、message.errorsにエラーメッセージが格納されます。&lt;% if message.errors.any? %&gt;で、エラーメッセージがある場合のみ表示するようにしています。
+message.errorsの内容をもう少しくわしくみていきます。Railsはデフォルトでbyebugというデバッグの仕組みが備わっています。byebugを利用して、messages.errorsの内容を見てみましょう。
+New Message画面でCreate Messageをクリックすると、MessagesControllerのcreateメソッドが呼ばれます。createメソッド内のif @message.saveのsaveメソッドでデータを保存しようとした時、バリデーションが行われ、不正な値であればエラーが返り、saveメソッドの戻り値がfalseになります。処理はif文の中ではなく、else文の中に入りますので、以下のようにこちらにbyebugを設定しましょう。
+app/controllers/messages_controller.rb
+<pre><code class="ruby hljs">...
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">create</span></span>
+ @message = Message.new(message_params)
+ respond_to <span class="hljs-keyword">do</span> <span class="hljs-params">|format|</span>
+  <span class="hljs-keyword">if</span> @message.save
+   format.html { redirect_to @message, <span class="hljs-symbol">notice:</span> <span class="hljs-string">'Message was successfully created.'</span> }
+   format.json { render <span class="hljs-symbol">:show</span>, <span class="hljs-symbol">status:</span> <span class="hljs-symbol">:created</span>, <span class="hljs-symbol">location:</span> @message }
+  <span class="hljs-keyword">else</span>
+   byebug
+   format.html { render <span class="hljs-symbol">:new</span> }
+   format.json { render <span class="hljs-symbol">json:</span> @message.errors, <span class="hljs-symbol">status:</span> <span class="hljs-symbol">:unprocessable_entity</span> }
+  <span class="hljs-keyword">end</span>
+ <span class="hljs-keyword">end</span>
+<span class="hljs-keyword">end</span>
+...</code></pre>
+この状態で、先ほどと同じようにNew Message画面でtitle、messageを空欄のままにし、nameに32文字より長い文字列を入力して、Create Messageボタンをクリックしてみましょう。
+Railsサーバーを起動しているターミナルで以下のように処理が止まります。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/byebug-1024x193.png" alt="byebug" width="840" height="158" />この状態で、railsコンソールのようにデータの参照などを行うことができます。以下のように@message.errorsと入力してEnterし、値を確認してみましょう。
+<pre><code class="ruby hljs">(byebug) @message.errors</code></pre>
+以下、実行例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/errors-1024x48.png" alt="errors" width="840" height="39" />
+<pre><code class="ruby hljs"><span class="hljs-symbol">:title=&gt;</span>[<span class="hljs-string">"can't be blank"</span>], <span class="hljs-symbol">:message=&gt;</span>[<span class="hljs-string">"can't be blank"</span>], <span class="hljs-symbol">:name=&gt;</span>[<span class="hljs-string">"is too long (maximum is 32 characters)"</span></code></pre>
+views/messages/_form.html.erbの以下の箇所で、この内容を出力しています。
+<pre><code class="ruby hljs">...
+&lt;% message.errors.full_messages.each <span class="hljs-keyword">do</span> <span class="hljs-params">|message|</span> %&gt;
+  &lt;li&gt;&lt;%= message %&gt;&lt;<span class="hljs-regexp">/li&gt;
+&lt;% end %&gt;
+...</span></code></pre>
+errorsの内容が確認できましたので、以下のようにターミナルにcを入力して、デバッグを終了しましょう。
+<pre><code class="ruby hljs">(byebug) c</code></pre>
+デバッグを終了したら、MessagesControllerのcreateメソッドに設定したbyebugの記述は削除しておきましょう。
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-27. 【課題２】新しいカラムを追加しよう！</div>
+<div class="l-content--detail p-lesson">
+条件１：nameを追加したように、新しいカラムを追加し、画面で設定できるようにすること
+条件２：新しいカラムは体重、気温、金額などの数値(integer)であること
+条件３：バリデーションを設定すること
+条件4：作業ブランチ名をnew-columnとすること
+<h5>※ブランチについて（作業ブランチ名を変更する）</h5>
+gitにはブランチというものが存在します。これは「作業履歴を枝分かれで記録していくためのもの」になります。
+現在gitコマンドでmasterという指定をしている箇所がありますが、これはmaster という名前のブランチで作業していることを表しています。git init を実施した場合、最初に作成されるブランチは master のみとなります。
+例えばmasterには含めるかどうか分からないが、一時的に変更を試したいため commitしたいという事があると仮定します。この場合masterにcommit してしまうと、やっぱりそのcommitは必要がなかった、という時にcommit を取り消す必要が生じます。しかし、一度commit したものを取り消す作業は、複数人で同じgit リポジトリを操作している場合、ファイルの競合が発生するため、好ましくありません。
+ブランチ名を変更する場合、その変更が何を意味しているのかわかりやすい英名を設定すると良いです。「新しいテキストファイルを1つ追加する」というような変更の場合は `new-text` といったようなブランチ名を指定します。（コンソールにて、
+<pre><code class="hljs java">git checkout -b <span class="hljs-keyword">new</span>-text</code></pre>
+コマンドを打つことで、masterブランチからnew-textブランチを作り、new-textブランチ上に移動できます。）
+コンソールにて
+<pre><code class="hljs">git status</code></pre>
+コマンドを打つと
+<div>
+<pre><code class="hljs java">
+  master
+* <span class="hljs-keyword">new</span>-text (master のコピー)</code></pre>
+</div>
+が表示されるかと思います。 この場合、ブランチ名を変更することで「master のコピー」を作成したことになります。一時的な変更を試したい人はmaster ブランチのコピーである new-text で作業し、そこにcommit しておくことで、本来のmasterブランチにcommit しなくても、作業履歴を残すことができます。
+<h5>※git commandについて</h5>
+<div>
+command:
+<pre><code class="hljs ruby">$ git status</code></pre>
+</div>
+現在自分がどのブランチ名を利用しているかは
+<pre><code class="hljs">git status</code></pre>
+で調べられます。
+<div>
+command:
+<pre><code class="hljs ruby">$ git branch</code></pre>
+</div>
+どのようなブランチ名があるか、どのブランチ上にいるかは
+<pre><code class="hljs">git branch</code></pre>
+で調べられます。
+<div>
+command:
+<pre><code class="hljs java">$ git checkout -b <span class="hljs-keyword">new</span>-text</code></pre>
+</div>
+ブランチ名を変更する際、そのブランチ名がまだ作成されていない（初めて変更する）場合は
+<pre><code class="hljs">git checkout -b (ブランチ名)</code></pre>
+を実行します。上記の例は
+<pre><code class="hljs java"><span class="hljs-keyword">new</span>-text</code></pre>
+というブランチ名に変更されます。
+<div>
+command:
+<pre><code class="hljs ruby">$ git checkout master</code></pre>
+</div>
+ブランチ名を変更する際、そのブランチ名が既に作成済みである場合は
+<pre><code class="hljs">git checkout (ブランチ名)</code></pre>
+を実行します。上記の例は
+<pre><code class="hljs">master</code></pre>
+ブランチ名に戻ります。
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-28. Heroku</div>
+<div class="l-content--detail p-lesson">
+これ以降では、今回作成したMyBlogを本番環境(production環境)であるHerokuで公開します。
+作成したアプリケーションをHerokuなどの外部サーバーに配置することをデプロイと呼びます。
+<blockquote><a href="https://www.heroku.com/" target="_blank" rel="noopener noreferrer">Heroku</a></blockquote>
+にアカウント登録済みであることをご確認ください。 まだの方はアカウント作成をお願いいたします。
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-29. Gemfile</div>
+<div class="l-content--detail p-lesson">
+HerokuにデプロイするためにGemfileを修正します。GemfileはRailsアプリケーションで使うgemをまとめたファイルです。Gemfileに記述したgemをbundle installコマンドでインストールして利用することができます。
+HerokuではデータベースにSQLiteではなく、PostgreSQLが推奨されているので、GemfileにPostgreSQLを使えるように修正します。
+<pre><code class="ruby hljs">gem <span class="hljs-string">'sqlite3'</span></code></pre>
+Gemfileで上記のように記述されている箇所を以下に書き変えましょう。
+<pre><code class="ruby hljs">gem <span class="hljs-string">'sqlite3'</span>, <span class="hljs-symbol">group:</span> <span class="hljs-symbol">:development</span>
+gem <span class="hljs-string">'pg'</span>, <span class="hljs-string">'~&gt; 0.18'</span>, <span class="hljs-symbol">group:</span> <span class="hljs-symbol">:production</span></code></pre>
+group: :developmentとすることで開発環境で使うgem、group: :productionとすることでproduction環境で使うgemとして指定することができます。
+＊ Cloud9がAWSになってから下記のコマンドでpg環境を作成する必要があるので、次のコマンドを叩き、環境を整えてください。（ダウンロードのy/nを聞かれるのでyを押してエンター）
+<pre><code class="hljs sql">sudo yum <span class="hljs-keyword">install</span> postgresql-devel</code></pre>
+上記を実行後、ターミナルでbundle installコマンドを実行し、追加したgemをインストールしましょう。
+<pre><code class="hljs sql">$ bundle <span class="hljs-keyword">install</span></code></pre>
+以下、実行例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/bundle-install.png" alt="bundle-install" width="498" height="549" />
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-30. データベースの設定</div>
+<div class="l-content--detail p-lesson">
+config/database.ymlのproductionの箇所をpostgresqlを使うように修正します。
+config/database.yml
+<pre><code class="ruby hljs"><span class="hljs-comment"># SQLite version 3.x</span>
+<span class="hljs-comment"># gem install sqlite3</span>
+<span class="hljs-comment">#</span>
+<span class="hljs-comment"># Ensure the SQLite 3 gem is defined in your Gemfile</span>
+<span class="hljs-comment"># gem 'sqlite3'</span>
+<span class="hljs-comment">#</span>
+<span class="hljs-symbol">default:</span> &amp;default
+  <span class="hljs-symbol">adapter:</span> sqlite3
+  <span class="hljs-symbol">pool:</span> <span class="hljs-number">5</span>
+  <span class="hljs-symbol">timeout:</span> <span class="hljs-number">5000</span>
+<span class="hljs-symbol">development:</span>
+  &lt;&lt;: *default
+  <span class="hljs-symbol">database:</span> db/development.sqlite3
+<span class="hljs-comment"># Warning: The database defined as "test" will be erased and</span>
+<span class="hljs-comment"># re-generated from your development database when you run "rake".</span>
+<span class="hljs-comment"># Do not set this db to the same as development or production.</span>
+<span class="hljs-symbol">test:</span>
+  &lt;&lt;: *default
+  <span class="hljs-symbol">database:</span> db/test.sqlite3
+<span class="hljs-symbol">production:</span>
+  &lt;&lt;: *default
+  <span class="hljs-symbol">adapter:</span> postgresql
+  <span class="hljs-symbol">encoding:</span> unicode
+  <span class="hljs-symbol">pool:</span> <span class="hljs-number">5</span></code></pre>
+今までの変更を保存しておきましょう。ターミナルで以下の3つのコマンドを実行します。
+<pre><code class="ruby hljs">$ git add .
+$ git commit -m <span class="hljs-string">"Add postgresql"</span>
+$ git push origin master</code></pre>
+GitHubにアクセスしてMyBlogリポジトリに内容が反映されていればOKです。
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-31. Herokuへのデプロイ</div>
+<div class="l-content--detail p-lesson">
+Herokuにプログラムをデプロイするために、Heroku内にアプリケーションを作成します。Herokuアプリケーションの作成には
+<pre><code class="hljs sql">heroku <span class="hljs-keyword">create</span></code></pre>
+コマンドを実行します。ターミナルで以下のコマンドを実行しましょう。
+<pre><code class="hljs sql">$ heroku <span class="hljs-keyword">create</span> アプリケーション名</code></pre>
+※ アプリケーション名はHeroku内で一意にしなければならず、他の人のアプリケーション名とかぶるとエラーになります。「Herokuアカウント名-my-blog」などユニークな名前にしましょう。
+実行例：アプリケーション名をtest-my-blogとする場合、以下のようになります。
+<pre><code class="hljs sql">$ heroku <span class="hljs-keyword">create</span> <span class="hljs-keyword">test</span>-my-blog</code></pre>
+※ 実行時にHerokuのアカウント名とパスワードを求められるので入力してください。
+heroku createコマンドを実行すると、gitリモートリポジトリが追加されます。git remote -vコマンドで追加されたリモートリポジトリを確認しましょう。ターミナルで以下のコマンドを実行しましょう.
+<pre><code class="hljs ruby">$ git remote -v</code></pre>
+以下、実行例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/remote-v.png" alt="remote-v" width="480" height="108" />originにはGitHubのリモートリポジトリが、herokuにはHerokuのリモートリポジトリが登録されているのが確認できます。今まで、git push origin masterコマンドでGitHubにプログラムをpushしていたように、git push heroku masterコマンドでHerokuにpushします。ターミナルで以下のコマンドを実行しましょう。
+<pre><code class="hljs ruby">$ git push heroku master</code></pre>
+※ この処理にはしばらく時間がかかります。途中でerrorやfaitalなどの文字が出力されてエラーになっていないか、確認しましょう。実行後、最後に
+<pre><code class="hljs java">* [<span class="hljs-keyword">new</span> branch]      master -&gt; master</code></pre>
+のように正しくpushできていればデプロイ完了です。もし途中でエラーが出た場合は、該当箇所のエラーメッセージを参考に修正し、再度pushを実行しましょう。
+※ Cloud9上でmasterブランチ以外をpushする場合は、以下のコマンドを実行します。
+<pre><code class="hljs ruby">$ git push heroku Cloud9上のブランチ名<span class="hljs-symbol">:master</span></code></pre>
+デプロイ完了後、Herokuのデータベースを初期化するために、heroku run rails db:migrate コマンドを実行します。ターミナルで以下のコマンドを実行しましょう。
+<pre><code class="hljs ruby">$ heroku run rails <span class="hljs-symbol">db:</span>migrate</code></pre>
+以上でHerokuにアクセスする準備が整いました。ブラウザで以下のURLにアクセスして、アプリケーションが公開されていることを確認しましょう。
+<pre><code class="hljs java">http:<span class="hljs-comment">//アプリケーション名.herokuapp.com</span></code></pre>
+アクセス例： アプリケーション名をtest-my-blogとした場合、以下のようになります。
+<pre><code class="hljs java">http:<span class="hljs-comment">//test-my-blog.herokuapp.com</span></code></pre>
+※ アクセスしてもエラーが表示されている場合、ターミナルで以下のようにheroku restartコマンドでHerokuアプリケーションを再起動後アクセスしなおしてみてください。
+<pre><code class="hljs ruby">$ heroku restart</code></pre>
+※ それでも改善しない場合、Cloud9上でもエラーになっている可能性がありますので、Cloud9で動作を確認してみましょう。
+</div>
+</div>

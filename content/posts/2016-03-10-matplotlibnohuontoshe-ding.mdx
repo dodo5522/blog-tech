@@ -1,0 +1,89 @@
+---
+title: "matplotlibを使って可視化したグラフの文字化け解消法。"
+description: "Excelで描けるようなグラフを、pythonで描くことができます。その機能を提供しているのがmatplotlibというパッケージ。Excelで描けるものをスク..."
+tags:
+  - "python"
+  - "プログラミング"
+  - "可視化"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-03-10T03:54:03.000Z
+author: takashi
+---
+
+
+Excelで描けるようなグラフを、pythonで描くことができます。
+その機能を提供しているのがmatplotlibというパッケージ。
+Excelで描けるものをスクリプト言語で描く意味は、主に自動化のためですかね…。
+日々更新される類のデータを定期的に取得してグラフ化し、その画像をメールで送信するのを自動化するような用途で使えます。
+ここでは例として、<a href="http://www.mext.go.jp/b_menu/shingi/kokuritu/005/gijiroku/06052921/005/002.htm">文部科学省が公表している国立私立大の授業料推移データ</a>を使います。
+以下のようにdata.csvファイルとして保存します。（vimで空白を,に置換する等、適当に整形してあります）
+<pre><code>年度,授業料（円）,入学料（円）,検定料（円）,授業料（円）,入学料（円）,検定料（円）,授業料（倍）,入学料（倍）,検定料（倍）
+昭和50年,36000,50000,5000,182677,95584,9647,5.1,1.9,1.9
+昭和51年,96000,50000,7500,221844,121888,11452,2.3,2.4,1.5
+昭和52年,96000,60000,7500,248066,135205,13084,2.6,2.3,1.7
+昭和53年,144000,60000,10000,286568,157019,14722,2,2.6,1.5
+...
+</code></pre>
+国立私立それぞれの授業料実データ部分をpythonで読み取り、リスト化して、ラベル設定や判例表示設定など調整し、最後にgraph.pngに書き出しています。
+<pre><code class="python">from matplotlib import pyplot
+with open("data.csv", "r", encoding="shift-jis") as fp:
+    x, xlabels = [], []
+    y1, y2 = [], []
+    for linenum, line in enumerate(fp):
+        if linenum is 0:
+            continue
+        x.append(linenum)
+        xlabels.append(line.split(",")[0])
+        y1.append(line.split(",")[1])
+        y2.append(line.split(",")[4])
+# x軸のラベル設定
+pyplot.xticks(x, xlabels, rotation=90)
+# x軸のラベル表示スペースを拡大
+pyplot.subplots_adjust(bottom=0.2)
+# cyanの実線で描画
+pyplot.plot(x, y1, 'c-', label="国立大学")
+# magendaの実線で描画
+pyplot.plot(x, y2, 'm-', label="私立大学")
+# grid, title, 凡例表示
+pyplot.title("国立大学と私立大学の授業料等の推移")
+pyplot.legend()
+pyplot.grid()
+#pyplot.show()
+pyplot.savefig("graph.png")
+</code></pre>
+その結果が以下の図です。
+<img src="https://farm6.staticflickr.com/5755/23508632942_794c8b078d_z_d.jpg" alt="" />
+いわゆる豆腐ですね…。これはmatplotlibが日本語フォントを持たないためです。
+ちょっと古い上、python2の情報ですが、<a href="http://blog.olgabotvinnik.com/blog/2012/11/15/2012-11-15-how-to-set-helvetica-as-the-default-sans-serif-font-in/">How to set Helvetica as the default sans-serif font in Matplotlib</a>でフォントの追加方法を解説しています。<sup id="fnref-1"><a href="#fn-1" class="jetpack-footnote">1</a></sup>
+システムから日本語対応したフォントを引っ張ってきてもいいんですが、手持ちのマックにはttfフォントが見当たらなかったので、<a href="http://ipafont.ipa.go.jp/old/ipafont/download.html#en">IPAフォント</a>を頂きました。
+ダウンロードしたzipファイルを解凍し、以下のようにコピーします。コピー先は環境に依るのでご注意を。
+<pre><code class="bash">$ cp ~/Downloads/IPAfont00303/*.ttf /usr/local/lib/python3.4/site-packages/matplotlib/mpl-data/fonts/ttf/
+</code></pre>
+設定ファイルをホーム下にコピーして、それを編集します。
+<pre><code class="bash">$ cp /usr/local/lib/python3.4/site-packages/matplotlib/mpl-data/matplotlibrc ~/.matplotlib/
+$ vi ~/.matplotlib/matplotlibrc
+</code></pre>
+font.familyにフォント名を設定します。
+ここで指定するのはフォントファイル名ではないのでご注意を。
+<code>open ipa.ttf</code>のようにして、使いたいフォント名を確認してから設定してください。
+<pre><code class="bash:matplotlibrc"># The font.size property is the default font size for text, given in pts.
+# 12pt is the standard value.
+#
+font.family         : IPAmincho
+</code></pre>
+キャッシュデータを削除します。
+<pre><code class="bash">$ rm ~/.matplotlib/fontList.py3k.cache
+</code></pre>
+これで、次回<code>import matplotlib</code>した時に、キャッシュデータが自動的に生成され、日本語表示が可能になります。
+先ほどのpythonスクリプトを再実行すると、以下のように豆腐が解消されているのがわかります。
+<img src="https://farm6.staticflickr.com/5703/23439509492_98fdb9472a_z_d.jpg" alt="" />
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn-1">
+matplotlib標準のフォントが美しくない！とご立腹の様子&#160;<a href="#fnref-1">&#8617;</a>
+</li>
+</ol>
+</div>

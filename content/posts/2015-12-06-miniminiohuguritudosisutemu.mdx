@@ -1,0 +1,47 @@
+---
+title: "スマホ充電用オフグリッドシステムを改良しました"
+description: "1500W家電が使えるオフグリッドシステムとは別に、我が家には去年の9月にわたしたち電力主催のワークショップで製作したミニミニ太陽光システムがあります。電気を自..."
+tags:
+  - "DIY"
+  - "オフグリッド"
+  - "電子工作"
+categories:
+  - hobby
+image: /images/software-developer.jpg
+date: 2015-12-06T06:17:54.000Z
+author: takashi
+---
+
+
+1500W家電が使えるオフグリッドシステムとは別に、我が家には<a href="http://greenz.jp/2014/08/11/wataden-ws-903/">去年の9月にわたしたち電力主催のワークショップで製作したミニミニ太陽光システム</a>があります。電気を自給できる感動を味わった初の試作機。
+<img src="https://farm4.staticflickr.com/3668/20241073180_ef015af5a3_z_d.jpg" alt="" />
+上の写真を見てわかる通り、扱いがぞんざい過ぎたので、以下のように組み直しました。
+<h1>USB充電器兼ノートPC電源の全体像</h1>
+<img src="https://farm6.staticflickr.com/5622/23231012056_74fbc1b2f5_z_d.jpg" alt="" />
+棚は近くのホームセンターで売ってる木材を適当に組み立て、適等に穴を開けて、各パーツをねじ止めしてあります。パネルは小型の20Wで格安5000円強。
+バッテリーも小型の12V12Ah(144Wh)で、格安4000円弱。バイク用かな？
+チャージコントローラは日本企業、電綾製のPWM方式コントローラ（詳しくは<a href="http://blog.rinka-blossom.com/tai-yang-guang-fa-dian-sisutemunoyao-tiyazikontororawoxuan-bu/">こちら</a>）。これも小型でしかも安い。3000円強。パネルの発電力が低いので、MPPT方式にするまでもないと、割り切りました。
+<h1>400W正弦波インバータ</h1>
+<img src="https://farm1.staticflickr.com/717/22799631667_2c518f0f7a_z_d.jpg" alt="" />
+天気のいい日はノートPC電源としても活用できるように、<a href="http://www.amazon.co.jp/%E5%A4%A7%E6%A9%8B%E7%94%A3%E6%A5%AD-BAL-3WAY%E6%AD%A3%E5%BC%A6%E6%B3%A2%E3%82%A4%E3%83%B3%E3%83%90%E3%83%BC%E3%82%BF%E3%83%BC-400W-No1787/dp/B00JHVG22S/ref=sr_1_cc_1?s=aps&amp;ie=UTF8&amp;qid=1448317169&amp;sr=1-1-catcorr&amp;keywords=400W+%E6%AD%A3%E5%BC%A6%E6%B3%A2+%E3%82%A4%E3%83%B3%E3%83%90%E3%83%BC%E3%82%BF">安めの400W正弦波インバータ</a>を付けました。8000円ちょい。バッテリー直結です。
+DC電源としてスマホに給電した方が効率いいので、AC電源としてはあまり使いませんが…
+<h1>DC（直流）降圧回路</h1>
+<img src="https://farm6.staticflickr.com/5811/22799590937_f4e7becc43_z_d.jpg" alt="" />
+USB端子付きDC降圧回路は<a href="https://www.amazon.co.jp/gp/aw/d/B00ENE55SQ/ref=ya_aw_oh_pii?ie=UTF8&amp;psc=1#">これ</a>にしました。600円強。
+入力電圧12-40Vに対応しているので、将来的にバッテリー電圧を上げても余裕で対応できます。その横にあるコンセントは、使いやすいように400Wインバータから引っぱってきました。第二種電気工事士技能試験練習部品の余り。
+DC降圧回路は車のシガーソケット用USB端子を分解してもいいんですが、あまり美しくないので…。
+これなら、最大出力電流8AなのでiPadの充電も余裕です。
+<h1>電圧計</h1>
+バッテリ電圧は大体11V以上をキープするようにしましょう。
+都度テスターで測るのはめんどくさいので、<a href="http://www.amazon.co.jp/gp/product/B00B1Y0E2I/ref=oh_aui_detailpage_o02_s00?ie=UTF8&amp;psc=1">車・バイク用の小型デジタル電圧計</a>を取り付けました。約400円。
+<img src="https://farm1.staticflickr.com/681/23266822140_c10dba53a9_z_d.jpg" alt="" />
+<h1>まとめ</h1>
+AC電源不要なら以下の構成で十分です。部品代は合計13000円程度で、各種ケーブルや台を合わせると、高くついても20000円に収まるかな。
+<ul>
+<li>20W太陽光パネル</li>
+<li>PWM方式チャージコントローラ</li>
+<li>12Vバッテリー</li>
+<li>小型デジタル電圧計</li>
+<li>DC降圧回路（USB端子付き）</li>
+</ul>
+太陽光さえあれば無料で電力が得られるのは、使ってて気持ちがいいです。ぜひお試しあれ。

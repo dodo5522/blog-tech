@@ -1,0 +1,37 @@
+---
+title: "TypeScriptコード補完プラグインtsuquyomi。シンタックスチェッカーsyntasticとの連携がとてもシンプルで良い。。"
+description: "とりあえずシンタックスハイライトします。https://github.com/leafgarland/typescript-vimNeoBundle 'leaf..."
+tags:
+  - "TypeScript"
+  - "vim"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2017-07-10T22:07:44.000Z
+author: takashi
+---
+
+
+とりあえずシンタックスハイライトします。
+https://github.com/leafgarland/typescript-vim
+NeoBundle 'leafgarland/typescript-vim'
+コード補完もしたくなります。
+https://github.com/clausreinke/typescript-tools
+NeoBundle 'Quramy/tsuquyomi'
+以下のメッセージが。
+duplicateしていないリポジトリどこやねん。
+https://github.com/clausreinke/typescript-tools/blob/master/ftplugin/typescript_tss.vim#L2
+```vim
+echomsg "typescript-tools vim plugin has moved to separate repo:"
+```
+ほっといても使えるけど鬱陶しい。
+後回しにしてsyntasticとの連携を調べる。
+https://github.com/vim-syntastic/
+&gt; 4.15. Q. What happened to the tsc checker?
+&gt;
+&gt; A. It didn't meet people's expectations and it has been removed. The plugin **tsuquyomi** comes packaged with a checker for TypeScript. If you install this plugin the checker should be picked up automatically by syntastic.
+ほう。
+勝手に連携してくれるとな。
+https://github.com/Quramy/tsuquyomi/
+こんな設定もあるらしい。
+http://pospome.hatenablog.com/entry/20150630/1435631383

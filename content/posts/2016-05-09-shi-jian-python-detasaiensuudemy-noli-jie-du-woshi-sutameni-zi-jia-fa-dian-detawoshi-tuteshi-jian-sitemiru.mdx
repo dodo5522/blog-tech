@@ -1,0 +1,175 @@
+---
+title: "Keen IOに蓄積した自家発電量データをPythonで可視化する: ピボットテーブルの生成"
+description: "Udemyの実践 Python データサイエンス復習を兼ねて、自家発電量データからピボットテーブルを生成します。ピボットテーブルとは？ピボットテーブルの使い方ピ..."
+tags:
+  - "keenio"
+  - "python"
+  - "プログラミング"
+  - "可視化"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-05-09T05:11:43.000Z
+author: takashi
+---
+
+
+Udemyの<a href="https://www.udemy.com/python-jp/learn/v4/overview">実践 Python データサイエンス</a>復習を兼ねて、自家発電量データからピボットテーブルを生成します。
+ピボットテーブルとは？
+<ul>
+<li><a href="http://allabout.co.jp/gm/gc/297727/">ピボットテーブルの使い方</a></li>
+</ul>
+<pre><code>ピボットテーブルは、Excelで「クロス集計」を行う機能です。
+クロス集計は、2つ以上の項目についてデータの集計を行う集計方法です。
+</code></pre>
+<ul>
+<li><a href="http://hamachan.info/excel/piboto.html">初心者のためのExcel講座</a></li>
+</ul>
+<pre><code>一つのデータをいろいろな視点から統計をとったり、分析したりする場合に使います。
+元になる表は、領収書の項目をただ横並びに入力したようなものが分かりやすいと思います。
+</code></pre>
+横並びに入力したような、それなりの量のデータを自前で用意するには、<a href="http://blog.rinka-blossom.com/hems-like-system/">Keen IOに蓄積した１年分の自家発電量データ</a>しかないので、これを使います。なぜ<strong>横並びに入力したような</strong>データが必要なのかは後で触れます。
+また、Keen IOとは以下のようなサービスです。
+<ul>
+<li>REST API経由でデータを送信することができ、オンラインのデータベースに蓄積が可能</li>
+<li>データを可視化してWeb経由で参照するためのダッシュボードサンプルコードを無料公開しており、カスタマイズ可能</li>
+<li>月当たりのデータ送信量が少なければ全て無料で使用可能、有料の<a href="https://keen.io/plans/keen-pro/">Pro版</a>ならデータ解析もしてくれるらしい</li>
+</ul>
+<img src="https://farm8.staticflickr.com/7054/26820779775_57baefce60_z_d.jpg" alt="keenio home" />
+まずはKeen IOからデータをロードするための下準備。project_id、read_key、master_keyには、Keen IOにログイン後、プロジェクトのホーム画面で「Show API Keys」ボタンを押して表示されるキー値を入れます。
+<pre><code class="python">from keen import KeenClient
+from pandas import DataFrame, Series
+import pandas as pd
+import seaborn as sns
+client = KeenClient(
+    project_id="5548xxxx",
+    read_key="8c33yyyy",
+    master_key="3855zzzz")
+</code></pre>
+Keen IOに溜めた生データを３日分取得します。this_n_daysオプションで任意の日数を指定できます。他にもprevious_n_weeksとか色々あるんですが、詳細はKeen IOのヘルプを参照ください。
+<pre><code class="python">In [25]: data = client.extraction(
+    event_collection="offgrid", timeframe="this_3_days")
+In [26]: data[:2]
+Out[26]:
+[{'group': 'Array',
+  'keen': {'created_at': '2016-05-03T00:01:40.470Z',
+   'id': '5727ea6436bca46681f102da',
+   'timestamp': '2016-05-03T00:01:38.983Z'},
+  'label': 'Array Current',
+  'source': 'solar',
+  'unit': 'A',
+  'value': 1.923828125},
+ {'group': 'Array',
+  'keen': {'created_at': '2016-05-03T00:01:40.471Z',
+   'id': '5727ea6436bca46681f102db',
+   'timestamp': '2016-05-03T00:01:38.983Z'},
+  'label': 'Array Voltage',
+  'source': 'solar',
+  'unit': 'V',
+  'value': 53.81103515625}]
+In [27]: type(data)
+Out[27]: list
+</code></pre>
+扱いやすいように、listをDataFrameにします。
+<pre><code class="python">In [28]: data = DataFrame(data)
+In [13]: data.head(2)
+Out[13]:
+   group                                               keen          label  ?
+0  Array  {'timestamp': '2016-05-06T00:03:06.020Z', 'id'...  Array Current
+1  Array  {'timestamp': '2016-05-06T00:03:06.020Z', 'id'...  Array Voltage
+  source unit      value
+0  solar    A   1.994629
+1  solar    V  54.019775
+In [14]: data.info()
+&lt;class 'pandas.core.frame.DataFrame'&gt;
+Int64Index: 3192 entries, 0 to 3191
+Data columns (total 6 columns):
+group     3192 non-null object
+keen      3192 non-null object
+label     3192 non-null object
+source    3192 non-null object
+unit      3192 non-null object
+value     3192 non-null float64
+dtypes: float64(1), object(5)
+memory usage: 174.6+ KB
+</code></pre>
+timestampが辞書メンバの入れ子になっていて扱いづらいので、取り出します。
+<pre><code class="python">In [19]: data["timestamp"] = Series([k["timestamp"] for k in data.keen])
+In [20]: data = data.drop("keen", axis=1)
+In [21]: data.head(2)
+Out[21]:
+   group          label source unit      value                 timestamp
+0  Array  Array Current  solar    A   1.994629  2016-05-06T00:03:06.020Z
+1  Array  Array Voltage  solar    V  54.019775  2016-05-06T00:03:06.020Z
+</code></pre>
+下準備が終わったので、これからピボットテーブルを生成しますが、その前に…。
+ピボットテーブルを生成するpivot関数の仕様は以下のようになっています。
+<pre><code class="python">Signature: data.pivot(index=None, columns=None, values=None)
+Docstring:
+Reshape data (produce a "pivot" table) based on column values. Uses
+unique values from index / columns to form axes and return either
+DataFrame or Panel, depending on whether you request a single value
+column (DataFrame) or all columns (Panel)
+Parameters
+----------
+index : string or object, optional
+    Column name to use to make new frame's index. If None, uses
+    existing index.
+columns : string or object
+    Column name to use to make new frame's columns
+values : string or object, optional
+    Column name to use for populating new frame's values
+</code></pre>
+データのどの列をindex、columns、valuesとして割り振るかをこのpivot関数の引数に指定してテーブルを生成するので、冒頭で触れた<strong>横並びに入力したような</strong>データの方が都合が良い（というより、そうでないデータは横並びに整形し直す必要がある）んですね。
+ということで、keenioから取得したデータのtimestamp列をindex（グラフ描画するときのX軸）、label列をcolumns（hueに相当する）、value列をvaluesとして指定し、ピボットテーブルを生成します。
+<pre><code class="python">In [23]: data_p = data.pivot("timestamp", "label", "value")
+</code></pre>
+data.info()とdata_p.info()の結果を見比べてみると…
+dataの方は3192 entriesのindexがあったのに対し、data_pは399 entriesになっています。
+<pre><code class="python">In [25]: data_p.info()
+&lt;class 'pandas.core.frame.DataFrame'&gt;
+Index: 399 entries, 2016-05-06T00:03:06.020Z to 2016-05-08T21:24:28.943Z
+Data columns (total 8 columns):
+Amp Hours                399 non-null float64
+Array Current            399 non-null float64
+Array Voltage            399 non-null float64
+Battery Voltage          399 non-null float64
+Charge Current           399 non-null float64
+Heat Sink Temperature    399 non-null float64
+Kilowatt Hours           399 non-null float64
+Target Voltage           399 non-null float64
+dtypes: float64(8)
+memory usage: 28.1+ KB
+</code></pre>
+(total 8 columns)とある通り、data.labelは以下の８種類あり、これをcolumnsとしてピボットテーブルを生成したので、3192/8=399ということですね。
+<pre><code class="python">In [28]: data.label.unique()
+Out[28]:
+array(['Array Current', 'Array Voltage', 'Heat Sink Temperature',
+       'Charge Current', 'Amp Hours', 'Kilowatt Hours', 'Target Voltage',
+       'Battery Voltage'], dtype=object)
+</code></pre>
+data_pをダンプすると、こんな感じ。
+<pre><code class="python">In [24]: data_p.head(3)
+Out[24]:
+label                     Amp Hours  Array Current  Array Voltage  ?
+timestamp
+2016-05-06T00:03:06.020Z    23811.1       1.994629      54.019775
+2016-05-06T00:13:06.221Z    23811.8       1.735840      53.349609
+2016-05-06T00:23:06.417Z    23812.6       2.321777      53.986816
+label                     Battery Voltage  Charge Current  ?
+timestamp
+2016-05-06T00:03:06.020Z        24.691772        4.606934
+2016-05-06T00:13:06.221Z        24.697266        4.064941
+2016-05-06T00:23:06.417Z        24.686279        5.280762
+label                     Heat Sink Temperature  Kilowatt Hours  ?
+timestamp
+2016-05-06T00:03:06.020Z                     29             382
+2016-05-06T00:13:06.221Z                     30             382
+2016-05-06T00:23:06.417Z                     30             382
+label                     Target Voltage
+timestamp
+2016-05-06T00:03:06.020Z       28.597412
+2016-05-06T00:13:06.221Z       28.597412
+2016-05-06T00:23:06.417Z       28.597412
+</code></pre>
+データをグラフにプロットすると…　次回に続く。

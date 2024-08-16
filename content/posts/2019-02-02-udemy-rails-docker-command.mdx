@@ -1,0 +1,123 @@
+---
+title: "フルスタックエンジニアが教える即戦力Railsエンジニア養成講座 @Udemy 学習記録: docker/docker-composeコマンドの使い方"
+description: "課題rubyも知らないのに、仕事でrails使うことになりました。やばい。解決策rubyもrailsもど素人な自分を助けてもらおうと、今回もudemyにお世話に..."
+tags:
+  - "docker"
+  - "rails"
+  - "ruby"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2019-02-02T03:28:59.000Z
+author: takashi
+---
+
+
+<h1>課題</h1>
+rubyも知らないのに、仕事でrails使うことになりました。やばい。
+<h1>解決策</h1>
+rubyもrailsもど素人な自分を助けてもらおうと、今回もudemyにお世話になってます。
+<a href="https://www.udemy.com/share/100eFCAEQdcV1VQXo=/">フルスタックエンジニアが教える 即戦力Railsエンジニア養成講座</a>
+個人的には<strong>フルスタック</strong>というワードが既に死語ではないかと感じていたりするんですが、内容はとても良いです。ruby自体素人の自分にとっては、rubyのシンタックス解説が最小限含まれてるのは有難い‥。知っている人にとっては冗長だと思いますが、そんときは飛ばせば良いだけですし。
+後でもう少し整理するのだけど、以下メモ書き。rubyだけでなくdockerも素人ということがこのメモ書きからバレてしまうけど。
+<h1>docker exec</h1>
+railsアプリを動かすためのdockerコンテナを起動した後、
+<pre class="lang:sh decode:true ">$ docker-compose up -d</pre>
+起動したコンテナに後からbashログインしたいことが度々ある。そもそも仮想マシンコンテナ内部がどんな構成になってんのか覗いてみたいと思いますよね（大体普通にFHSに則ったdirectory treeを眺めるだけですが）。
+とりあえず以下コマンドで、起動済みコンテナの一覧を得る。webとdbのコンテナが起動していることが分かる。
+<pre class="lang:sh decode:true">$ docker ps
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                    NAMES
+64dfb07beafe        5d247124df8b        "bundle exec rails s…"   17 minutes ago      Up 17 minutes       0.0.0.0:3000-&gt;3000/tcp   rails_web_1
+be255fff550f        mysql:5.7           "docker-entrypoint.s…"   17 minutes ago      Up 17 minutes       3306/tcp, 33060/tcp      rails_db_1</pre>
+ちょっとdbコンテナのmysqlにログインしてテーブルの中身を覗いて見たい‥と思ったときには以下コマンドで、コンテナにbashログインした後、普通にmysqlを叩く。
+<pre class="lang:mysql decode:true">$ docker exec -it rails_db_1 /bin/bash
+root@be255fff550f:/#
+root@be255fff550f:/#　mysql -u root -p
+Enter password:
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 8
+Server version: 5.7.24 MySQL Community Server (GPL)
+mysql&gt; show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| app_development    |
+| app_test           |
+| mysql              |
+| performance_schema |
+| sys                |
++--------------------+
+6 rows in set (0.01 sec)
+mysql&gt; use app_development
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+Database changed
+mysql&gt; show tables;
++---------------------------+
+| Tables_in_app_development |
++---------------------------+
+| ar_internal_metadata      |
+| boards                    |
+| schema_migrations         |
++---------------------------+
+3 rows in set (0.00 sec)</pre>
+describeとかしてみると、ちゃんとrailsのORマッパーが働いてくれそうな気配を感じることができる。
+<pre class="lang:mysql decode:true">mysql&gt; describe boards;
++------------+--------------+------+-----+---------+----------------+
+| Field      | Type         | Null | Key | Default | Extra          |
++------------+--------------+------+-----+---------+----------------+
+| id         | int(11)      | NO   | PRI | NULL    | auto_increment |
+| name       | varchar(255) | YES  |     | NULL    |                |
+| title      | varchar(255) | YES  |     | NULL    |                |
+| body       | text         | YES  |     | NULL    |                |
+| created_at | datetime     | NO   |     | NULL    |                |
+| updated_at | datetime     | NO   |     | NULL    |                |
++------------+--------------+------+-----+---------+----------------+
+6 rows in set (0.01 sec)</pre>
+コンテナ起動後にrailsコンソールを叩くこともできる。
+<pre class="lang:sh decode:true  ">$ docker exec -it rails_web_1 rails c
+Running via Spring preloader in process 50
+Loading development environment (Rails 5.0.0.1)
+irb(main):001:0&gt;</pre>
+<h1>docker attach</h1>
+起動済みコンテナに後からattachすることもできる。
+以下コマンドで起動済みコンテナの一覧を得た後、
+<pre class="lang:sh decode:true">$ docker ps
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                    NAMES
+64dfb07beafe        5d247124df8b        "bundle exec rails s…"   17 minutes ago      Up 17 minutes       0.0.0.0:3000-&gt;3000/tcp   rails_web_1
+be255fff550f        mysql:5.7           "docker-entrypoint.s…"   17 minutes ago      Up 17 minutes       3306/tcp, 33060/tcp      rails_db_1</pre>
+attachしてみる。
+<pre class="lang:sh decode:true ">$ docker attach rails_web_1</pre>
+作成中のrailsアプリで何か叩くと反応する。
+<pre class="lang:default decode:true ">Started POST "/boards" for 172.23.0.1 at 2019-02-02 17:43:54 +0000
+Cannot render console from 172.23.0.1! Allowed networks: 127.0.0.1, ::1, 127.0.0.0/127.255.255.255
+  ActiveRecord::SchemaMigration Load (15.5ms)  SELECT `schema_migrations`.* FROM `schema_migrations`
+Processing by BoardsController#create as HTML
+  Parameters: {"utf8"=&gt;"✓", "authenticity_token"=&gt;"YdVLdgI6BHsOB3YPJhYR9bz8OnSJacTP57J5eWvZYorXBPy6LyHulObUkO41ox8rSMOEaCX31h8Yrfk2U0x25A==", "board"=&gt;{"name"=&gt;"takashi", "title"=&gt;"hei", "body"=&gt;"hoi\r\n"}}
+   (0.5ms)  BEGIN
+  SQL (29.1ms)  INSERT INTO `boards` (`name`, `title`, `body`, `created_at`, `updated_at`) VALUES ('takashi', 'hei', 'hoi\r\n', '2019-02-02 17:43:56', '2019-02-02 17:43:56')
+   (4.8ms)  COMMIT
+From: /app/app/controllers/boards_controller.rb @ line 12 BoardsController#create:</pre>
+<h1>docker attachしたコンテナから安全に抜ける</h1>
+困ったのがこれ。attachした後、そのコンテナから抜けたいだけなのに、CTRL-cとかするとコンテナ自体が死んでしまう。
+<pre class="lang:sh decode:true">read escape sequence
+$ docker ps
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                    NAMES
+4d5ff643e471        mysql:5.7           "docker-entrypoint.s…"   19 minutes ago      Up 19 minutes       3306/tcp, 33060/tcp      rails_db_1</pre>
+上は、attachしたrails_web_1コンテナから抜けたかっただけなのに殺してしまった図。
+<a href="https://docs.docker.com/engine/reference/commandline/attach/">dockerのヘルプ</a>を見ると、仕様通りの動作みたい。コンテナに対してSIGKILL送っちゃうんだからそりゃ死ぬよね。
+<blockquote>To stop a container, use <code class="highlighter-rouge">CTRL-c</code>. This key sequence sends <code class="highlighter-rouge">SIGKILL</code> to the container. If <code class="highlighter-rouge">--sig-proxy</code> is true (the default),<code class="highlighter-rouge">CTRL-c</code> sends a <code class="highlighter-rouge">SIGINT</code> to the container.</blockquote>
+もちろん、コンテナを殺さずに抜ける方法も用意されてる。
+<blockquote>You can detach from a container and leave it running using the<code class="highlighter-rouge">CTRL-p CTRL-q</code> key sequence.</blockquote>
+試してみよう。rails_web_1コンテナにattachした後、CTRL-p CTRL-qを入力する。
+<pre class="lang:sh decode:true">read escape sequence
+$ docker ps
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                    NAMES
+0b2a521d54d4        rails_web           "bundle exec rails s…"   19 minutes ago      Up 19 minutes       0.0.0.0:3000-&gt;3000/tcp   rails_web_1
+4d5ff643e471        mysql:5.7           "docker-entrypoint.s…"   19 minutes ago      Up 19 minutes       3306/tcp, 33060/tcp      rails_db_1</pre>
+ちゃんとrails_web_1コンテナが生きてる。やった。
+<h1>まとめ</h1>
+シンタックスが嫌いだからと避けていたruby。
+いつ何時必要になるか分からないので、喰わず嫌いせずに少しずつでも勉強してれば良かったな。
+という反省から、同時進行でGoもやってたりします。きつい。
