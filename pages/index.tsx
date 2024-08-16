@@ -51,7 +51,7 @@ const Home: React.FC<HomePageProps> = ({ posts }): ReactElement => (
 );
 
 export const getStaticProps = async (): Promise<{ props: HomePageProps }> => {
-  const postsList = await client.queries.postConnection();
+  const postsList = await client.queries.postConnection({sort: "date"});
   return {
     props: {
       posts: postsList.data.postConnection.edges?.map((p) => ({
