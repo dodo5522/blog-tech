@@ -1,0 +1,43 @@
+---
+title: "副業初仕事、Canon製レーザープリンタをプリントサーバ化する。"
+description: "とある動物病院の検査室に設置されている、USB接続のCanon製レーザープリンタをプリントサーバ化したい、WindowsとmacOS双方からプリントしたい、とい..."
+tags:
+categories:
+  - programming
+  - work
+  - hobby
+image: /images/software-developer.jpg
+date: 2017-09-03T23:18:47.000Z
+author: takashi
+---
+
+
+
+とある動物病院の検査室に設置されている、USB接続のCanon製レーザープリンタをプリントサーバ化したい、WindowsとmacOS双方からプリントしたい、というご要望。
+検査機制御用PCとプリンタが微妙に離れた位置に設置されており、動線を阻害してしまう。
+依頼元の動物病院院長、すでにこんな製品を購入済み。準備早…。
+<blockquote class="twitter-tweet" data-lang="ja"><p lang="ja" dir="ltr">【対応評価情報更新】C-6600GB、C-6700WGの対応機種に対応OSが追加されました。<br />機種: Canon LBP6300、imageRUNNER ADVANCE C3320F他<a href="https://t.co/aT9Sfx5C9P">https://t.co/aT9Sfx5C9P</a> <a href="https://t.co/yaqvCVW4Qv">pic.twitter.com/yaqvCVW4Qv</a></p>&mdash; サイレックス・テクノロジー株式会社 (@silex_marcom) <a href="https://twitter.com/silex_marcom/status/718327867822706688">2016年4月8日</a></blockquote>
+
+## C-6600GB 提供ツール
+なぜかドライバCDやマニュアルを紛失していたので、[製品公式ページ](http://www.silex.jp/support/old/c6600gb.html)を辿って[ドライバ、ツール、マニュアル](http://www.silex.jp/sys/download_list1.html?product_category=6&amp;product_name=326&amp;button=%E8%A1%A8%E7%A4%BA)を入手しました。
+この製品に用意されたドライバやツールを、自分の目的に合わせてインストールしないといけません。
+提供ツールは２種類。
+1. Device Server Setup
+2. SX Virtual Link
+### Device Server Setup
+手動IP設定においてC-6800GBのIPアドレスを設定するためのツール。
+今回はWiFiルータがDHCPサーバを兼ねるので不要。
+### SX Virtual Link
+Windows/macOS混在環境において必須。SXはサイレックスの略称かな。
+各OS用ツールが存在するので各々インストールする必要があります。
+## 動作確認
+試しに自前のmacOS/Windows10を入れたMBAにツールをインストールし、環境設定してみると…
+* Windows/macOS共にネットワーク越しにUSB機器（マウス、マスストレージ）を認識、使用可能であることを確認
+* USB接続のCanon製プリンタは手持ちがなく、未確認
+*Virtual Link* という名前のツールが示す通り、USBポートを無線ネットワーク化するためのガジェットですね。
+使用環境がWindowsのみならStandard TCP/IPポート経由で印刷可能なプリントサーバにすることも可能で、便利なんですが…
+今回はmacOSからも印刷したいという要望なので、しょうがない。
+## 設置作業
+* 使用する全てのマシンにSX Virtual Linkとプリンタドライバをインストール
+* SX Virtual Linkツールの使い方レクチャー
+といったところで、およそ2時間程度で無事稼働、作業完了しました。

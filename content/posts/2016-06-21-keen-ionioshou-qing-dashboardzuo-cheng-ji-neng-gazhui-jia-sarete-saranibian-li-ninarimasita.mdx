@@ -1,0 +1,54 @@
+---
+title: "Web上で簡単にデータを可視化できるサービス、Keen IO。"
+description: "突然Keen IOからテンション高めのメールが届きました。  Hi Takashi, we have some big news!  We’re excited..."
+tags:
+  - "keenio"
+  - "python"
+  - "プログラミング"
+  - "可視化"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-06-21T16:23:53.000Z
+author: takashi
+---
+
+
+突然Keen IOからテンション高めのメールが届きました。
+<blockquote>
+  Hi Takashi, we have some big news!
+  We’re excited to announce Keen Dashboards Beta release, a brand new tool that will enable anyone at your company to create custom dashboards with just a few clicks (or taps!)
+</blockquote>
+Keen IOは、クラウド上のデータベースを提供してくれる上、溜め込んだデータを簡単（？）に可視化してくれるサービス。
+REST API経由で指定期間の平均値や最大最小値を取得できたりと結構高機能で、使いきれないほど。
+主にWebサイトのアクセス解析を自分流にカスタムしたい人向けっぽい感じです。
+更に、<a href="https://github.com/keen/dashboards">Keen IO提供のサンプルdashboard HTML5ソースコード</a>をちょっと弄ってHerokuなどのPaasにpushすれば…　こんな感じのdashboardの完成です。
+<img src="https://farm2.staticflickr.com/1577/25056091411_6d9ebc0c5a_z_d.jpg" alt="" />
+ちなみにこれは、家の発電状況監視用dashboard。
+自分流にカスタムできるのはいいんですが、設置するまでのハードルはちょい高め。
+ユーザから要望があったんですかね？ just a few clicks (or taps!)でdashboardを設置できるようになったようです。
+<blockquote class="twitter-tweet" data-lang="ja"><p lang="ja" dir="ltr">サンプルを自分でカスタムして適当なPaaSにpushしないと出来なかったdashbaordが、数ステップ画面をクリックするだけで簡単に出来上がる！らしい。<br />Announcing: Keen Dashboards <a href="https://t.co/hkf7YV78gA">https://t.co/hkf7YV78gA</a></p>&mdash; takashi ando (@takashi7ando) <a href="https://twitter.com/takashi7ando/status/745274963079233536">2016年6月21日</a></blockquote>
+
+今はBetaで無料っぽいけど、正式版では有料オプションになるのかな…？
+使えるうちに使っとこ。
+<h1>新dashboardの作り方</h1>
+まずはログイン。アカウント持ってない人はこれを機に作ってくださいね。
+<img src="https://farm8.staticflickr.com/7746/27540427550_3e5767c0a9_z_d.jpg" alt="" />
+作成済みのプロジェクトを選びます。offgrid home projectしかないんで、迷うことなくクリック。
+<img src="https://farm8.staticflickr.com/7271/27784132296_89b2abb248_z_d.jpg" alt="" />
+おお、以前はなかった（はずの）Dashboardタブが右上に追加されてる。クリック。
+<img src="https://farm8.staticflickr.com/7404/27207195933_fce6658698_z_d.jpg" alt="" />
+これはすごい。サンプルを自分でカスタムするときは一生懸命CSSいじくったのが、本当にマウスクリックだけでdashboardが作れちゃう。
+レイアウトもプルダウンから選択すればいい。感激。
+<img src="https://farm8.staticflickr.com/7583/27540427630_8806780941_z_d.jpg" alt="" />
+あるデータ列を別のグラフとして追加もできる。
+<img src="https://farm8.staticflickr.com/7638/27784132396_b8835c116b_z_d.jpg" alt="" />
+で、何も問題なく完成するかと思ったら、そううまくはいかなかった。トラブル発生。
+あるはずのデータ列が空で選択できないという致命的なトラブルが。
+<img src="https://farm8.staticflickr.com/7698/27207196013_ba2a8ea30d_z_d.jpg" alt="" />
+どうやってもデータ列選択プルダウンメニューが空なので、どうしようもなく、テンション高めな通知くれたDustinに「どうすりゃええの？」と画像付きで質問投げました。回答待ちです。
+<h1>まとめ</h1>
+従来は自分でgithubからコード落としてカスタマイズしてPaaSにアップしないと使えなかったdashboardが、マウスクリック数回でできるようになりました。
+以前とは比較にならないほどハードル下がりましたね。
+ただ、結局新dashboardの完成品を目にすることはできてませんが… Dustinの回答に期待です。
+続く。

@@ -1,0 +1,73 @@
+---
+title: "OpenCV3 on Python3 on OSX 環境整備に思いのほか手間取った上、結局うまくいかない件。"
+description: "Udemyのデータサイエンス講習がもうすぐ終わりそうなので、次の教材を探しました。パラパラ見ていると、前から気になっていたOpenCVを使った画像処理レシピ発見..."
+tags:
+  - "OpenCV"
+  - "python"
+  - "プログラミング"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-05-20T18:30:04.000Z
+author: takashi
+---
+
+
+Udemyのデータサイエンス講習がもうすぐ終わりそうなので、次の教材を探しました。
+
+パラパラ見ていると、前から気になっていたOpenCVを使った画像処理レシピ発見。
+画像認識で機械学習を使った解説が盛り込まれている模様。
+ということで、まずはOpenCVをOSXにインストールしておこう…　今更Python2に戻りたくないからPython3で…　なんて腰を上げたのが運の尽き。ハマるハマる。
+<h1>OpenCVインストール手順</h1>
+基本的に、こちらのブログで紹介されている手順でOKなはず。
+<ul>
+<li><a href="https://blog.ymyzk.com/2015/07/os-x-opencv-3-python-2-3/">Mac OS X で OpenCV 3 + Python 2/3 の開発環境を整備する方法</a></li>
+</ul>
+だったのに、自分の場合、<a href="http://blog.rinka-blossom.com/anyenvhuan-jing-gou-zhu-de%08hamatuta/">Python環境にanyenvを使っているからか</a>、こんなスマートにいきませんでした…。
+<h1>OpenCVインストール手順（ハマり過程）</h1>
+まずはシステムにインストール済みのnumpyをアンインストール。
+<pre><code class="bash">$ brew unlink numpy
+$ brew uninstall numpy
+</code></pre>
+python3で使うことを明示しつつ、numpyを再インストールして、ツール類を/usr/local下にリンクする。
+<pre><code class="bash">$ pyenv global 3.5.1
+$ brew install numpy --with-python3
+$ brew link numpy
+</code></pre>
+と、ゴミが残っていたのか、既存ファイルを上書きするオプションつけなさいと怒られるので言うとおりにする。
+<pre><code class="bash">$ rm '/usr/local/bin/f2py'
+$ brew link --overwite numpy
+</code></pre>
+いよいよOpenCVのインストール。ここでもpython3で使うことを明示しておく。
+<pre><code class="bash">$ brew install opencv3 --with-python3
+</code></pre>
+と、<strong>setuptoolsをimportできませんエラー</strong>により、早々にコケる。なぜに…？
+この辺りはanyenv環境のせいな気がする。
+取り急ぎ、Python2系でインストールしてみる。
+<pre><code class="bash">$ pyenv global 2.7.11
+$ brew install numpy --with-python3
+$ brew link --overwrite numpy
+$ brew install opencv3 --with-python3
+</code></pre>
+今度はうまくビルドできた。
+以下のように、anyenv下のpyenv下に、cv2.soのシンボリックリンクを作成して、python2/3両方からimport cv2できるようにする。
+<pre><code class="bash">~ $ ln -fs /usr/local/Cellar/opencv3/3.1.0_3/lib/python2.7/site-packages/cv2.so ~/.anyenv/envs/pyenv/versions/２．７．１１/lib/python２．７/site-packages/
+~ $ ls -al ~/.anyenv/envs/pyenv/versions/2.7.11/lib/python2.7/site-packages/cv2.so
+lrwxr-xr-x  1 takashi  staff  68  5 15 10:16 /Users/takashi/.anyenv/envs/pyenv/versions/2.7.11/lib/python2.7/site-packages/cv2.so -&gt; /usr/local/Cellar/opencv3/3.1.0_3/lib/python2.7/site-packages/cv2.so
+~ $ ln -fs /usr/local/Cellar/opencv3/3.1.0_3/lib/python2.7/site-packages/cv2.so ~/.anyenv/envs/pyenv/versions/3.5.1/lib/python3.5/site-packages/
+~ $ ls -al ~/.anyenv/envs/pyenv/versions/3.5.1/lib/python3.5/site-packages/cv2.so
+lrwxr-xr-x  1 takashi  staff  68  5 15 11:04 /Users/takashi/.anyenv/envs/pyenv/versions/3.5.1/lib/python3.5/site-packages/cv2.so -&gt; /usr/local/Cellar/opencv3/3.1.0_3/lib/python2.7/site-packages/cv2.so
+</code></pre>
+python2では無事cv2をインポートできて、顔認識できた！これは感動。
+ところが、結局python3でのimport エラーは解決できず。なんでだー。
+<pre><code class="python">In [1]: import cv2
+---------------------------------------------------------------------------
+ImportError                               Traceback (most recent call last)
+&lt;ipython-input-1-72fbbcfe2587&gt; in &lt;module&gt;()
+----&gt; 1 import cv2
+ImportError: dlopen(/Users/takashi/.anyenv/envs/pyenv/versions/3.5.1/lib/python3.5/site-packages/cv2.so, 2): Symbol not found: _PyCObject_Type
+  Referenced from: /Users/takashi/.anyenv/envs/pyenv/versions/3.5.1/lib/python3.5/site-packages/cv2.so
+  Expected in: flat namespace
+ in /Users/takashi/.anyenv/envs/pyenv/versions/3.5.1/lib/python3.5/site-packages/cv2.so
+</code></pre>
+とりあえず、IPythonデータサイエンスクックブックが言うとおり、python2でOpenCVの勉強を始めようと思います…。

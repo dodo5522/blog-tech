@@ -1,0 +1,175 @@
+---
+title: "SparkFunのSEN-11345をcpm単位で空間線量を返すように修正してみる。ついでに、OSXでmakeする環境整備も。"
+description: "電子工作ではおなじみのSparkFunが出しているガイガーカウンター、SEN-11345。すごく気になる…。コンパクトなガイガーミュラー菅には、LND712を使..."
+tags:
+  - "放射能"
+  - "電子工作"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-08-28T04:39:55.000Z
+author: takashi
+---
+
+
+電子工作ではおなじみのSparkFunが出しているガイガーカウンター、SEN-11345。すごく気になる…。
+<a href="https://www.sparkfun.com/products/11345"><img src="https://cdn.sparkfun.com//assets/parts/7/0/6/3/11345-01a.jpg" alt="" /></a>
+コンパクトなガイガーミュラー菅には、LND712を使用している上、ArduinoでおなじみのATMega328を搭載しているんですよね。以下のArduino Pro Miniと動作周波数も同じです。
+<div class="cstmreba"><div class="kaerebalink-box"><div class="kaerebalink-image"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB0079FZ7BQ%2Fref%3Dnosim" target="_blank" rel="noopener"><img src="http://ecx.images-amazon.com/images/I/51bwyFOEn9L._SL160_.jpg" style="border: none" /></a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="kaerebalink-info"><div class="kaerebalink-name"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB0079FZ7BQ%2Fref%3Dnosim" target="_blank" rel="noopener">Arduino Pro Mini 328 3.3V 8MHz</a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"><div class="kaerebalink-powered-date">posted with <a href="http://kaereba.com" rel="nofollow noopener" target="_blank">カエレバ</a></div></div><div class="kaerebalink-detail"> スイッチサイエンス     </div><div class="kaerebalink-link1"><div class="shoplinkamazon"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fgp%2Fsearch%3Fkeywords%3DArduino%2520Pro%2520Mini%2520328%25203.3V%25208MHz%26__mk_ja_JP%3D%2583J%2583%255E%2583J%2583i" target="_blank" rel="noopener">Amazonで購入</a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="shoplinkrakuten"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=54&amp;pc_id=54&amp;pl_id=616&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fsearch.rakuten.co.jp%2Fsearch%2Fmall%2FArduino%2520Pro%2520Mini%2520328%25203.3V%25208MHz%2F-%2Ff.1-p.1-s.1-sf.0-st.A-v.2%3Fx%3D0" target="_blank" rel="noopener">楽天市場で購入</a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=54&amp;pc_id=54&amp;pl_id=616" width="1" height="1" style="border:none"></div></div></div><div class="booklink-footer"></div></div></div>
+というか、このArduino Pro Mini、以前庭先の自動水やり機を作った時の余りが手元にあるんですよね。
+でもって、Geiger Counter用コードが<a href="https://github.com/sparkfun/Geiger_Counter/tree/V_HW4.0_FW1.2">Github</a>にpushされていると。
+ハード構成は色々違うはずですが、このGeiger Counter用コードがArduino Pro Miniで動くのか試してみたくなりました。
+<h1>OSXでMakeする</h1>
+Arduinoのソフトウェアは基本的に<a href="https://www.arduino.cc/en/Main/Software">Arduino IDE</a>で開発するので、Geiger Counterのように素でMakeする環境はちょっとハードル上がります。
+個人的には、マウスでボタン押してソフトウェア書き込みするより、全ての作業がコマンドラインで完結している方がやりやすい。
+でもOSXのターミナルでMakeするには、色々と下準備が必要です。
+<ol>
+<li><a href="https://www.arduino.cc/en/Main/Software">Arduino IDE</a>をインストールする</li>
+<li>avrコマンドへのパスを通す</li>
+<li>Arduino Pro Mini上で動作させるためのMakefile修正</li>
+<li>cpm単位で値を返すようにGeiger Counterのソースコードを修正する</li>
+</ol>
+これで、OSX上でMakeできる上、<code>make program</code>コマンドでボードへのソフトウェア書き込みもできてしまいます。
+以下、詳細です。
+<h2>Arduino IDEをインストールする</h2>
+<a href="https://www.arduino.cc/en/Main/Software">リンク先</a>からインストーラをダウンロードして、インストールしてください。
+<h2>avrコマンドへのパスを通す</h2>
+Makeでavr-gccやavrdudeコマンドが必要になるので、PATHが通ってないといけません。
+以下のようにします。
+<pre><code class="bash">$ export PATH=/Applications/Arduino.app/Contents/Java/hardware/tools/avr/bin:${PATH}
+</code></pre>
+永続的にパス通しておきたいなら.bash_profile辺りに追記しておきます。
+<pre><code class="bash">$ echo 'export PATH=/Applications/Arduino.app/Contents/Java/hardware/tools/avr/bin:${PATH}' &gt;&gt; ~/.bash_profile
+</code></pre>
+パスがちゃんと通れば、以下のようにavrdudeコマンドが実行できるはず。
+<pre><code>$ avrdude -C /Applications/Arduino.app/Contents/Java/hardware/tools/avr/etc/avrdude.conf -c ?
+Valid programmers are:
+  2232HIO          = FT2232H based generic programmer
+  4232h            = FT4232H based generic programmer
+  arduino          = Arduino
+  arduino-ft232r   = Arduino: FT232R connected to ISP
+  arduinoisp       =
+  avr109           = Atmel AppNote AVR109 Boot Loader
+  avr910           = Atmel Low Cost Serial Programmer
+  avr911           = Atmel AppNote AVR911 AVROSP
+  avrftdi          = FT2232D based generic programmer
+  avrisp           = Atmel AVR ISP
+  avrisp2          = Atmel AVR ISP mkII
+...
+</code></pre>
+<h2>Arduino Pro Mini上で動作させるためのMakefile修正</h2>
+以下のようにします。
+<pre><code class="diff">--- a/firmware/geiger_counter_board/Makefile
++++ b/firmware/geiger_counter_board/Makefile
+@@ -197,16 +197,20 @@ LDFLAGS += $(PRINTF_LIB) $(SCANF_LIB) $(MATH_LIB)
+ #
+ # Type: avrdude -c ?
+ # to get a full listing.
+-AVRDUDE_PROGRAMMER = stk500v2
++AVRDUDE_PROGRAMMER = arduino
++#AVRDUDE_PROGRAMMER = avrisp
+ #AVRDUDE_PROGRAMMER = ponyser
+ # com1 = serial port. Use lpt1 to connect to parallel port.
+ #AVRDUDE_PORT = lpt1
+-AVRDUDE_PORT = COM3
++AVRDUDE_PORT = /dev/tty.usbserial-A9KZJ9DL
+ AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
+ #AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
++AVRDUDE_CONF = -C /Applications/Arduino.app/Contents/Java/hardware/tools/avr/etc/avrdude.conf
++AVRDUDE_BAUD = -b 57600
+ # Uncomment the following if you want avrdude's erase cycle counter.
+ # Note that this counter needs to be initialized first using -Yn,
+@@ -382,7 +386,7 @@ gccversion :
+ # Program the device.
+ program: $(TARGET).hex $(TARGET).eep
+-       $(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM)
++       $(AVRDUDE) $(AVRDUDE_BAUD) $(AVRDUDE_CONF) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM)
+</code></pre>
+AVRDUDE_PORTは使用するPro Miniによって変わるので、適宜変更してください。
+AVRDUDE_PROGRAMMERはavrispでも正常に書き込みできました。
+ちなみに、この<a href="http://www.nongnu.org/avrdude/">avrdude(AVR Downloader/UploaDEr)</a>コマンド、詳細なオプション情報はリンク先のdownload pageからマニュアルがダウンロードできるので、もっと詳細が知りたくなったらこちらを参照してください。
+<h2>cpm単位で値を返すようにGeiger Counterのソースコードを修正する</h2>
+<a href="https://github.com/sparkfun/Geiger_Counter/tree/V_HW4.0_FW1.2">Github</a>に公開されているGeiger Counter用コードは以下のように、INT0割り込み回数を1秒毎にprintfするようになっています。
+<pre><code class="c">ISR(INT0_vect) {
+    i++;
+    cbi(PORTC, STATUS_LED);
+}
+ISR(TIMER1_OVF_vect) {
+    TCNT1 = 34000;  //(256/8MHz)*(65536bits-34000)~=1.009s
+    printf("counts per second: %ld  ?r", i);
+    i=0;
+}
+int main(void) {
+    ioinit(); //Setup IO pins and defaults
+    delay_ms(1200); //wait to settle
+    while(1) {
+        sbi(PORTC, STATUS_LED);
+        delay_ms(30);
+    }
+    cli();
+}
+void ioinit (void) {
+    ...
+    //load timer with a value to optimize for 1 second, (256/8MHz)*(65536bits-34000)~=1.009s
+    TCNT1 = 34000;
+    sei(); //turn on global interrupts
+}
+</code></pre>
+ガイガーミュラー菅に放射線が通ると割り込み発生、ってことなんでしょうね。
+さらにTimer1のTCNT1設定方法を<a href="https://sites.google.com/site/qeewiki/books/avr-guide/counter-atmega328">COUNTERS ON THE ATmega168/328</a>で見てみると、コードのコメントにある通り、1クロック毎にデクリメントしてちょうど1秒になるように設定してやると、1秒タイマーの出来上がり。
+<blockquote>
+  Timer/Counter Register (stores the counter value) Can be accessed as TCNT1.<br />
+  The Control Logic unit in counter1 has the ability to increment, decrement or clear(reset) the TCNT1 register.
+</blockquote>
+これをcpm単位で返せるように修正すると、以下のようになります。…間違ってないよね？
+<pre><code class="c">ISR(INT0_vect) {
+    ++cps;
+    cbi(PORTC, STATUS_LED);
+}
+ISR(TIMER1_OVF_vect) {
+    TCNT1 = TCNT1_1SEC;
+    //printf("%lu ?r", sec);
+    if (sec &lt; 60) {
+        cpm += cps;
+        ++sec;
+    }
+    cps = 0;
+}
+int main(void) {
+    ioinit(); //Setup IO pins and defaults
+    delay_ms(1200); //wait to settle
+    while(1) {
+        sbi(PORTC, STATUS_LED);
+        delay_ms(30);
+        if (sec &gt;= 60) {
+            //printf("cpm:%lu          ?r", cpm);
+            printf("cpm:%lu          ?n", cpm);
+            cpm = 0;
+            sec = 0;
+        }
+    }
+    cli(); // Disables all interrupts by clearing the global interrupt mask.
+}
+</code></pre>
+可能なかぎりISR（割り込み処理）内の処理は軽く、単純な四則演算だけで処理して、少なくとも返すcpmの値を計測する時間に差が発生しないようにしたつもり。
+これでmakeしたコードをArduino Pro Miniに書き込んで、
+<pre><code class="bash">$ make
+$ make program
+</code></pre>
+<a href="http://www.cyberciti.biz/faq/unix-linux-apple-osx-bsd-screen-set-baud-rate/">screenコマンド</a>でArduino Pro Miniが返す値を表示してやると、
+<pre><code class="bash">$ screen /dev/tty.usbserial-A9KZJ9DL 19200
+</code></pre>
+こうなります。
+<pre><code class="bash">cpm:3000
+cpm:3051
+cpm:2989
+</code></pre>
+まぁ、ガイガーミュラー菅がないので、適当な変な値が表示されるだけですが。
+<h1>結局何がしたいのか？</h1>
+SEN-11345を使って定点観測所を作りたいんですよね。
+行政が作る定点観測所は、どうも信用ならない。あるがままの値を計測するのではなく、計測所周りを綺麗に掃除して綺麗な値を公表したいだけに思えるので。
+こんな感じでその日その瞬間の空間線量値をつぶやいたり、
+<blockquote class="twitter-tweet" data-lang="ja"><p lang="ja" dir="ltr">バッテリ電圧がかなり低下しています。<br />現在22.34[V]ですので、PCサーバ等の電源を落とします。<br />2016年8月28日11時26分に取得したデータを元にしています。</p>&mdash; solar_monitor (@mybot_athome) <a href="https://twitter.com/mybot_athome/status/769858599459823616">2016年8月28日</a></blockquote>
+
+地点毎の線量をグラフ化して公開したりしたいですね。
+<a href="http://blog.rinka-blossom.com/rest-api-safecast/">Safecast APIでの線量値のPost方法もわかった</a>ので、iOSアプリでのマップ情報も参照できるようになる。…予定です。

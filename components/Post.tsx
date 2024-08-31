@@ -43,6 +43,7 @@ const Post: React.FC<PostProps> = (props): ReactElement => (
           {props.description}
         </p>
       </Link>
+      <span>{props.tags.join(', ')}</span>
     </div>
     <Image
       src={props.image}
@@ -51,9 +52,6 @@ const Post: React.FC<PostProps> = (props): ReactElement => (
       alt={props.title}
       className='rounded-lg bg-cover bg-no-repeat bg-center w-full sm:w-full md:w-full  lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-[210px] transition-all'
     />
-    <div>
-      {props.tags}
-    </div>
   </div>
 );
 

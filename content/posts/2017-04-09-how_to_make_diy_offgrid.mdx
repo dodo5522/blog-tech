@@ -1,0 +1,135 @@
+---
+title: "太陽光オフグリッドシステムの作りかた"
+description: "原発依存の生活見直しの一環で、約半年前の2015年5月から始めたDIYオフグリッド化。自家発電した電気で1500W家電が使えるようになったことに加え、発電量見え..."
+tags:
+  - "DIY"
+  - "オフグリッド"
+  - "プログラミング"
+  - "電子工作"
+categories:
+  - hobby
+image: /images/software-developer.jpg
+date: 2017-04-09T06:04:57.000Z
+author: takashi
+---
+
+
+<p>原発依存の生活見直しの一環で、約半年前の2015年5月から始めたDIYオフグリッド化。
+自家発電した電気で1500W家電が使えるようになったことに加え、<a href="http://grid.uribou.me/">発電量見える化システム</a>も一応完成し、ネットでどこからでも発電状況をチェックできるようになったので、そこそこ満足しています。
+<a href="http://grid.uribou.me/"><img src="https://farm5.staticflickr.com/4209/35086175820_e43aa99a9d_z_d.jpg" alt="" /></a>
+とはいえ、不満もあり。
+そもそも発電量が足りず、使用電力量の半分は外から買っている状況ということで、完全にはオフグリッドできていません。
+でも、誰でも電力会社依存を断ち切れる可能性があることを多くの人に知ってもらいたいという目的で、賃貸住まいの自分がDIYオフグリッドシステムを製作した過程を紹介しようと思います。</p>
+<h2>参考資料</h2>
+<p>1kWの太陽光パネルを使い、DIYでオフグリッドシステムを製作する過程を詳細かつ具体的に解説した本。とても参考になります。
+</p>
+<div class="booklink-box" style="text-align:left;padding-bottom:20px;font-size:small;overflow: hidden"><div class="booklink-image" style="float:left;margin:0 15px 10px 0"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2F4827720762%2Fref%3Dnosim" target="_blank" rel="noopener"><img src="https://images-fe.ssl-images-amazon.com/images/I/51tukBu8eeL._SL160_.jpg" style="border: none" /></a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="booklink-info" style="line-height:120%;overflow: hidden"><div class="booklink-name" style="margin-bottom:10px;line-height:120%"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2F4827720762%2Fref%3Dnosim" target="_blank" rel="noopener">自分で作る蓄電型発電所 1kW独立型太陽光発電―付・雨水の飲料水化</a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"><div class="booklink-powered-date" style="font-size:8pt;margin-top:5px;font-family:verdana;line-height:120%">posted with <a href="http://yomereba.com" rel="nofollow noopener" target="_blank">ヨメレバ</a></div></div><div class="booklink-detail" style="margin-bottom:5px">角川 浩 パワー社 2013-07-01    </div><div class="booklink-link2" style="margin-top:10px"><div class="shoplinkamazon" style="margin-right:5px"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2F4827720762%2Fref%3Dnosim" target="_blank" rel="noopener">Amazon</a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="shoplinkrakuten" style="margin-right:5px"><a href="//af.moshimo.com/af/c/click?a_id=602828&amp;p_id=56&amp;pc_id=56&amp;pl_id=637&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fbooks.rakuten.co.jp%2Frb%2F12378738%2F" target="_blank" rel="noopener">楽天ブックス</a><img src="//i.moshimo.com/af/i/impression?a_id=602828&amp;p_id=56&amp;pc_id=56&amp;pl_id=637" width="1" height="1" style="border:none"></div>                                      </div></div><div class="booklink-footer" style="clear: left"></div></div>
+<p>こちらの本は、上記の本より具体性に欠けますが、導入の勉強のためにはとてもいい内容だと思います。太陽光だけでなく風力や水力の例もあって、そこまで個人でやるかと驚きます。</p>
+<div class="booklink-box" style="text-align:left;padding-bottom:20px;font-size:small;overflow: hidden"><div class="booklink-image" style="float:left;margin:0 15px 10px 0"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2F4881818341%2Fref%3Dnosim" target="_blank" rel="noopener"><img src="https://images-fe.ssl-images-amazon.com/images/I/612-YheeltL._SL160_.jpg" style="border: none" /></a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="booklink-info" style="line-height:120%;overflow: hidden"><div class="booklink-name" style="margin-bottom:10px;line-height:120%"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2F4881818341%2Fref%3Dnosim" target="_blank" rel="noopener">自分で作る 自家発電 (大人の週末工作)</a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"><div class="booklink-powered-date" style="font-size:8pt;margin-top:5px;font-family:verdana;line-height:120%">posted with <a href="http://yomereba.com" rel="nofollow noopener" target="_blank">ヨメレバ</a></div></div><div class="booklink-detail" style="margin-bottom:5px">中村昌広 総合科学出版 2013-09-25    </div><div class="booklink-link2" style="margin-top:10px"><div class="shoplinkamazon" style="margin-right:5px"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2F4881818341%2Fref%3Dnosim" target="_blank" rel="noopener">Amazon</a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="shoplinkrakuten" style="margin-right:5px"><a href="//af.moshimo.com/af/c/click?a_id=602828&amp;p_id=56&amp;pc_id=56&amp;pl_id=637&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fbooks.rakuten.co.jp%2Frb%2F12481357%2F" target="_blank" rel="noopener">楽天ブックス</a><img src="//i.moshimo.com/af/i/impression?a_id=602828&amp;p_id=56&amp;pc_id=56&amp;pl_id=637" width="1" height="1" style="border:none"></div>                                     </div></div><div class="booklink-footer" style="clear: left"></div></div>
+<h2>目指すゴール</h2>
+<p><img src="https://farm5.staticflickr.com/4358/36333506751_1053e31ffc_o_d.jpg" alt="" />
+「オフグリッド」と言うと大変そうなイメージがありますが、構造は意外と単純。
+間違えてはいけないポイントを抑えた上で、作り切る根気または覚悟をもってすれば、本当に簡単です。
+ただ、本当に簡単な仕組みで済ませるためにも、売電はしません。
+売電するには、従来の買電とは別の契約が必要になる上、高額なパワーコンディショナを設置する必要があるため、システムが複雑かつ高額になり、個人の手に負えなくなります。
+そもそも買取価格を政府（というより電力会社）に握られ、依存関係を残したままでは、本来の目的が果たせません。
+売電はせずに、気楽に安価で構築可能な蓄電がオススメです。</p>
+<h2>必要な機材</h2>
+<p><a data-flickr-embed="true" href="https://www.flickr.com/gp/29110932@N07/4T3832" title="オフグリッド上映会システム構成案"><img src="https://c1.staticflickr.com/3/2944/33090154284_3d40c54d24.jpg" width="500" height="375" alt="オフグリッド上映会システム構成案"></a>
+ざっくり言うと、以下の４つを揃えて繋げるだけで、オフグリッドシステムの完成です。</p>
+<ol>
+<li>太陽光パネル</li>
+<li>蓄電池</li>
+<li>チャージコントローラ<a href="//standard-project.net/solar/words/ept.html)）">^n</a>　→詳細は<a href="http://tech.uribou.tokyo/how-to-select-charge-controller/">こちら</a></li>
+<li>正弦波インバータ<a href="//standard-project.net/solar/words/ept.html)）">^n</a>　→詳細は<a href="http://tech.uribou.tokyo/how-to-select-charge-controller/">こちら</a>
+繋げばいいとは言っても、最大電流量を想定した、適切な太さの電線を選ぶ必要があります。
+電流量に対して電線が細すぎると発火することもあるので、特に注意が必要です。
+この辺りの詳細は、<a href="http://tech.uribou.tokyo/dian-qi-gong-shi-shi-er-zhong-bi-ji-shi-yan-nihe-ge-suruniha/">電気工事士の試験</a>で出題される許容電流表を参考にしてください。</li>
+</ol>
+<h2>見込み発電量の計算</h2>
+<p><img src="https://farm5.staticflickr.com/4367/36333069011_e1bb05dedd_o_d.jpg" alt="" />
+本来なら使用する家電の消費電力量から逆算して、曇りや雨の日の分を考慮した容量の蓄電池を確保し、それを充電するのに必要な容量の太陽光パネルを揃えて、チャージコントローラを選定、といった流れで考えるんでしょうけど…
+我が家は南西向きの庭付きアパートで、洗濯物を干すには程良く良好な日当たり具合ですが、太陽光発電向きな直射日光は夏の晴天であっても1日5〜6時間しか当たりません。
+さらに、庭の広さ的に300W程度の太陽光パネル2枚が限界。
+ということで、合計600Wのパネルが発電可能な電力量を貯めて使い切るのに必要な機材を、以下のような流れで揃えていきました。</p>
+<ol>
+<li>曇りや雨の日も考慮して、1日平均3時間程度の日光が当たると仮定し、300W x 2枚 x 3時間 / 日 = 1.8kWh/日の発電量になるはず。</li>
+<li>上記発電量を貯める蓄電池は、蓄電容量の50%を超えない範囲で使うとして（蓄電池の寿命を縮めるので…）、倍の3.6kWhが必要。</li>
+<li>チャージコントローラはMPPT方式<a href="//standard-project.net/solar/words/ept.html)）">^n</a>なので、最大電流値から必要な電線の太さを割り出し、電線管に収めた場合の電流減少係数も考慮して計算。
+これらの計画（というより勉強？）、部品集めに１ヶ月くらい要しましたかね…。</li>
+</ol>
+<h2>組み立てと設置</h2>
+<p>蓄電池をバッテリーボックスに収め、パネルの角度が30°になるように架台を組み立てます。
+というより事前にそうなるように架台用の単管パイプ長さを切り揃えるんですけどね。
+架台は、大人２人が鉄棒代わりにぶら下がっても大丈夫なくらいの強度です。
+<img src="https://farm1.staticflickr.com/730/22951003390_6fb32b2b90_z_d.jpg" alt="基礎" />
+組み上げた架台にパネルを載せます。
+1枚あたり18.6kgあるので、1人で持ち上げて載せるのは、なかなか骨が折れました…。
+奥に見えるのは当時2歳の娘なので、力仕事では戦力にならず…　でも色々と手伝おうとしてくれました。感謝。
+<img src="https://farm1.staticflickr.com/778/23246846115_6b302c0b24_z_d.jpg" alt="組み立て中" />
+下の写真が完成図です。
+<img src="https://farm1.staticflickr.com/591/22619744243_069a6bfac8_z_d.jpg" alt="組み立て完了" /></p>
+<h2>使用感と今後について</h2>
+<p><img src="https://farm1.staticflickr.com/641/23017019892_30bd5ae4f7_z_d.jpg" alt="" />
+正弦波インバータは1500Wの容量があるので、ドライヤー（1400W）、電子レンジ（1470W）、炊飯器（1430W）全て使えます。
+ただ、やっぱり600W程度の太陽光パネルでは発電量が足りず、一度蓄電池を使い切ると再充電に２日はかかってしまいます…。
+完全オフグリッドまでの道は遠い。
+あと、「オフグリッド化するとお得なのか？」　とよく聞かれますが、費用的には得しません。多分。
+蓄電池の耐用年数とかもありますしね。
+でも、そもそもコスト削減が目的ではなく、原発や電力会社への依存を減らすのが目的なんで。
+今後の目標としては、家庭の消費電力をもう少し減らした上で、太陽光パネルをもう２〜３枚増強して、完全オフグリッド化することですが…　今住んでるアパートじゃ無理だー。どうしたものか。</p>
+<h2>お世話になったお店とNPOの方々</h2>
+<p>必要な機器の入手にあたっては、以下の方々に非常にお世話になりました（敬称略）。</p>
+<ul>
+<li><a href="http://www.msolarsys.co.jp/">エムソーラーシステム株式会社</a>
+<ul>
+<li>耐久性、発電効率が良いSunPower社製の太陽光パネルを1枚単位で取り扱います</li>
+</ul></li>
+<li><a href="http://www.offgrid-child.com/">NPO法人 非電化地域の人々に蓄電池をおくる会</a>
+<ul>
+<li>劣化の少ない、使用済み蓄電池の再生、リユース販売をされています</li>
+<li>HPに載っていない蓄電池も多数あるので、組もうとしているシステムの情報から、蓄電池選定の相談に乗って頂ける</li>
+<li>最近では、太陽光パネルのアウトレット品も取り扱っています</li>
+</ul></li>
+<li><a href="http://oyaide.com/catalog/">オヤイデ電気</a>
+<ul>
+<li>様々な太さのケーブルを1m単位で切り売りしてくれる上、それをネットショップ経由で購入できるという、とても有難いお店です</li>
+</ul></li>
+<li><a href="http://www.natural-sky.net/">ナチュラルスカイネットワーク</a>
+<ul>
+<li>各種チャージコントローラ、太陽光パネル、正弦波インバータを取り扱います</li>
+<li>他店と比べてTS−MPPTシリーズの値段が若干安い</li>
+<li>組みたいシステムの構成を伝えると、コントローラ選定の相談に乗ってくれます</li>
+</ul></li>
+<li><a href="http://www.chikuden-sys.com/">蓄電システム.com</a>
+<ul>
+<li>各種チャージコントローラ、太陽光パネル、正弦波インバータを取り扱います</li>
+<li>MPPT形式チャージコントローラの品揃え豊富です
+チャージコントローラや正弦波インバータは、Amazonで買い揃えることもできます。</li>
+</ul></li>
+</ul>
+<h3>チャージコントローラ</h3>
+<p>TS-MPPT-30/45/60全て日本のアマゾンで取り扱っていますね。
+数字は最大充電流量を示します。
+また、Ethernet経由での情報取得はTS-MPPT-60のみサポートしているので、ご注意ください。</p>
+<div class="kaerebalink-box" style="text-align:left;padding-bottom:20px;font-size:small;overflow: hidden"><div class="kaerebalink-image" style="float:left;margin:0 15px 10px 0"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB0041O2KPY%2Fref%3Dnosim" target="_blank" rel="noopener"><img src="https://images-fe.ssl-images-amazon.com/images/I/31bdqgXUG2L._SL160_.jpg" style="border: none" /></a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="kaerebalink-info" style="line-height:120%;overflow: hidden"><div class="kaerebalink-name" style="margin-bottom:10px;line-height:120%"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB0041O2KPY%2Fref%3Dnosim" target="_blank" rel="noopener">ソーラーチャージコントローラー TS-MPPT-60 Morningstar社　桐生保証有　日本語取扱い説明書付き</a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"><div class="kaerebalink-powered-date" style="font-size:8pt;margin-top:5px;font-family:verdana;line-height:120%">posted with <a href="http://kaereba.com" rel="nofollow noopener" target="_blank">カエレバ</a></div></div><div class="kaerebalink-detail" style="margin-bottom:5px"> Morningstar社     </div><div class="kaerebalink-link1" style="margin-top:10px"><div class="shoplinkamazon" style="margin-right:5px"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fgp%2Fsearch%3Fkeywords%3DTS-MPPT-60%26__mk_ja_JP%3D%25E3%2582%25AB%25E3%2582%25BF%25E3%2582%25AB%25E3%2583%258A" target="_blank" rel="noopener">Amazon</a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="shoplinkrakuten" style="margin-right:5px"><a href="//af.moshimo.com/af/c/click?a_id=602828&amp;p_id=54&amp;pc_id=54&amp;pl_id=616&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fsearch.rakuten.co.jp%2Fsearch%2Fmall%2FTS-MPPT-60%2F-%2Ff.1-p.1-s.1-sf.0-st.A-v.2%3Fx%3D0" target="_blank" rel="noopener">楽天市場</a><img src="//i.moshimo.com/af/i/impression?a_id=602828&amp;p_id=54&amp;pc_id=54&amp;pl_id=616" width="1" height="1" style="border:none"></div></div></div><div class="booklink-footer" style="clear: left"></div></div>
+<h3>正弦波インバータ</h3>
+<p>太陽光で蓄電した電気は直流なので、家電製品を使うには交流に変換する必要があります。
+その役割を担うのが正弦波インバータです。
+品質面で評価が高い、電菱製がオススメ。
+型番に付いている124は24V用、112は12V用を示しますが、<strong>24Vでシステムを組むことを強くお勧めします</strong>。
+1500Wまでくると、蓄電池から取り出す電流の最大値が 1500W / 12V = 125A にもなり、これを許容する電線の太さは <strong>38sq (mm^2)</strong> （直径に直すと約7mm）にもなってしまうため、太くて重い電線を引き回すことになり、けっこう大変です。
+24Vであれば、この最大電流値が  1500W / 24V = 62.5A と半分になり、必要な電線太さも <strong>14sq (mm^2)</strong> （直径に直すと約4mm）まで細く、軽くなります。</p>
+<div class="kaerebalink-box" style="text-align:left;padding-bottom:20px;font-size:small;overflow: hidden"><div class="kaerebalink-image" style="float:left;margin:0 15px 10px 0"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB00KLV22EU%2Fref%3Dnosim" target="_blank" rel="noopener"><img src="https://images-fe.ssl-images-amazon.com/images/I/41L8EinewNL._SL160_.jpg" style="border: none" /></a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="kaerebalink-info" style="line-height:120%;overflow: hidden"><div class="kaerebalink-name" style="margin-bottom:10px;line-height:120%"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB00KLV22EU%2Fref%3Dnosim" target="_blank" rel="noopener">COTEK(コーテック) 正弦波インバーター 出力1500W/12V 周波数50/60Hz 歪み率3%以下 SKシリーズ SK1500-112</a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"><div class="kaerebalink-powered-date" style="font-size:8pt;margin-top:5px;font-family:verdana;line-height:120%">posted with <a href="http://kaereba.com" rel="nofollow noopener" target="_blank">カエレバ</a></div></div><div class="kaerebalink-detail" style="margin-bottom:5px"> COTEK(コーテック)     </div><div class="kaerebalink-link1" style="margin-top:10px"><div class="shoplinkamazon" style="margin-right:5px;background: url('http://img.yomereba.com/kl.gif') 0 0 no-repeat;padding: 2px 0 2px 18px"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fgp%2Fsearch%3Fkeywords%3DSK1500-112%26__mk_ja_JP%3D%25E3%2582%25AB%25E3%2582%25BF%25E3%2582%25AB%25E3%2583%258A" target="_blank" rel="noopener">Amazon</a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="shoplinkrakuten" style="margin-right:5px;background: url('http://img.yomereba.com/kl.gif') 0 -50px no-repeat;padding: 2px 0 2px 18px"><a href="//af.moshimo.com/af/c/click?a_id=602828&amp;p_id=54&amp;pc_id=54&amp;pl_id=616&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fsearch.rakuten.co.jp%2Fsearch%2Fmall%2FSK1500-112%2F-%2Ff.1-p.1-s.1-sf.0-st.A-v.2%3Fx%3D0" target="_blank" rel="noopener">楽天市場</a><img src="//i.moshimo.com/af/i/impression?a_id=602828&amp;p_id=54&amp;pc_id=54&amp;pl_id=616" width="1" height="1" style="border:none"></div></div></div><div class="booklink-footer" style="clear: left"></div></div>
+<div class="kaerebalink-box" style="text-align:left;padding-bottom:20px;font-size:small;overflow: hidden"><div class="kaerebalink-image" style="float:left;margin:0 15px 10px 0"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB00KLV2AEW%2Fref%3Dnosim" target="_blank" rel="noopener"><img src="https://images-fe.ssl-images-amazon.com/images/I/41L8EinewNL._SL160_.jpg" style="border: none" /></a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="kaerebalink-info" style="line-height:120%;overflow: hidden"><div class="kaerebalink-name" style="margin-bottom:10px;line-height:120%"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB00KLV2AEW%2Fref%3Dnosim" target="_blank" rel="noopener">COTEK(コーテック) 正弦波インバーター 出力1500W/24V 周波数50/60Hz 歪み率3%以下 SKシリーズ SK1500-124</a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"><div class="kaerebalink-powered-date" style="font-size:8pt;margin-top:5px;font-family:verdana;line-height:120%">posted with <a href="http://kaereba.com" rel="nofollow noopener" target="_blank">カエレバ</a></div></div><div class="kaerebalink-detail" style="margin-bottom:5px"> COTEK(コーテック)     </div><div class="kaerebalink-link1" style="margin-top:10px"><div class="shoplinkamazon" style="margin-right:5px;background: url('http://img.yomereba.com/kl.gif') 0 0 no-repeat;padding: 2px 0 2px 18px"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fgp%2Fsearch%3Fkeywords%3DSK1500-124%26__mk_ja_JP%3D%25E3%2582%25AB%25E3%2582%25BF%25E3%2582%25AB%25E3%2583%258A" target="_blank" rel="noopener">Amazon</a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="shoplinkrakuten" style="margin-right:5px;background: url('http://img.yomereba.com/kl.gif') 0 -50px no-repeat;padding: 2px 0 2px 18px"><a href="//af.moshimo.com/af/c/click?a_id=602828&amp;p_id=54&amp;pc_id=54&amp;pl_id=616&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fsearch.rakuten.co.jp%2Fsearch%2Fmall%2FSK1500-124%2F-%2Ff.1-p.1-s.1-sf.0-st.A-v.2%3Fx%3D0" target="_blank" rel="noopener">楽天市場</a><img src="//i.moshimo.com/af/i/impression?a_id=602828&amp;p_id=54&amp;pc_id=54&amp;pl_id=616" width="1" height="1" style="border:none"></div></div></div><div class="booklink-footer" style="clear: left"></div></div>
+<h2>おまけ</h2>
+<p>すでに使っている人も多いと思いますが、家庭の消費電力量を知るには、東京電力管轄下であれば<a href="https://www.kakeibo.tepco.co.jp/campaign201505/sp/index.html?utm_source=google&amp;amp;utm_medium=cpc&amp;amp;utm_campaign=Brand&amp;amp;re_adpcnt=7xl_w2H&amp;amp;device=m">電気家計簿</a>が便利です。
+月毎の消費電力量や電力料金の推移を知ることができ、CSVファイル形式でデータをダウンロードすることもできます。
+以下の表は、我が家の去年の消費電力量です。1日12〜15kWhを消費していたことが分かります。
+<img src="https://farm6.staticflickr.com/5766/23029247110_87b1c47e2e_z_d.jpg" alt="" />
+視覚的に分かりやすいグラフも描画してくれます。
+<img src="https://farm1.staticflickr.com/759/22957118079_dea9291678_z_d.jpg" alt="" />
+これを見てわかるように、オフグリッド化を始めた5〜6月に、買電量が急激に落ちてます。
+特に6月の電力料金は、去年の8000円から半額の4000円になりました。意外とオフグリッドシステムの効果覿面だったのは自分でも驚きです。
+電力会社のシステムを活用して、電力会社のシステムから脱却しましょ〜。</p>
+<p><a href="//standard-project.net/solar/words/ept.html)）">^n</a>: 太陽光パネルの最大電力量で蓄電池を充電する方式。単純に言うと、300W太陽光パネル（50V, 6A）で12Vの蓄電池を充電する場合、PWM方式の場合は最大でも6Aの電流量でしか充電できないが、MPPT方式であれば　300W / 12V = 25Aの電流量で充電できる、といった感じ。</p>

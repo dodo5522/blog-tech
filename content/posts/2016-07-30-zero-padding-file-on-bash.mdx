@@ -1,0 +1,61 @@
+---
+title: "bashでファイル末尾を0埋めする方法。例えばLinuxカーネルのページサイズでalignしたい場合。"
+description: "文字列の先頭や末尾を0埋めする方法はよくあるんですが、ファイル末尾を0データで埋める方法って、なかなか見つからなかったので、書いてみました。こんなの一体いつ使う..."
+tags:
+  - "linux"
+  - "コマンド"
+  - "ツール"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-07-30T06:10:56.000Z
+author: takashi
+---
+
+
+文字列の先頭や末尾を0埋めする方法はよくあるんですが、ファイル末尾を0データで埋める方法って、なかなか見つからなかったので、書いてみました。
+こんなの一体いつ使うのか？ と聞かれたら、使う機会は早々ないのであまり役に立たないかもしれないです(･_･; が、例えばinitramfsイメージファイルをLinuxカーネルのページサイズでalignしたい場合に役立ちます。
+…絶対使わなそうですが、以下のようなスクリプトを書いてtest.shとして保存しておき、<code>test.sh target.bin 4096</code>のように実行すれば、target.binの後に0データを付加して4096バイトでalignしてくれます。
+<pre><code class="bash">#!/bin/bash
+FILE_TARGET=${1}
+SIZE_PAGE=${2}
+function get_file_size() {
+    FILE=${1}
+    echo $(LANG=C ls -l ${FILE} | cut -d' ' -f5)
+}
+function get_printf_format() {
+    SIZE_PAD=${1}
+    while [ ${SIZE_PAD} -gt 0 ]; do
+        FORMAT=${FORMAT}'%b'
+        BIN=${BIN}'?x0'
+        let SIZE_PAD--
+    done
+    echo ${FORMAT} ${BIN}
+}
+MASK=$((${SIZE_PAGE} - 1))
+SURPLUS=$(($(get_file_size ${FILE_TARGET}) &amp; ${MASK}))
+if [ ${SURPLUS} -ne 0 ]; then
+    printf $(get_printf_format $((${SIZE_PAGE} - ${SURPLUS}))) &gt;&gt; ${FILE_TARGET}
+fi
+</code></pre>
+例えば以下のようなサイズのファイルがあったとします。10進で99472バイトのデータです。
+<pre><code class="bash">~ $ ls -l target.bin
+-rw-r--r-- 1 pi pi 99472 Jul 31 00:01 target.bin
+~ $ printf "0x%x?n" $(ls -l target.bin | cut -d' ' -f5)
+0x18490
+</code></pre>
+これに先ほどのスクリプトを実行してやると、以下のようになります。
+<pre><code class="bash">~ $ ./test.sh target.bin 4096
+~ $ ls -l target.bin
+-rw-r--r-- 1 pi pi 102400 Jul 31 00:04 target.bin
+~ $ printf "0x%x?n" $(ls -l target.bin | cut -d' ' -f5)
+0x19000
+~ $ hexdump -C target.bin | tail -n 4
+00018480  75 74 69 6c 73 2e 73 79  73 63 6f 6e 66 69 67 0a  |utils.sysconfig.|
+00018490  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+00019000
+</code></pre>
+しっかりと、4096 (0x1000)バイトでalignされたデータファイルになりました。これでとある機器のLinuxカーネルがパニックすることなく起動できます。
+ぜひお試しあれ。
+ただ、先ほどのスクリプト、<code>get_printf_format</code>関数内の処理がかなり非効率なので、もっといい案あればぜひ教えてください（^人^）

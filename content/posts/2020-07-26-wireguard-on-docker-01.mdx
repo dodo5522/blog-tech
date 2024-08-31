@@ -1,0 +1,289 @@
+---
+title: "Docker image linuxserver/wireguardでVPN構築する"
+description: "これは何？初代RPiに構築したOpenVPNサーバを他マシンに移管したい。しかし、VPN用に物理マシン用意するのもコスト的にしんどいので、仮想マシンに構築してロ..."
+tags:
+  - "docker"
+  - "VPN"
+  - "サーバ"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2020-07-26T14:50:09.000Z
+author: takashi
+---
+
+
+
+<h2>これは何？</h2>
+
+
+
+<p>初代RPiに構築したOpenVPNサーバを他マシンに移管したい。<br>しかし、VPN用に物理マシン用意するのもコスト的にしんどいので、仮想マシンに構築してローカルネットワークに接続したい。</p>
+
+
+
+<h2>docker runする</h2>
+
+
+
+<p>linuxserver.ioがほぼweeklyでメンテしているDocker imageを発見。ありがたい。具体的な手順は以下詳細。<br><a href="https://hub.docker.com/r/linuxserver/wireguard">https://hub.docker.com/r/linuxserver/wireguard</a></p>
+
+
+
+<h3>Docker on macOSでは使用不可</h3>
+
+
+
+<p>まずlatest imgeをpullして以下コマンドを実行、Server mode起動したいのでPEERS指定し、コンテナ生成した後にstart -aしてみると、エラー。本来であればkernel header等ダウンロード開始したはず。</p>
+
+
+
+<pre class="EnlighterJSRAW" data-enlighter-language="shell" data-enlighter-theme="" data-enlighter-highlight="" data-enlighter-linenumbers="" data-enlighter-lineoffset="" data-enlighter-title="" data-enlighter-group=""># docker run -d \
+  --name=wireguard \
+  --cap-add=NET_ADMIN \
+  --cap-add=SYS_MODULE \
+  -e PUID=1000 -e PGID=1000 \
+  -e TZ=Asia/Tokyo \
+  -e SERVERPORT=51820 \
+  -e PEERS=1 -e PEERDNS=auto \
+  -e INTERNAL_SUBNET=10.13.13.0 -p 51820:51820/udp \
+  -v /tmp/wireguard:/config \
+  -v /lib/modules:/lib/modules \
+  --sysctl="net.ipv4.conf.all.src_valid_mark=1" \
+  --restart unless-stopped \
+  linuxserver/wireguard</pre>
+
+
+
+<p>手順の最初の一文に記載の通り、macOSのDockerでは動作不可。</p>
+
+
+
+<blockquote class="wp-block-quote"><p>This image is designed for Ubuntu and Debian based systems mainly (it works on some others, but ymmv). During container start, it will first check if the wireguard module is already installed and loaded. If not, it will then check if the kernel headers are already installed (in&nbsp;<code>/usr/src</code>) and if not, attempt to download the necessary kernel headers from the ubuntu/debian/raspbian repos; then will compile and install the kernel module.</p><cite><a href="https://github.com/linuxserver/docker-wireguard#application-setup">https://github.com/linuxserver/docker-wireguard#application-setup</a></cite></blockquote>
+
+
+
+<h3>Ubuntuであっても特定のkernelバージョンでは使用不可</h3>
+
+
+
+<p>Ubuntu 18.04.4 LTS上でコンテナ生成、startすると、今度はkernel headerダウンロードとビルド開始する。</p>
+
+
+
+<p>しかし、ipv6関連ソースコンパイルでエラー発生。</p>
+
+
+
+<pre class="EnlighterJSRAW" data-enlighter-language="generic" data-enlighter-theme="" data-enlighter-highlight="" data-enlighter-linenumbers="" data-enlighter-lineoffset="" data-enlighter-title="" data-enlighter-group="">**** Building the module ****
+make: Entering directory '/app/wireguard-linux-compat/src'
+  CC [M]  /app/wireguard-linux-compat/src/main.o
+  CC [M]  /app/wireguard-linux-compat/src/noise.o
+  CC [M]  /app/wireguard-linux-compat/src/device.o
+  CC [M]  /app/wireguard-linux-compat/src/peer.o
+  CC [M]  /app/wireguard-linux-compat/src/timers.o
+  CC [M]  /app/wireguard-linux-compat/src/queueing.o
+  CC [M]  /app/wireguard-linux-compat/src/send.o
+  CC [M]  /app/wireguard-linux-compat/src/receive.o
+  CC [M]  /app/wireguard-linux-compat/src/socket.o
+  CC [M]  /app/wireguard-linux-compat/src/peerlookup.o
+  CC [M]  /app/wireguard-linux-compat/src/allowedips.o
+  CC [M]  /app/wireguard-linux-compat/src/ratelimiter.o
+/app/wireguard-linux-compat/src/socket.c: In function ‘send6’:
+/app/wireguard-linux-compat/src/socket.c:139:20: error: ‘const struct ipv6_stub’ has no member named ‘ipv6_dst_lookup_flow’; did you mean ‘ipv6_dst_lookup’?
+   dst = ipv6_stub-&gt;ipv6_dst_lookup_flow(sock_net(sock), sock, &amp;fl,
+                    ^~~~~~~~~~~~~~~~~~~~
+                    ipv6_dst_lookup
+scripts/Makefile.build:330: recipe for target '/app/wireguard-linux-compat/src/socket.o' failed
+make[2]: *** [/app/wireguard-linux-compat/src/socket.o] Error 1
+make[2]: *** Waiting for unfinished jobs....
+Makefile:1577: recipe for target '_module_/app/wireguard-linux-compat/src' failed
+make[1]: *** [_module_/app/wireguard-linux-compat/src] Error 2
+Makefile:26: recipe for target 'module' failed
+make: *** [module] Error 2
+make: Leaving directory '/app/wireguard-linux-compat/src'
+make: Entering directory '/app/wireguard-linux-compat/src'
+  DEPMOD  4.15.0-96-generic
+depmod -b "/" -a 4.15.0-96-generic
+depmod: WARNING: could not open //lib/modules/4.15.0-96-generic/modules.order: No such file or directory
+depmod: WARNING: could not open //lib/modules/4.15.0-96-generic/modules.builtin: No such file or directory</pre>
+
+
+
+<p>検索すると、wireguardのビルドで似た現象に遭遇した人多数。その中で、日本語記事は以下のみ。</p>
+
+
+
+<blockquote class="wp-block-quote"><p>Ubuntu 18.04.4 LTS (bionic) でカーネルが&nbsp;<code>linux-image-4.15.0-101-generic</code>&nbsp;から&nbsp;<code>linux-image-4.15.0-106-generic</code>&nbsp;に更新されたところ、&nbsp;<code>wireguard-dkms</code>&nbsp;でのカーネルモジュールのビルドが失敗して wireguard での接続ができなくなっていたので、 応急処置をして復旧しました。</p><p>wireguard が使っているカーネルの機能の一部がバックポートの影響を受けやすいらしく、 同じようなビルドの失敗が繰り返されていて、 不便なことがたまに起きていましたが、 Ubuntu 20.04 からはカーネル本体に wireguard が入っていて、&nbsp;<code>wireguard-dkms</code>&nbsp;で問題が起きることはないのと、 該当する修正差分の付近のバージョン分岐で 18.04 だけ抜けていたのが追加されたようなので、 今後は大丈夫なのではないかと思っています。</p><cite><a href="https://blog.n-z.jp/blog/2020-06-10-wireguard-dkms-error.html">https://blog.n-z.jp/blog/2020-06-10-wireguard-dkms-error.html</a></cite></blockquote>
+
+
+
+<p>自分の環境とはkernel versionが異なるが、原因は同じと思われる。かと言ってUbuntu 20.04以降にアップグレードする気力は今はないので、取り急ぎ18.04維持でkernel関連パッケージを最新にアップグレードして再チャレンジ。</p>
+
+
+
+<h3>Ubuntu 18.04.4 LTS with kernel 4.15.0-112では使用可</h3>
+
+
+
+<p>少なくとも下記組み合わせのバージョンであれば使用可能。</p>
+
+
+
+<pre class="EnlighterJSRAW" data-enlighter-language="generic" data-enlighter-theme="" data-enlighter-highlight="" data-enlighter-linenumbers="" data-enlighter-lineoffset="" data-enlighter-title="" data-enlighter-group="">$ sudo docker image ls
+REPOSITORY                       TAG                  IMAGE ID            CREATED             SIZE
+linuxserver/wireguard            latest               0677df8c385b        25 hours ago        446MB
+linuxserver/wireguard            v1.0.20200513-ls22   0677df8c385b        25 hours ago        446MB</pre>
+
+
+
+<pre class="EnlighterJSRAW" data-enlighter-language="shell" data-enlighter-theme="" data-enlighter-highlight="" data-enlighter-linenumbers="" data-enlighter-lineoffset="" data-enlighter-title="" data-enlighter-group="">$ uname -a
+Linux espresso 4.15.0-112-generic #113-Ubuntu SMP Thu Jul 9 23:41:39 UTC 2020 x86_64 x86_64 x86_64 GNU/Linux</pre>
+
+
+
+<p>以下の通り、それらしい起動ログが出力されることを確認。<code>wg0.conf</code> や、接続Client側が必要とする情報は <code>-v /tmp/wireguard:/config</code> 指定したディレクトリに生成される。</p>
+
+
+
+<pre class="EnlighterJSRAW" data-enlighter-language="generic" data-enlighter-theme="" data-enlighter-highlight="" data-enlighter-linenumbers="" data-enlighter-lineoffset="" data-enlighter-title="" data-enlighter-group="">$ sudo docker start -a 2986dd1d2141
+[s6-init] making user provided files available at /var/run/s6/etc...exited 0.
+[s6-init] ensuring user provided files have correct perms...exited 0.
+[fix-attrs.d] applying ownership &amp; permissions fixes...
+[fix-attrs.d] done.
+[cont-init.d] executing container initialization scripts...
+[cont-init.d] 01-envfile: executing... 
+[cont-init.d] 01-envfile: exited 0.
+[cont-init.d] 10-adduser: executing... 
+
+-------------------------------------
+          _         ()
+         | |  ___   _    __
+         | | / __| | |  /  \ 
+         | | \__ \ | | | () |
+         |_| |___/ |_|  \__/
+
+
+Brought to you by linuxserver.io
+-------------------------------------
+
+To support the app dev(s) visit:
+WireGuard: https://www.wireguard.com/donations/
+
+To support LSIO projects visit:
+https://www.linuxserver.io/donate/
+-------------------------------------
+GID/UID
+-------------------------------------
+
+User uid:    1000
+User gid:    1000
+-------------------------------------
+
+[cont-init.d] 10-adduser: exited 0.
+[cont-init.d] 30-config: executing... 
+**** It seems the wireguard module is already active. Skipping kernel header install and module compilation. ****
+**** Server mode is selected ****
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100    15  100    15    0     0      9      0  0:00:01  0:00:01 --:--:--     9
+**** SERVERURL var is either not set or is set to "auto", setting external IP to auto detected value of ... ****
+**** External server port is set to 51820. Make sure that port is properly forwarded to port 51820 inside this container ****
+**** Internal subnet is set to 10.13.13.0 ****
+**** PEERDNS var is either not set or is set to "auto", setting peer DNS to 10.13.13.1 to use wireguard docker host's DNS. ****
+**** No found wg0.conf found (maybe an initial install), generating 1 server and 1 peer/client confs ****
+PEER 1 QR code:
+[cont-init.d] 30-config: exited 0.
+[cont-init.d] 99-custom-scripts: executing... 
+[custom-init] no custom files found exiting...
+[cont-init.d] 99-custom-scripts: exited 0.
+[cont-init.d] done.
+[services.d] starting services
+[services.d] done.
+[#] ip link add wg0 type wireguard
+[#] wg setconf wg0 /dev/fd/63
+[#] ip -4 address add 10.13.13.1 dev wg0
+[#] ip link set mtu 1420 up dev wg0
+.:53
+CoreDNS-1.7.0
+linux/amd64, go1.14.4, f59c03d
+[#] ip -4 route add 10.13.13.2/32 dev wg0
+[#] iptables -A FORWARD -i wg0 -j ACCEPT; iptables -A FORWARD -o wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE</pre>
+
+
+
+<h2>iOS clientから接続する</h2>
+
+
+
+<p><code>-v /tmp/wireguard:/config</code> 指定したディレクトリに生成された接続情報を見てみると、以下のようなファイル構成であることが分かる。<code>peerX</code>は<code>-e PEERS=X</code>指定した数だけ生成される。</p>
+
+
+
+<pre class="EnlighterJSRAW" data-enlighter-language="generic" data-enlighter-theme="" data-enlighter-highlight="" data-enlighter-linenumbers="" data-enlighter-lineoffset="" data-enlighter-title="" data-enlighter-group=""># tree
+.
+├── coredns
+│   └── Corefile
+├── peer1
+│   ├── peer1.conf
+│   ├── peer1.png
+│   ├── privatekey-peer1
+│   └── publickey-peer1
+├── peer2
+│   ├── peer2.conf
+│   ├── peer2.png
+│   ├── privatekey-peer2
+│   └── publickey-peer2
+├── server
+│   ├── privatekey-server
+│   └── publickey-server
+├── templates
+│   ├── peer.conf
+│   └── server.conf
+└── wg0.conf
+
+5 directories, 14 files</pre>
+
+
+
+<p>鍵情報やエンドポイントIPアドレス等の接続情報がQRコードPNGファイルとして生成されるので、適宜ローカルにダウンロードしてビューアで開いておき、WireGuardアプリ（<a href="https://apps.apple.com/jp/app/wireguard/id1451685025?mt=12">iOS</a>、<a href="https://play.google.com/store/apps/details?id=com.wireguard.android">Android</a>）で読み込む。</p>
+
+
+
+<p>トンネル設定に名前をつけたり、VPN設定権限確認許可したりする等、アプリの指示に従うと、以下のようにON/OFFスイッチが出現するので、ONするとVPN接続状態となる。<a href="https://apps.apple.com/us/app/wireguard/id1441195209?itscg=30200&amp;itsct=apps_box"></a></p>
+
+
+
+<figure class="wp-block-image size-large"><img src="http://tech.blog.uribou.me/wp-content/uploads/sites/2/2020/12/IMG_1641.png" alt="" class="wp-image-3382" /></figure>
+
+
+
+<figure class="wp-block-image size-large"><img src="http://tech.blog.uribou.me/wp-content/uploads/sites/2/2020/12/IMG_1642.png" alt="" class="wp-image-3383" /></figure>
+
+
+
+<p>一時的にローカルネットワーク内で確認するには、トンネル設定のエンドポイントをGlobal IPアドレスからWireGuardサーバコンテナが稼働している物理マシンのIPアドレスに変更した上で接続する。</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="http://tech.blog.uribou.me/wp-content/uploads/sites/2/2020/12/IMG_1646.png" alt="" class="wp-image-3385" /></figure>
+
+
+
+<p>この状態でiOSからpingしてみると、通信可能となる。</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="http://tech.blog.uribou.me/wp-content/uploads/sites/2/2020/12/IMG_1643.png" alt="" class="wp-image-3384" /></figure>
+
+
+
+<h2>補足</h2>
+
+
+
+<p>自宅ローカルネットワークにVPN経由で接続するには、さらに別のインタフェースを設けてブリッジ接続する必要がありそうだけれど、それは追々やっていく。</p>
+
+
+
+<p>物理マシン上にWireGuard構築するのも簡単そう。<br><a href="https://www.cyberciti.biz/faq/ubuntu-20-04-set-up-wireguard-vpn-server/">https://www.cyberciti.biz/faq/ubuntu-20-04-set-up-wireguard-vpn-server/</a></p>

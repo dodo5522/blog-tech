@@ -1,0 +1,71 @@
+---
+title: "Raspberry Pi Zeroセットアップでするべき事４つ。"
+description: "raspbianインストール手順は公式ページにあるので、そちらを参照するとして…。実際に使える状態に持っていくためにすべき事をまとめておきます。X起動をやめる独..."
+tags:
+  - "RaspberryPi"
+  - "電子工作"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-08-23T05:44:34.000Z
+author: takashi
+---
+
+
+raspbianインストール手順は<a href="https://www.raspberrypi.org/documentation/installation/installing-images/">公式ページ</a>にあるので、そちらを参照するとして…。
+実際に使える状態に持っていくためにすべき事をまとめておきます。
+<h1>X起動をやめる</h1>
+独立電源でスタンドアロンで働いてもらうので、重い＆消費電力デカイXは不要。
+Raspberry Pi ZeroのMini HDMIを適当なディスプレイに繋いで起動して、ターミナルから以下のコマンドを実行し、再起動すると、めでたくXを無効にできます。
+<pre><code class="bash">$ sudo systemctl set-default multi-user.target
+$ sudo reboot
+</code></pre>
+以前は/etc/initrdの設定を変更していたはずですが、今後は組みこみLinuxも軒並みsystemdになっていくんですかね。
+<h1>キーボードレイアウトを日本語109に変更する</h1>
+英語101キーボードを使っている人には関係ないですが、自分は日本語109キーボードを使っているので、設定しないと記号入力がとても不便。
+以下のようにします。
+<pre><code class="bash">$ sudo dpkg-reconfigure keyboard-configuration
+</code></pre>
+使っているキーボードそのものズバリな機種はもちろん存在しないので、適当にDellとかのJapaneseキーボードを選択してやると、ちゃんと動作します。
+<h1>ネットワーク（無線LAN）に繋ぐ</h1>
+Zeroという名の通り、Zeroには何も付いてません。Raspberry Pi 1/2/3には普通にあったEthernetポートですら…。
+ということで、後々楽チンな無線LANを設定します。
+生産終了しちゃってますが、バッファロー製のwli-uc-gnという無線LANドングルは、何も追加インストールせずに動作しました。
+<div class="cstmreba"><div class="kaerebalink-box"><div class="kaerebalink-image"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB001POGJKU%2Fref%3Dnosim" target="_blank" rel="noopener"><img src="http://ecx.images-amazon.com/images/I/31p7dLiqFSL._SL160_.jpg" style="border: none" /></a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="kaerebalink-info"><div class="kaerebalink-name"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB001POGJKU%2Fref%3Dnosim" target="_blank" rel="noopener">BUFFALO Air Station NFINITI 11n/g/b USB用 無線子機 WLI-UC-GN</a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"><div class="kaerebalink-powered-date">posted with <a href="http://kaereba.com" rel="nofollow noopener" target="_blank">カエレバ</a></div></div><div class="kaerebalink-detail"> バッファロー     </div><div class="kaerebalink-link1"><div class="shoplinkamazon"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fgp%2Fsearch%3Fkeywords%3DBUFFALO%2520Air%2520Station%2520NFINITI%252011n%252Fg%252Fb%2520USB%2597p%2520%2596%25B3%2590%25FC%258Eq%258B%2540%2520WLI-UC-GN%26__mk_ja_JP%3D%2583J%2583%255E%2583J%2583i" target="_blank" rel="noopener">Amazonで購入</a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="shoplinkrakuten"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=54&amp;pc_id=54&amp;pl_id=616&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fsearch.rakuten.co.jp%2Fsearch%2Fmall%2FBUFFALO%2520Air%2520Station%2520NFINITI%252011n%252Fg%252Fb%2520USB%25E7%2594%25A8%2520%25E7%2584%25A1%25E7%25B7%259A%25E5%25AD%2590%25E6%25A9%259F%2520WLI-UC-GN%2F-%2Ff.1-p.1-s.1-sf.0-st.A-v.2%3Fx%3D0" target="_blank" rel="noopener">楽天市場で購入</a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=54&amp;pc_id=54&amp;pl_id=616" width="1" height="1" style="border:none"></div></div></div><div class="booklink-footer"></div></div></div>
+今時無線LANをWEPで運用しないので、WPA2-PSK/AESの設定をします。
+<pre><code class="bash">$ vi /etc/wpa_supplicant/wpa_supplicant.conf
+</code></pre>
+上記の設定ファイルに、以下のように入力してください。暗号方式をAESではなくTKIPにする場合は、CCMPをTKIPにすればいいそうですが…　ウチはAESなので試してません。
+<pre><code>ap_scan=1
+network={
+        ssid="YOUR-WIFI-AP-SSID"
+        proto=WPA2
+        key_mgmt=WPA-PSK
+        pairwise=CCMP
+        group=CCMP
+        psk="YOUR-WIFI-AP-PASSPHRASE"
+}
+</code></pre>
+reboot後、勝手にAPに接続しました。
+<h1>aptリポジトリを日本国内ミラーに向ける</h1>
+<a href="https://www.raspbian.org/RaspbianMirrors">Raspberry Pi用APTミラーの一覧</a>から、物理的な距離が近いところを探します。
+ウチは筑波のが一番近いかな。
+まずは以下のファイルの中身を全てコメントアウトします。
+<pre><code class="bash">$ vi /etc/apt/sources.list.d/raspi.list
+</code></pre>
+次に以下のファイルを編集して、
+<pre><code class="bash">$ sudo vi /etc/apt/sources.list
+</code></pre>
+以下のように筑波ミラーのみ残します。
+<pre><code>#deb http://mirrordirector.raspbian.org/raspbian/ jessie main contrib non-free rpi
+deb http://ftp.tsukuba.wide.ad.jp/Linux/raspbian/raspbian/ jessie main contrib non-free rpi
+# Uncomment line below then 'apt-get update' to enable 'apt-get source'
+#deb-src http://archive.raspbian.org/raspbian/ jessie main contrib non-free rpi
+</code></pre>
+これでデフォルト設定よりかは速くパッケージインストールが可能になります。
+<pre><code class="bash">$ sudo apt-get update
+$ sudo apt-get upgrade
+</code></pre>
+<h1>するべき事５つ目以降</h1>
+目的に応じてやるべきことはまだまだ沢山ありますが、とりあえずこの４つを押さえておけば必要十分だと思います。
+次はPython環境整備を進めないと…。

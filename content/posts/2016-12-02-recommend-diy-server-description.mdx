@@ -1,0 +1,205 @@
+---
+title: "快適！全部入りメディアサーバ自作のススメ。"
+description: "![](https://farm5.staticflickr.com/4317/36004933166_826777ca90_z_d.jpg)超低消費電力なAR..."
+tags:
+  - "linux"
+  - "サーバ"
+  - "ツール"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-12-02T17:06:55.000Z
+author: takashi
+---
+
+
+![](https://farm5.staticflickr.com/4317/36004933166_826777ca90_z_d.jpg)
+超低消費電力なARMマイコンLinuxサーバとして活用できるRaspberry Pi。
+我が家では、既に販売終了している初代の[Raspberry Pi 1 Model A](https://ja.wikipedia.org/wiki/Raspberry_Pi)が現役で活躍中です。
+そんな我が家の家庭内LAN上に張り巡らせた、超快適環境を提供してくれるサーバ群を紹介します。
+というより、そろそろ整理しておかないと、壊れた時に困りそうな気がして、慌てて書き出したというのが正直なところ^^;
+## 提供サービス一覧@Raspberry Pi
+低消費電力を活かして、**Raspberry Piには常時稼働が必要な、それでいて負荷が少ないサービスを割り当てるのが得策**です。<div style="color:#CCCCCC">OpenVPNは負荷が低いサービスに入るのか…？</div>
+一般的なマイコンより高性能とはいえ、さすがにx86 Core2/CoreiなどのCPUには劣るARM。目的が違うのでしょうがない。
+そういうわけで、我が家では以下のサービスがRaspberry Piで稼働しています。ディストリは標準的なraspbian。
+<table style="border:solid 2px #FFFFFF">
+  <thead>
+    <tr>
+      <th style="background:#ACB9BF" colspan="3">サーバサイド</th>
+      <th style="background:#ACB9BF" colspan="3">クライアントサイド</th>
+    </tr>
+    <tr>
+      <th style="background:#ACB9BF">名称</th>
+      <th style="background:#ACB9BF">価格</th>
+      <th style="background:#ACB9BF">概要</th>
+      <th style="background:#ACB9BF">名称</th>
+      <th style="background:#ACB9BF">価格</th>
+      <th style="background:#ACB9BF">概要</th>
+    </tr>
+  </thead>
+  <tfoot>
+    <tr>
+      <td style="background:#E2EDF2" rowspan="2">OpenVPN</td>
+      <td style="background:#F0F6F8" rowspan="2">free</td>
+      <td style="background:#F0F6F8" rowspan="2">家庭内LANに安全にアクセス。</td>
+      <td style="background:#E2EDF2"><a href="https://itunes.apple.com/us/app/openvpn-connect/id590379981?mt=8&amp;at=1000locx">OpenVPN Connect</a></td>
+      <td style="background:#F0F6F8">free</td>
+      <td style="background:#F0F6F8">iOSアプリ。家庭内LANに安全にアクセス。</td>
+    </tr>
+    <tr>
+      <td style="background:#E2EDF2"><a href="https://play.google.com/store/apps/details?id=net.openvpn.openvpn">OpenVPN Connect</a></td>
+      <td style="background:#F0F6F8">free</td>
+      <td style="background:#F0F6F8">Androidアプリ。機能はiOSアプリと同様。</td>
+    </tr>
+    <tr>
+      <td style="background:#E2EDF2">BIND9</td>
+      <td style="background:#F0F6F8">free</td>
+      <td style="background:#F0F6F8">家庭内LANの名前解決に。</td>
+      <td style="background:#E2EDF2">-</td>
+      <td style="background:#F0F6F8">-</td>
+      <td style="background:#F0F6F8">-</td>
+    </tr>
+    <tr>
+      <td style="background:#E2EDF2"><a href="https://github.com/dodo5522/rpwc" target="_blank" rel="noopener">rpwcweb</td>
+      <td style="background:#F0F6F8">free(original)</td>
+      <td style="background:#F0F6F8">サーバPCの電源スイッチをリモートでON/OFFできる。</td>
+      <td style="background:#E2EDF2">ブラウザ</td>
+      <td style="background:#F0F6F8">free</td>
+      <td style="background:#F0F6F8">ChromeやFirefox。一応IEでも動作する。</td>
+    </tr>
+    <tr>
+      <td style="background:#E2EDF2"><a href="https://github.com/dodo5522/solar_monitor">Solar monitor</a></td>
+      <td style="background:#F0F6F8">free(original)</td>
+      <td style="background:#F0F6F8">DIY太陽光蓄電システムの状況を監視し、データを可視化（グラフ化）したり、呟いてくれる。</td>
+      <td style="background:#E2EDF2"><a href="http://grid.rinka-blossom.com/">ブラウザ</a>,<br /><a href="https://twitter.com/mybot_athome?lang=ja">Twitter</a></td>
+      <td style="background:#F0F6F8">free</td>
+      <td style="background:#F0F6F8">グラフ化したデータをブラウザで参照できる。Twitterで主要なイベントを参照できる。</td>
+    </tr>
+    <tr>
+      <td style="background:#E2EDF2"><a href="https://github.com/dodo5522/radiation_monitor" target="_blank" rel="noopener">Radiation monitor</a></td>
+      <td style="background:#F0F6F8">free(original)</td>
+      <td style="background:#F0F6F8">放射線量を定点観測し、データを可視化（グラフ化）したり、呟いてくれる。</td>
+      <td style="background:#E2EDF2">ブラウザ,Twitter</td>
+      <td style="background:#F0F6F8">free</td>
+      <td style="background:#F0F6F8">休止中</td>
+    </tr>
+  </tfoot>
+</table>
+### OpenVPN
+大量の写真や動画など、重いデータを抱えたサーバPCを外部ネットワークから隠すため、VPNを導入しています。
+### BIND9
+でもって、家庭内LAN上のデバイスをIPで直接指定するのはイケてないので、BIND9も稼働しています。DHCPはルータにMAC毎の固定割り当て設定をしてお任せしています。
+### 太陽光/放射線量モニタ etc.
+上記以外は自作のサーバアプリ群で、VPN内部に隠したサーバPCの電源をブラウザ経由でONしたり、自作ソーラー発電蓄電システムの状態を監視したり、家の周辺の放射線量を定点観測したりしています。
+## メディアサーバPC提供サービス
+VPNの後ろに隠したサーバPCでは以下のメディア関連サービスが稼働しています。
+QNAPなどのNASを検討したこともありますが、ビデオカメラで撮影したMTS動画を標準的なMP4変換する処理など、結構重い処理をJenkinsが回すので、QNAP外にスレーブを用意するくらいならNASとビルドスレーブマシンは兼任させるのがベスト。
+という判断で、PCサーバに落ち着いています。
+ディストリは未だにUbuntu 14.04.5 LTS。そろそろdist-upgradeせねば…。
+<table style="border:solid 2px #FFFFFF">
+  <thead>
+    <tr>
+      <th style="background:#ACB9BF" colspan="3">サーバサイド</th>
+      <th style="background:#ACB9BF" colspan="3">クライアントサイド</th>
+    </tr>
+    <tr>
+      <th style="background:#ACB9BF">名称</th>
+      <th style="background:#ACB9BF">価格</th>
+      <th style="background:#ACB9BF">概要</th>
+      <th style="background:#ACB9BF">名称</th>
+      <th style="background:#ACB9BF">価格</th>
+      <th style="background:#ACB9BF">概要</th>
+    </tr>
+  </thead>
+  <tfoot>
+    <tr>
+      <td style="background:#E2EDF2">Jenkins</td>
+      <td style="background:#F0F6F8">free</td>
+      <td style="background:#F0F6F8">説明が不要なくらい超有名なCIシステム。<br />デジカメ写真や動画を撮影日ディレクトリに振り分けたり、写真を<a href="http://blog.rinka-blossom.com/xie-zhen-detabatukuatupuniamazon-cloud-drivewoshi-ukotonomerituto/">Amazon Cloud Service</a>に同期してくれたり、<a href="http://tech.uribou.tokyo/python_flickrapi_2/">flickrに自動でアップした上でExifデータを読み取って月ごとのアルバムを自動生成</a>したり、撮った動画をDLNA経由で配信できる形式に自動変換してくれる。</td>
+      <td style="background:#E2EDF2">-</td>
+      <td style="background:#F0F6F8">-</td>
+      <td style="background:#F0F6F8">-</td>
+    </tr>
+    <tr>
+      <td style="background:#E2EDF2" rowspan="2">Bittorrent Sync</td>
+      <td style="background:#F0F6F8" rowspan="2">free(機能制限あり)</td>
+      <td style="background:#F0F6F8" rowspan="2">Dropboxのようなサービスを自前のPCサーバで実現できる。<br />無料で使用するには一部機能制限を受け入れる必要がある。</td>
+      <td style="background:#E2EDF2"><a href="https://itunes.apple.com/us/app/bittorrent-sync/id665156116?mt=8&amp;at=1000locx">BitTorrent Sync</a></td>
+      <td style="background:#F0F6F8">free</td>
+      <td style="background:#F0F6F8">iOSアプリ。<br />撮った写真や動画を自前PCサーバと同期できる。無線LAN接続時のみ同期させて通信量を節約することも可能。</td>
+    </tr>
+    <tr>
+      <td style="background:#E2EDF2"><a href="https://play.google.com/store/apps/details?id=com.resilio.sync">Resilio Sync</a></td>
+      <td style="background:#F0F6F8">free</td>
+      <td style="background:#F0F6F8">Androidアプリ。<br />アプリ名はiPhone版と多少異なるが、リリース元、機能共に同じっぽい。</td>
+    </tr>
+    <tr>
+      <td style="background:#E2EDF2" rowspan="2">mpd</td>
+      <td style="background:#F0F6F8" rowspan="2">free</td>
+      <td style="background:#F0F6F8" rowspan="2">ALSAデバイス用音楽Jukeboxサーバ。<br />ローカルに接続したALSAデバイス経由で、ローカルなスピーカから音楽再生が可能。&lt;!-- <br /><a href="https://wiki.archlinux.org/index.php/Music_Player_Daemon/Troubleshooting#Binding_to_IPV6_before_IPV4">Binding_to_IPV6_before_IPV4</a>に注意。 --&gt;</td>
+      <td style="background:#E2EDF2"><a href="https://itunes.apple.com/us/app/mpdluxe/id991758069?mt=8&amp;at=1000locx" target="_blank" rel="noopener">MPDluxe</a></td>
+      <td style="background:#F0F6F8">$2.99</td>
+      <td style="background:#F0F6F8">iOSアプリ。<br />mpdをリモート操作できる。</td>
+    </tr>
+    <tr>
+      <td style="background:#E2EDF2"><a href="https://play.google.com/store/apps/details?id=com.namelessdev.mpdroid" target="_blank" rel="noopener">MPDroid</a></td>
+      <td style="background:#F0F6F8">free</td>
+      <td style="background:#F0F6F8">Androidアプリ。<br />mpdをリモート操作できる。</td>
+    </tr>
+    <tr>
+      <td style="background:#E2EDF2" rowspan="2">Supersonic</td>
+      <td style="background:#F0F6F8" rowspan="2">free</td>
+      <td style="background:#F0F6F8" rowspan="2">Subsonicクローン。<br />WebベースのMusic Streamer。JukeboxやPodcast Receiver機能も備える。</td>
+      <td style="background:#E2EDF2"><a href="https://itunes.apple.com/jp/app/avsub/id923424694?mt=8&amp;uo=4&amp;at=1000locx" target="_blank" rel="noopener">AVSub</a></td>
+      <td style="background:#F0F6F8">$3.99 (480円)</td>
+      <td style="background:#F0F6F8">iOSアプリ。<br />Supersonicからのストリーミングを受けて音楽を再生できる。</td>
+    </tr>
+    <tr>
+      <td style="background:#E2EDF2"><a href="https://play.google.com/store/apps/details?id=org.moire.ultrasonic" target="_blank" rel="noopener">UltraSonic</a></td>
+      <td style="background:#F0F6F8">free</td>
+      <td style="background:#F0F6F8">Androidアプリ。<br />Supersonicからのストリーミングを受けて音楽を再生できる。</td>
+    </tr>
+    <tr>
+      <td style="background:#E2EDF2"><a href="https://github.com/ps3mediaserver/ps3mediaserver">PS3 media server</a></td>
+      <td style="background:#F0F6F8">free</td>
+      <td style="background:#F0F6F8">動画や写真、音楽データをDLNAクライアントに配信できる。</td>
+      <td style="background:#E2EDF2">色々</td>
+      <td style="background:#F0F6F8">-</td>
+      <td style="background:#F0F6F8">DLNAクライアントアプリ、デバイス。（省略）</td>
+    </tr>
+  </tfoot>
+</table>
+*※：日本円価格は為替レートにより変動します。*
+### Jenkins
+PCサーバは少し凝ったことを自動化していて、udevでSDカードの挿抜をフックしてJenkinsにイベント飛ばすようにしています。
+JenkinsはSDカードから写真や動画をローカルにコピー、撮影日時に応じてディレクトリツリーを生成、振り分けて整理してくれた後、写真はRAWデータごと[Amazon Cloud Service](http://blog.rinka-blossom.com/xie-zhen-detabatukuatupuniamazon-cloud-drivewoshi-ukotonomerituto/)と同期してバックアップします。
+また、写真はJPEG画像のみ、[flickrに自動でアップした上で、Exifデータを読み取って月ごとのアルバムを自動生成](http://tech.uribou.tokyo/python_flickrapi_2/)するようにしました。
+Amazon Cloud Drive同様、flickrも **写真をオリジナル画質のままアップロードできる** ので重宝しています。
+### Bittorrent Sync
+DropBoxのようなサービスを自前のPCサーバで提供することができます。
+無料で使用するには、同期するファイルを子フォルダに配置できないという宣言はありますが、同期ファイルのサイズ制限や容量制限はない（自前のPCサーバ容量が許す限り）ので、Dropboxよりはある意味自由度があるのかなと。
+iPhoneの写真や動画をサーバに飛ばし、Jenkinsさんに処理させて自動整理するようにしています。
+### mpd
+ALSAに対応したサウンドデバイス経由で音楽再生を可能にするJukeboxサーバアプリケーションです。
+クライアントアプリはiPhone、Androidの両方からリリースされているので、特に迷うことはないと思います。
+### Supersonic
+手持ちの音楽ファイルを、3G/4G回線を経由したVPN回線でストリーミング配信することができます。
+このためにPCサーバを稼働させ続けるのでは電力が勿体無いので、[rpwcweb](https://github.com/dodo5522/rpwc)のような、外部から電源操作できるようなサービスがあると便利。
+AndroidのSubsonicクライアントアプリは複数の選択肢がありましたが、無料アプリでSupersonicとの組み合わせで正常に音楽再生できたのは[Ultrasonic](https://play.google.com/store/apps/details?id=org.moire.ultrasonic)だけでした。他は**「サーバアドレスが不正」**などのエラーで再生できませんでした。Subsonicクローン対策がされているのかも…？
+### PS3 media server
+名前から分かる通り、PlayStation3のDLNAクライアントに配信するためのDLNAサーバです。
+でも実際は規格を満たしていれば何でも良いので、、DLNAクライアントはiPhoneだろうがTVだろうが再生可能です。
+主に旅の思い出動画を家族で鑑賞する際に使用しています。
+## まとめ
+カメラやビデオなど、記録を残すデバイスがデジタル化するにつれて、その記録したデータをどう手軽に参照するかが問題になると思います。
+特に記録を残すデバイスが１つならまだいいんですが、複数個になると収集がつきませんよね。我が家の場合は夫婦それぞれが所有するデジカメとiPhone（各２台）、ビデオカメラが１台あるという状態です。
+つまり、写真撮影可能な機材は４台、動画撮影可能な機材は５台あるわけですね。
+メーカーもApple、Nikon、Sonyとバラバラなので、専用のアプリケーションソフトを個別にいれて管理しようものなら、破綻するのは明白。
+というわけで、メディアサーバを１台用意し、Jenkinsという便利な自動化ツールを活用して、データを一元管理して快適なデジタルライフを送りましょう。
+…ちょっとやりすぎな感じもしますが。
+## おまけ
+上記サーバ群は主にLinux OS上に構築しています。
+Linuxについて知っておいて損はないと思うので、赤本黒本片手に勉強しながらサーバを構築し、LPIC資格も取得して一石二鳥にするのがオススメです。
+<div class="booklink-box" style="text-align:left;padding-bottom:20px;font-size:small;overflow: hidden"><div class="booklink-image" style="float:left;margin:0 15px 10px 0"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB01076Y8CC%2Fref%3Dnosim" target="_blank" rel="noopener"><img src="https://images-fe.ssl-images-amazon.com/images/I/51UR5R2PsXL._SL160_.jpg" style="border: none" /></a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="booklink-info" style="line-height:120%;overflow: hidden"><div class="booklink-name" style="margin-bottom:10px;line-height:120%"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB01076Y8CC%2Fref%3Dnosim" target="_blank" rel="noopener">Linux教科書 LPICレベル1 Version4.0対応[Kindle版]</a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"><div class="booklink-powered-date" style="font-size:8pt;margin-top:5px;font-family:verdana;line-height:120%">posted with <a href="http://yomereba.com" rel="nofollow noopener" target="_blank">ヨメレバ</a></div></div><div class="booklink-detail" style="margin-bottom:5px">リナックスアカデミー中島能和 翔泳社 2015-06-23    </div><div class="booklink-link2" style="margin-top:10px"><div class="shoplinkkindle" style="margin-right:5px"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB01076Y8CC%2F" target="_blank" rel="noopener">Kindle</a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="shoplinkamazon" style="margin-right:5px"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2F4798141917%2F" target="_blank" rel="noopener">Amazon[書籍版]</a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div>                                    	  	  	  	</div></div><div class="booklink-footer" style="clear: left"></div></div>
+<div class="booklink-box" style="text-align:left;padding-bottom:20px;font-size:small;overflow: hidden"><div class="booklink-image" style="float:left;margin:0 15px 10px 0"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB00APVQ6OS%2Fref%3Dnosim" target="_blank" rel="noopener"><img src="https://images-fe.ssl-images-amazon.com/images/I/51%2B34i71KKL._SL160_.jpg" style="border: none" /></a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="booklink-info" style="line-height:120%;overflow: hidden"><div class="booklink-name" style="margin-bottom:10px;line-height:120%"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB00APVQ6OS%2Fref%3Dnosim" target="_blank" rel="noopener">徹底攻略LPI 問題集 Level1/Release3 対応 徹底攻略シリーズ[Kindle版]</a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"><div class="booklink-powered-date" style="font-size:8pt;margin-top:5px;font-family:verdana;line-height:120%">posted with <a href="http://yomereba.com" rel="nofollow noopener" target="_blank">ヨメレバ</a></div></div><div class="booklink-detail" style="margin-bottom:5px">鳥谷部 昭寛,菖蒲 淳司,ソキウス・ジャパン インプレス 2012-11-15    </div><div class="booklink-link2" style="margin-top:10px"><div class="shoplinkkindle" style="margin-right:5px"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB00APVQ6OS%2F" target="_blank" rel="noopener">Kindle</a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="shoplinkamazon" style="margin-right:5px"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2F4844327941%2F" target="_blank" rel="noopener">Amazon[書籍版]</a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div>                                    	  	  	  	</div></div><div class="booklink-footer" style="clear: left"></div></div>
+今では両方ともKindle版が出てるんですね。かさばらなくて良いなぁ。

@@ -1,0 +1,92 @@
+---
+title: "スマホから電源スイッチのリモート操作を可能にするシステムをDIYしよう。"
+description: "サーバ管理経験者なら、これって意外と夢だったりしませんかね？パソコンの電源スイッチをリモート（自宅の外）からON/OFF操作する。これ、意外と簡単にできちゃいま..."
+tags:
+  - "オフグリッド"
+  - "プログラミング"
+  - "電子工作"
+categories:
+  - hobby
+image: /images/software-developer.jpg
+date: 2016-07-21T12:50:47.000Z
+author: takashi
+---
+
+
+<br />
+サーバ管理経験者なら、これって意外と夢だったりしませんかね？
+<strong>パソコンの電源スイッチをリモート（自宅の外）からON/OFF操作する。</strong>
+これ、意外と簡単にできちゃいます。電子工作経験とRaspberry Piみたいな小型低消費電力サーバと、低消費電力無線機能付きマイコンXBeeが２つあれば。
+<h1>XBeeを使ってできること</h1>
+<a href="http://blog.rinka-blossom.com/recommend-xbee/">こちら</a>に概要を書いていますが、Arduinoほどの自由度はありません。
+でもXBee自身が結構な数のI/Oを持つ上、ADCもあったりするので、ちょっとしたことならXBeeだけで出来てしまいます。今回のようなリレー操作なら超簡単。
+とあるピンにリモートで0か1を指定して、それがそのままリレーのON/OFFに変換されるというだけでの仕組みです。
+<a href="http://xbee-sdk-doc.readthedocs.io/en/1.5.7/doc/working_xbee_extensions/#332-layout-view"><img src="http://xbee-sdk-doc.readthedocs.io/en/1.5.7/doc/images/img006bm.jpg" alt="XBeeLayout" /></a>
+<h1>そんなシステムの構成</h1>
+それなりにシーケンス図を書いてみるとこうなります。
+<img src="https://qiita-image-store.s3.amazonaws.com/0/27086/25c88b94-f1a8-5dde-91b8-0ae88854692e.png" alt="sequence_web.png" />
+PC電源をON/OFFするには、マザーボードの電源スイッチ端子をショートさせればいいので、リレーを使います。
+リレー制御は3.3V highにできるGPIOがあれば十分なので、XBeeのdigital I/O操作APIを叩くだけというお手軽さ。
+<h1>設定やら構築やらの手順</h1>
+<h2>RaspberryPi + XBee Coordinatorの組み立てと設定</h2>
+RaspberryPiがWebサーバとして動作して、ユーザはブラウザ経由でXBee Coordinatorを操作することになります。
+家庭菜園リモート監視の記事の<a href="http://qiita.com/dodo5522/items/63d1efee3f70b3d5f2f6#3-2">Coordinatorの設定</a>と<a href="http://qiita.com/dodo5522/items/63d1efee3f70b3d5f2f6#2-3">Raspberry Pi側のサーバ環境構築</a>を参考にXBeeとRaspberryPiを設定してみてください。
+この辺も整理しないと・・・。
+<h2>小型リレーボードキットLK-RB1 + XBee Routerの組み立てと設定</h2>
+お手軽にリレーを使えるようにしたキットがあります。小型リレーボードキットLK-RB1です。
+<div class="kaerebalink-box"><div class="kaerebalink-image"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB00FF2TXMO%2Fref%3Dnosim" target="_blank" rel="noopener"><img src="http://ecx.images-amazon.com/images/I/41up%2Bchf6GL._SL160_.jpg" style="border: none" /></a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="kaerebalink-info"><div class="kaerebalink-name"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB00FF2TXMO%2Fref%3Dnosim" target="_blank" rel="noopener">エレキット 小型リレーボードキット (5V用) LK-RB1</a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"><div class="kaerebalink-powered-date">posted with <a href="http://kaereba.com" rel="nofollow noopener" target="_blank">カエレバ</a></div></div><div class="kaerebalink-detail"> イーケイジャパン 2013-10-04    </div><div class="kaerebalink-link1"><div class="shoplinkamazon"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fgp%2Fsearch%3Fkeywords%3D%2583G%2583%258C%2583L%2583b%2583g%2520%258F%25AC%258C%255E%2583%258A%2583%258C%2581%255B%2583%257B%2581%255B%2583h%2583L%2583b%2583g%2520%25285V%2597p%2529%2520LK-RB1%26__mk_ja_JP%3D%2583J%2583%255E%2583J%2583i" target="_blank" rel="noopener">Amazonで購入</a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="shoplinkrakuten"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=54&amp;pc_id=54&amp;pl_id=616&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fsearch.rakuten.co.jp%2Fsearch%2Fmall%2F%25E3%2582%25A8%25E3%2583%25AC%25E3%2582%25AD%25E3%2583%2583%25E3%2583%2588%2520%25E5%25B0%258F%25E5%259E%258B%25E3%2583%25AA%25E3%2583%25AC%25E3%2583%25BC%25E3%2583%259C%25E3%2583%25BC%25E3%2583%2589%25E3%2582%25AD%25E3%2583%2583%25E3%2583%2588%2520%25285V%25E7%2594%25A8%2529%2520LK-RB1%2F-%2Ff.1-p.1-s.1-sf.0-st.A-v.2%3Fx%3D0" target="_blank" rel="noopener">楽天市場で購入</a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=54&amp;pc_id=54&amp;pl_id=616" width="1" height="1" style="border:none"></div></div></div><div class="booklink-footer" style="clear: left"></div></div>
+これらを以下のように配線します。
+リレーの初期状態をOFF（PC電源ボタン端子アンショート）にするため、DIO10 pin6はpull downしておき、J1はPCの電源ボタン端子に接続しています。
+<img src="https://qiita-image-store.s3.amazonaws.com/0/27086/5554d4fa-6f84-aa35-ae87-9203ed333ea5.png" alt="remote power controller_回路図.png" />
+絵にするとこんな感じです。実際の電源は電池ではなく、太陽光だったりしますが。
+<img src="https://qiita-image-store.s3.amazonaws.com/0/27086/b64c93c0-acd6-dcd2-d5cd-363e648ca2ba.png" alt="remote power controller_フ_レット_ホ_ート_.png" />
+XCTUツールを操作して、XBee Routerを以下のように設定します。
+<ol>
+<li>PAN ID, Scan Channels, Baud Rateは、RaspberryPiに接続したCoordinatorと同じ値を設定する。</li>
+<li>Destination Address Low/Highには0を設定する。0は、通信相手がCoordinatorであることを示す。</li>
+<li>API Enableを2に設定する。</li>
+<li>D0〜D5, P1〜P2を全てDisabledに設定する。リレーの初期状態をOFF（PC電源ボタン端子アンショート）にするため、P0（DIO10 pin6）のみDigital Out Lowに設定する。</li>
+</ol>
+<img src="https://qiita-image-store.s3.amazonaws.com/0/27086/b4ab21f8-ae96-1081-ae7e-b0e30f9a8629.png" alt="スクリーンショット 2015-07-22 1.33.26.png" />
+でもって、LK-RB1とAE-XBee-REG-DIPを回路図の通りに配線したボードを作ります。下記はあくまで一例なので、適当で構いません。動けばいいんです。
+<img src="https://qiita-image-store.s3.amazonaws.com/0/27086/8ba01204-9a36-978a-8c38-0ed1d87ebd55.jpeg" alt="IMG_7495.JPG" />
+基盤を載せて、
+<img src="https://qiita-image-store.s3.amazonaws.com/0/27086/a3b3a7ad-d2e9-4f6d-a629-7e5fd126d5a6.jpeg" alt="IMG_7494.JPG" />
+本体電源スイッチとリモートスイッチの両方で操作可能にするため、どちらでもショートできるように配線し、
+<img src="https://qiita-image-store.s3.amazonaws.com/0/27086/12f6d906-6e80-9175-465d-741a9d8b0670.jpeg" alt="IMG_7497.JPG" />
+<img src="https://qiita-image-store.s3.amazonaws.com/0/27086/e7259d5e-82b0-2b55-93b5-8a79976fd1d3.jpeg" alt="IMG_7496.JPG" />
+あとは基盤の電源を入れるだけ。
+<img src="https://qiita-image-store.s3.amazonaws.com/0/27086/c400687f-7107-2cfa-7431-479e98e43a0b.jpeg" alt="IMG_7498.JPG" />
+あとはRaspberry Piでスイッチ操作ツールを実行すれば、リモートから電源ONすることができます。
+<h2>リモート電源スイッチ操作ツール（コマンドライン版）インストール</h2>
+Pythonで書きました。
+Raspberry Piにログインして、以下のようにコマンド実行するとインストール出来ます。…初心者丸出しコードで恥ずかしい…　書き直そう。
+<pre><code class="bash">$ git clone https://github.com/dodo5522/rpwc.git
+$ cd rpwc
+$ virtualenv .
+$ . bin/activate
+(rpwc)$ ./setup.sh
+</code></pre>
+以下のようにコマンドを実行すると、電源ボタンを押下して１秒後に離す、といった動作をします。
+<pre><code class="bash">$ python3 -m rpwc -d 0x0013A20040AFBCCE -g P0 -i 1
+{'status': b'?x00', 'source_addr': b'%Y', 'source_addr_long': b'?x00?x13?xa2?x00@?xaf?xbc?xce', 'frame_id': b'?x01', 'command': b'P0', 'id': 'remote_at_response'}
+{'status': b'?x00', 'source_addr': b'%Y', 'source_addr_long': b'?x00?x13?xa2?x00@?xaf?xbc?xce', 'frame_id': b'?x02', 'command': b'P0', 'id': 'remote_at_response'}
+</code></pre>
+オプションの概要は以下の通り。
+<pre><code class="bash">optional arguments:
+  -h, --help            show this help message and exit
+  -d L, --xbee-dest-addr L
+                        destination address of xbee terminal as hexdecimal
+  -g P, --xbee-gpio-power P
+                        GPIO pin name which is assigned to power control on
+                        xbee
+  -p M, --serial-port M
+                        serial port device file path to communicate with xbee
+                        terminal
+  -b N, --serial-baurate N
+                        serial port baurate
+  -i I, --interval I    interval time between press and release of power buton
+</code></pre>
+<h1>まとめ</h1>
+PyPIにxbeeパッケージが公開されているので、同梱されるZigBeeクラスを使えば楽勝で実装できると踏んでたんですが、remote_at関数を見つけるのに手間取って、意外とハマりました。
+<a href="https://code.google.com/p/python-xbee/source/browse/xbee/zigbee.py">zibee.py</a>のapi_commandsと<a href="https://code.google.com/p/python-xbee/source/browse/xbee/base.py">base.py</a>のgetattrの実装を覚えておくと、いつか役に立つ気がします。

@@ -1,0 +1,248 @@
+---
+title: "4. 学習モデルのデプロイ（API化）"
+description: "4. 学習モデルのデプロイ（API化）4-1. Watson Machine Learningを用いたモデルのAPI化4-1-1. 学習モデルのデプロイ第3章で..."
+tags:
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2019-02-24T12:42:10.000Z
+author: takashi
+---
+
+
+<h1 class="c-title--primary">4. 学習モデルのデプロイ（API化）</h1>
+<div class="l-content--detail p-lesson"></div>
+<div class="l-content--detail p-lesson">
+<div>4-1. Watson Machine Learningを用いたモデルのAPI化</div>
+<div class="l-content--detail p-lesson"></div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-1-1. 学習モデルのデプロイ</div>
+<div class="l-content--detail p-lesson">
+第3章では、TensorFlowとKerasを用いて画像認識などのモデルを作成しました。このモデルを実際の業務システムやWebサービスで活用するには、どうすれば良いのでしょうか。
+例えば、Kerasでは下記のようにすると作成したモデルを保存することができます。それを都度読み込んで、与えられたデータで予測を行えば、業務システムやWebサービスに組み込むことができるでしょう。
+<pre><code class="python hljs">
+  model.save(<span class="hljs-string">'＜保存先のファイルパス＞'</span>)
+</code></pre>
+<figure><img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/MNIST_CNN_-_IBM_Watson-8.png" alt="" width="1618" /></figure>
+また、作成したモデルをクラウド上に配置することもできます。例えば、IBM CloudではWatson Machine Learning（ML）というサービスを使うと、モデルをWeb API化することができます。
+本章では、Watson Machine Learningを活用したWeb API化について説明します。
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-1-2. Watson MLを使用したWeb API化</div>
+<div class="l-content--detail p-lesson">
+<h4>Watson MLの準備</h4>
+まず、Watson StudioのプロジェクトにWatson Machine Learningのインスタンスを紐付けます。
+プロジェクトのSettings画面を開きます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/IBM_Watson.png" alt="" width="2636" />
+画面下部のAssociated Servicesの欄にあるAdd serviceから、Watsonをクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/IBM_Watson-16.png" alt="" width="2878" />
+Machine LearningのAddをクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/IBM_Watson-18.png" alt="" width="2878" />
+NewタブからLiteプランを選択してインスタンスを作成するか、既にWatson Machine Learningのインスタンスが存在する場合はExistingタブで選択して、プロジェクトとWatson Machine Learningを紐付けます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/IBM_Watson-19.png" alt="" width="2878" />
+<h4>Cloud Object Storage (COS)の準備</h4>
+Watson MLでは、訓練データと作成したモデルの保存場所と、訓練結果の保存場所をCOS上にそれぞれ準備しておく必要があります。
+IBM Cloudのダッシュボードから作成済みのCOSの管理画面を開き、バケットを作成します。
+バケットの作成をクリックし、2つのバケットを作成します。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/Cloud_Object_Storage_-_IBM_Cloud-2.png" alt="" width="2878" />
+バケットの名前は、下記のように分かりやすいように適宜付けてください。
+<ul>
+ 	<li>訓練データと作成したモデルの保存用（データ用バケット）：ki-dlaas-data</li>
+ 	<li>訓練結果の保存用（結果用バケット）：ki-dlaas-result</li>
+</ul>
+Watson Studioの地域を米国南部しているため、ロケーションはus-geoを選んでおきましょう。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/Cloud_Object_Storage_-_IBM_Cloud-3.png" alt="" width="2878" />
+データ用バケットには、MNISTのデータセットをあらかじめアップロードしておく必要があります。アップロードするファイルは、<a href="https://dataplatform.ibm.com/exchange/public/entry/view/903188bb984a30f38bb889102a1baae5" target="_blank" rel="noopener noreferrer">こちらのページ</a>からダウンロードすることができます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/IBM_Watson-2-1.png" alt="" width="2618" />
+ダウンロードしたMNIST-plk.zipを展開し、下記の2つのファイルをデータ用バケットにアップロードします。
+<ul>
+ 	<li>mnist-tf-train.pkl</li>
+ 	<li>mnist-tf-test.pkl</li>
+</ul>
+<figure><img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/Cloud_Object_Storage_-_IBM_Cloud-1.png" alt="" width="2618" /></figure>
+<h4>Pythonスクリプトの準備</h4>
+Watson MLにデプロイするモデルは、Watson ML上で学習させる必要があるため、学習の手順をPythonスクリプトにまとめる必要があります。
+下記のようなファイルを作成し、mnist-cnn.pyというファイル名で保存してください。
+<pre><code class="python hljs">
+  <span class="hljs-keyword">import</span> os
+  <span class="hljs-keyword">import</span> sys
+  <span class="hljs-keyword">import</span> pickle
+  <span class="hljs-keyword">from</span> os <span class="hljs-keyword">import</span> path, environ
+  <span class="hljs-keyword">from</span> keras.datasets <span class="hljs-keyword">import</span> mnist
+  <span class="hljs-keyword">from</span> keras.utils <span class="hljs-keyword">import</span> to_categorical
+  <span class="hljs-keyword">from</span> keras.models <span class="hljs-keyword">import</span> Sequential
+  <span class="hljs-keyword">from</span> keras.layers <span class="hljs-keyword">import</span> Dense, Activation, Conv2D, MaxPooling2D, Flatten
+  <span class="hljs-keyword">from</span> keras.callbacks <span class="hljs-keyword">import</span> EarlyStopping, TensorBoard
+  <span class="hljs-keyword">from</span> keras.utils <span class="hljs-keyword">import</span> np_utils
+  DATA_DIR = os.environ[<span class="hljs-string">"DATA_DIR"</span>]
+  RESULT_DIR = os.environ[<span class="hljs-string">"RESULT_DIR"</span>]
+  JOB_STATE_DIR = os.environ[<span class="hljs-string">"JOB_STATE_DIR"</span>]
+  <span class="hljs-comment"># データセットの準備</span>
+  os.chdir(DATA_DIR)
+  <span class="hljs-keyword">with</span> open(<span class="hljs-string">'mnist-tf-train.pkl'</span>, <span class="hljs-string">'rb'</span>) <span class="hljs-keyword">as</span> f:
+    X_train, y_train = pickle.load(f)
+  <span class="hljs-keyword">with</span> open(<span class="hljs-string">'mnist-tf-test.pkl'</span>, <span class="hljs-string">'rb'</span>) <span class="hljs-keyword">as</span> f:
+    X_test, y_test = pickle.load(f)
+  <span class="hljs-comment"># shape[0]はデータの個数、(28, 28)を(28, 28, 1)に</span>
+  X_train = X_train.reshape(X_train.shape[<span class="hljs-number">0</span>], <span class="hljs-number">28</span>, <span class="hljs-number">28</span>, <span class="hljs-number">1</span>)
+  X_test = X_test.reshape(X_test.shape[<span class="hljs-number">0</span>], <span class="hljs-number">28</span>, <span class="hljs-number">28</span>, <span class="hljs-number">1</span>)
+  <span class="hljs-comment"># データの正規化</span>
+  X_train =  X_train / <span class="hljs-number">255</span>
+  X_test = X_test / <span class="hljs-number">255</span>
+  <span class="hljs-comment"># One-Hot形式に変換</span>
+  y_train = to_categorical(y_train, <span class="hljs-number">10</span>)
+  y_test = to_categorical(y_test, <span class="hljs-number">10</span>)
+  <span class="hljs-comment"># モデルの作成</span>
+  model = Sequential()
+  model.add(Conv2D(<span class="hljs-number">32</span>, kernel_size=(<span class="hljs-number">3</span>, <span class="hljs-number">3</span>), padding=<span class="hljs-string">'same'</span>, input_shape=(<span class="hljs-number">28</span>, <span class="hljs-number">28</span>, <span class="hljs-number">1</span>)))
+  model.add(MaxPooling2D(pool_size=(<span class="hljs-number">2</span>, <span class="hljs-number">2</span>)))
+  model.add(Flatten())
+  model.add(Dense(<span class="hljs-number">128</span>))
+  model.add(Activation(<span class="hljs-string">'relu'</span>))
+  model.add(Dense(<span class="hljs-number">10</span>))
+  model.add(Activation(<span class="hljs-string">'softmax'</span>))
+  model.compile(optimizer=<span class="hljs-string">'adam'</span>, loss=<span class="hljs-string">'categorical_crossentropy'</span>, metrics=[<span class="hljs-string">'accuracy'</span>])
+  <span class="hljs-comment"># TensorBoard</span>
+  tb_directory = os.path.join(JOB_STATE_DIR, <span class="hljs-string">"logs"</span>, <span class="hljs-string">"tb"</span>, <span class="hljs-string">"test"</span>)
+  os.makedirs(tb_directory, exist_ok=<span class="hljs-keyword">True</span>)
+  tensorboard = TensorBoard(log_dir=tb_directory)
+  <span class="hljs-comment"># 学習</span>
+  model.fit(X_train, y_train, batch_size=<span class="hljs-number">32</span>, validation_split=<span class="hljs-number">0.25</span>, callbacks=[EarlyStopping(), tensorboard], verbose=<span class="hljs-number">1</span>)
+  <span class="hljs-comment"># 評価</span>
+  model.evaluate(X_test, y_test, verbose=<span class="hljs-number">0</span>)
+  <span class="hljs-comment"># モデルの保存</span>
+  model_result_path = path.join(RESULT_DIR, <span class="hljs-string">"model"</span>, <span class="hljs-string">'MNIST-CNN.h5'</span>)
+  os.makedirs(path.dirname(model_result_path), exist_ok=<span class="hljs-keyword">True</span>)
+  model.save(model_result_path)
+</code></pre>
+「データセットの準備」は、先ほどCOSのデータ用バケットにアップロードしたファイルをWatson ML環境上にダウンロードしています。その後、データの正規化やOne-Hot形式への変換、モデルの作成（model.compileまで）は、これまでの演習と同様です。
+Watson MLではKerasのTensorBoardコールバックを追加しておくと、学習状況を可視化する機能があるので、その準備も行っています。
+学習と評価についても演習と同様です。最後に、作成したモデルを、データ用バケットに保存しています。
+このファイルをZip形式で圧縮します。mnist-cnn.zipというファイル名にしました。
+<h4>Training Definitionの作成</h4>
+Watson StudioでNotebookを新規作成し、Dataアイコンから先ほど作成したmnist-cnn.zipをCOSにアップロードします。
+次に、Notebookの環境上にダウンロードします。COSにアップロードしたmnist-cnn.zipのInsert Credentialsをクリックするとコードが自動的に挿入されるので、その後に、下記のコードを追記します。
+<pre><code class="python hljs">
+  <span class="hljs-keyword">import</span> ibm_boto3
+  <span class="hljs-keyword">from</span> ibm_botocore.client <span class="hljs-keyword">import</span> Config
+  <span class="hljs-keyword">import</span> json
+  cos = ibm_boto3.client(service_name=<span class="hljs-string">'s3'</span>,
+    ibm_api_key_id=credentials_1[<span class="hljs-string">'IBM_API_KEY_ID'</span>],
+    ibm_service_instance_id=credentials_1[<span class="hljs-string">'IAM_SERVICE_ID'</span>],
+    ibm_auth_endpoint=credentials_1[<span class="hljs-string">'IBM_AUTH_ENDPOINT'</span>],
+    config=Config(signature_version=<span class="hljs-string">'oauth'</span>),
+    endpoint_url=credentials_1[<span class="hljs-string">'ENDPOINT'</span>])
+  cos.download_file(Bucket=credentials_1[<span class="hljs-string">'BUCKET'</span>], Key=credentials_1[<span class="hljs-string">'FILE'</span>], Filename=credentials_1[<span class="hljs-string">'FILE'</span>])
+  !ls -la
+</code></pre>
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/CNN_MNIST_20180706_-_IBM_Watson.png" alt="" width="1270" />
+Training DefinitionはWatson MLのPython SDKを使って行います。Watson MLのサービス資格情報を使用して、WatsonMachineLearningAPIClientのインスタンスを作成します。
+Watson MLのサービス資格情報は、IBM CloudのダッシュボードからWatson MLのインスタンスを開き、Service credentialsタブで表示することができます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/Service_Details_-_IBM_Cloud.png" alt="" width="1270" />
+<pre><code class="python hljs">
+  <span class="hljs-keyword">from</span> watson_machine_learning_client <span class="hljs-keyword">import</span> WatsonMachineLearningAPIClient
+  wml_credentials = {
+    <span class="hljs-string">"username"</span>: <span class="hljs-string">"＜Watson MLのusername＞"</span>,
+    <span class="hljs-string">"password"</span>: <span class="hljs-string">"＜Watson MLのpassword＞"</span>,
+    <span class="hljs-string">"instance_id"</span>: <span class="hljs-string">"＜Watson MLのinstance_id＞"</span>,
+    <span class="hljs-string">"url"</span>: <span class="hljs-string">"https://ibm-watson-ml.mybluemix.net"</span>
+  }
+  client = WatsonMachineLearningAPIClient(wml_credentials)
+  print(client.version)
+</code></pre>
+<figure><img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/deploy_model_-_IBM_Watson-1.png" alt="" width="1412" /></figure>
+Training Definitionを登録します。最後のEXECUTION_COMMANDで、先ほど作成したmnist-cnn.pyを実行するように指定しています。
+<pre><code class="python hljs">
+  model_definition_metadata = {
+    client.repository.DefinitionMetaNames.NAME: <span class="hljs-string">"CNN MNIST"</span>,
+    client.repository.DefinitionMetaNames.FRAMEWORK_NAME: <span class="hljs-string">"tensorflow"</span>,
+    client.repository.DefinitionMetaNames.FRAMEWORK_VERSION: <span class="hljs-string">"1.5"</span>,
+    client.repository.DefinitionMetaNames.RUNTIME_NAME: <span class="hljs-string">"python"</span>,
+    client.repository.DefinitionMetaNames.RUNTIME_VERSION: <span class="hljs-string">"3.5"</span>,
+    client.repository.DefinitionMetaNames.EXECUTION_COMMAND: <span class="hljs-string">'python3 mnist-cnn.py'</span>
+    }
+<span class="hljs-comment"># 定義ファイルの登録</span>
+definition_details = client.repository.store_definition(<span class="hljs-string">'mnist-cnn.zip'</span>, model_definition_metadata)
+<span class="hljs-comment"># 結果表示</span>
+<span class="hljs-keyword">import</span> json
+print(json.dumps(definition_details, indent=<span class="hljs-number">2</span>))
+</code></pre>
+<figure><img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/deploy_model_-_IBM_Watson-2.png" alt="" width="2036" /></figure>
+<h4>Experimentの作成と実行</h4>
+次に、Experimentを作成します。Experimentは先ほど登録したTraining Definitionをどのように実行するかを定義します。
+Experimentの作成は、Watson Studioのプロジェクト画面で行います。
+Assetsタブを開き、New Experimentをクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/IBM_Watson-3.png" alt="" width="2620" />
+Add training definitionをクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/IBM_Watson-4.png" alt="" width="2620" />
+Training Definitionは先ほど登録したものがあるので、Existing training definitionタブを開き、先ほど登録したCNN MNISTを選択します。
+Compute planは、1 x NVIDIA Tesla K80 (2 GPU)を選択しました。
+最後に、Selectボタンをクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/IBM_Watson-5.png" alt="" width="2620" />
+次に、Cloud Object Storage bucket for storing training source and results filesという欄の下にあるSelectをクリックして、COSのバケット指定画面に移ります。
+まずNew connectionタブを開き、COSのインスタンス、データ用バケット、結果用バケットを順に選択して、Cerateボタンをクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/IBM_Watson-6.png" alt="" width="2620" />
+適当な名前を付けて、Create and runボタンをクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/IBM_Watson-7.png" alt="" width="2620" />
+モデルの学習が始まります。Queued→In Progress→Completedと順に進んでいきます。CompletedでのSTATUS欄の表示がcompletedになれば学習完了です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/IBM_Watson-8.png" alt="" width="2620" />
+<h4>Modelの保存</h4>
+モデルの学習が終わったら、そのモデルを保存します。Experiment画面のCompletedにあるモデルCNN MNISTのACTIONSメニューからSave modelをクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/IBM_Watson-9.png" alt="" width="2620" />
+モデルの保存が終わると、Watson Studioのプロジェクト画面にあるModelsに表示されるようになります。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/IBM_Watson-10.png" alt="" width="2620" />
+<h4>Modelのデプロイ</h4>
+Watson Studioのプロジェクト画面にあるModelsから、CNN MNISTをクリックしてModel画面を表示します。
+モデルをデプロイするには、Deploymentタブを開いて、Add Deploymentをクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/IBM_Watson-11.png" alt="" width="2620" />
+Create Deployment画面で、適当な名前を付け、Deployment typeとしてWeb serviceを選択して、Saveボタンをクリックすると、モデルのデプロイが始まります。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/IBM_Watson-12.png" alt="" width="2620" />
+しばらく待っていると、STATUSがDEPLOY_SUCCESSに変わります。これで、モデルのデプロイの完了です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/IBM_Watson-13.png" alt="" width="2620" />
+<h4>デプロイされたAPIのテスト</h4>
+デプロイされたWeb serviceの画面を開くと、概要（Overview）やAPIの呼び出し方の説明（Implement）を参照することができます。ここでは、TestタブをクリックしてAPIのテストを行いましょう。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/IBM_Watson-14.png" alt="" width="2620" />
+TestタブではJSONデータをモデルに渡して分類や予測を行わせることができます。テスト用のJSONデータを作成するため、Notebookを開きます。
+まず、Kearsを使ってMNISTのデータセットをダウンロードします。
+<pre><code class="python hljs">
+  %matplotlib inline
+  <span class="hljs-keyword">from</span> matplotlib <span class="hljs-keyword">import</span> pyplot <span class="hljs-keyword">as</span> plt
+  <span class="hljs-keyword">from</span> keras.datasets <span class="hljs-keyword">import</span> mnist
+  (X_train, y_train), (X_test, y_test) = mnist.load_data()
+  print(y_test[<span class="hljs-number">0</span>])
+  plt.imshow(X_test[<span class="hljs-number">0</span>])
+  plt.show()
+</code></pre>
+最初のテストデータ（X_test[0]）は「7」のようです。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/deploy_model_-_IBM_Watson-3.png" alt="" width="1288" />
+このデータをテスト用のJSONデータに変換します。
+<pre><code class="python hljs">
+  <span class="hljs-keyword">import</span> json
+  value = X_test[<span class="hljs-number">0</span>].reshape(<span class="hljs-number">28</span>, <span class="hljs-number">28</span>, <span class="hljs-number">1</span>)
+  value = value.astype(<span class="hljs-string">'float32'</span>) / <span class="hljs-number">255</span>
+  value = value.reshape(<span class="hljs-number">1</span>, <span class="hljs-number">28</span>, <span class="hljs-number">28</span>, <span class="hljs-number">1</span>)
+  value = value.tolist()
+  params = {
+    <span class="hljs-string">'values'</span>: value
+  }
+  print(json.dumps(params))
+</code></pre>
+これを実行して表示されたJSONデータをクリップボードにコピーしておきます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/deploy_model_-_IBM_Watson-4.png" alt="" width="2098" />
+APIのテスト画面に戻り、Enter input data欄にコピーしておいたJSONデータを貼り付けます。後は、Predictボタンをクリックすれば分類・予測が開始されます。
+結果は画面の右に表示されます。2つ目の項目（prediction_classes）の値が分類された結果です。ちゃんと「7」と分類されていることが分かります。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/IBM_Watson-15.png" alt="" width="2636" />
+</div>
+<div class="c-course-learn c-course-learn--compleated"></div>
+</div>

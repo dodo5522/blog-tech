@@ -1,0 +1,77 @@
+---
+title: "XBeeよりTWE-Liteを選ぶべき理由？を３つほど。"
+description: "XBeeの類似製品にTWE-Lite（トワイライト）があるんですが、これはZigbee認証を受けていないみたいですね。Zigbee認証済み製品は、こちらで検索で..."
+tags:
+  - "電子工作"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-07-22T03:49:05.000Z
+author: takashi
+---
+
+
+<br />
+XBeeの類似製品にTWE-Lite（トワイライト）があるんですが、これはZigbee認証を受けていないみたいですね。
+<strong><a href="http://www.zigbee.org/zigbee-products-2/">Zigbee認証済み製品は、こちらで検索できる</a></strong>んですが、TWE-Liteはヒットせず。
+<blockquote>
+  ZigBeeアライアンスが認定した製品が正式なZigBeeであり、市場では802.15.4部分のみを利用した製品や準拠しただけの非認定製品に対してZigBeeの表現が用いられる事がある。
+  ZigBeeの名称はZigBeeアライアンスの商標
+</blockquote>
+by <a href="https://ja.m.wikipedia.org/wiki/ZigBee">Wikipedia</a>
+どうりで、<a href="http://mono-wireless.com/jp/products/TWE-NET/index.html">TWE-Lite公式ページ</a>でもZigbee準拠と書いてないわけだ…。
+XBeeとの相互通信は無理ってことかな。試してないけど。
+でも、それを補って余りある長所が、TWE-Liteにはありそうです。以下、XBee比での利点を挙げてみます。
+<h1>ファームウェアをプログラミングできる</h1>
+<img src="http://mono-wireless.com/jp/products/TWE-NET/TWE-NET_service.png" alt="" />
+C言語でユーザアプリケーションを書くためのSDKが用意されていて、各イベントに応じた自前のコールバック関数を登録できます。
+詳しくは<strong><a href="http://mono-wireless.com/jp/tech/Programming/index.html">公式のプログラミング情報</a></strong>に記載されていますが、概略はこんな感じ。
+<ul>
+<li>cbAppColdStart()
+<ul>
+<li>電源投入時に呼び出し</li>
+</ul></li>
+<li>cbAppWarmStart()
+<ul>
+<li>スリープ復帰時に呼び出し</li>
+</ul></li>
+<li>cbToCoNet_vMain()
+<ul>
+<li>メインループ。各種センサーの情報を定期的に送信する処理はここに書くことになるんでしょうね。</li>
+</ul></li>
+<li>cbToCoNet_vRxEvent()
+<ul>
+<li>無線パケット受信時に呼び出し</li>
+</ul></li>
+<li>cbToCoNet_vTxEvent()
+<ul>
+<li>無線パケット送信完了時に呼び出し</li>
+</ul></li>
+<li>cbToCoNet_vNwkEvent()
+<ul>
+<li>MAC層やネットワーク層の各種イベント通知。外部からのwake upピンlow/highはここで受けるんだろうか？ドキュメント読まないと分かりませんが…。</li>
+</ul></li>
+<li>cbToCoNet_vHwEvent()
+<ul>
+<li>ペリフェラルの割り込み処理の遅延実行部。割り込み処理後に呼び出される…ということは、wake up割り込み処理もここに書くのかな？</li>
+</ul></li>
+<li>cbToCoNet_u8HwInt()
+<ul>
+<li>ペリフェラルの割り込みハンドラ。sleep中のwake up割り込みを受けられるとしたら、遅延実行側よりこっちかな。</li>
+</ul></li>
+</ul>
+<h1>XBeeより小さい</h1>
+<img src="http://mono-wireless.com/jp/tech/assets/TWE-Lite-RFID.jpg" alt="" />
+大きさは、ほぼ一円玉大。
+XBeeって意外と大きいんですよね。500円玉くらいかな。その分、アンテナを基盤に内蔵してたりするんですけど。
+TWE-Liteはアンテナが別途必要になります。それでも小さいけど。
+<h1>XBeeより安い</h1>
+XBeeは3000〜4000円。
+対してTWE-Liteは、2000〜3000円で購入できます。
+XBeeには、Zigbee認証分のコストが上乗せされているってことですかね。
+<h1>まとめ</h1>
+結局、<strong>目的に応じてどっちを使うか決める</strong>という、よくある結論に落ち着きました。
+Zigbee採用製品との連携を図りたいなら、多少高価でもXBee。
+独自の小規模ネットワークを構築するだけなら、安価なTWE-Lite。
+ってとこでしょうか。
+とりあえず、XBeeとの相互接続が本当に不可なのか試すためにも、一つ買ってみようかな。

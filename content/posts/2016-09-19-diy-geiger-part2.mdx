@@ -1,0 +1,46 @@
+---
+title: "DIYガイガーカウンタ製作日記その２。"
+description: "DIYガイガーカウンタ製作日記その１の続き。前回はSparkfun製ガイガーカウンタから得たcpm値をuSv/hに変換してprintするとこまでだったので、今度..."
+tags:
+  - "放射能"
+  - "電子工作"
+categories:
+  - hobby
+image: /images/software-developer.jpg
+date: 2016-09-19T19:35:53.000Z
+author: takashi
+---
+
+
+<a href="http://blog.rinka-blossom.com/diy-geiger-counter/">DIYガイガーカウンタ製作日記その１</a>の続き。
+前回はSparkfun製ガイガーカウンタから得たcpm値をuSv/hに変換してprintするとこまでだったので、今度はこれをSafacast API経由でSafecastサーバに送信してみます。
+検討は過去記事<strong><a href="http://blog.rinka-blossom.com/rest-api-safecast/">空間放射線量データを公開しているSafecast。REST API経由で定点観測データを自動送信するには？</a></strong>でほぼ完了しているので、あとは組み合わせるだけです。
+<pre><code class="python">import requests
+from datetime import datetime
+from serial import Serial
+# Sparkfunガイガーカウンタを接続したシリアルポートを開く
+port = Serial("/dev/tty.usbserial-AK05C8NQ", baudrate=19200)
+while True:
+    # cpm値の部分だけ抜き出す
+    cpm = int(port.readline().decode("ascii").split()[0])
+    # uSv/h換算
+    usv = cpm * 0.00812
+    print("{:.2f}[uSv]".format(usv))
+    # 計測した線量値をSafecastのHPから登録する際のやり取りをgoogle chromeでキャプチャした結果を使う
+    data = {
+        "measurement[value]": cpm,
+        "measurement[unit]": "cpm",
+        "measurement[captured_at]": datetime.utcnow().strftime("%d %B %Y, %H:%M:%S"),
+        "measurement[location_name]": "東京都昭島市",
+        "measurement[latitude]": 35.704502,
+        "measurement[longitude]": 139.353540,
+        "measurement[device_id]": 158,
+        "measurement[height]": "1m",
+        "measurement[surface]": "Floor",
+        "measurement[radiation]": "Air",
+    }
+    # Safecastサーバに送信する（API keyは伏字）
+    requests.post("https://api.safecast.org/en-US/measurements?api_key=xxx", data=data)
+</code></pre>
+この結果が、記事のトップ絵になります。無事１分毎の線量データがSafecastに投稿できるようになりました。が、定点観測データを１分おきに送りつけるのはサーバ負荷対効果としてあまり宜しくない気がするので、適当に間引きたいと思います。
+次回はXively連携でグラフ化したい。KeenIOの方がオシャレだけど、<a href="http://grid.rinka-blossom.com/">太陽光発電モニタリング</a>分で無料枠を使い切ってしまったので、Xivelyに頑張ってもらいます。

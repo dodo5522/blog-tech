@@ -1,0 +1,45 @@
+---
+title: "意外と知らない、超基本コマンドcdの便利なオプション。"
+description: "近い将来、Windowsにも組み込まれるbash。これでLinux、OSX、Windowsで共通のシェルが使えるようになって、嬉しい限り。Windows 10の..."
+tags:
+  - "linux"
+  - "コマンド"
+  - "ツール"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-07-27T05:43:56.000Z
+author: takashi
+---
+
+
+<br />
+近い将来、Windowsにも組み込まれるbash。これでLinux、OSX、Windowsで共通のシェルが使えるようになって、嬉しい限り。
+<blockquote class="twitter-tweet" data-lang="ja"><p lang="ja" dir="ltr">Windows 10のbash on Windowsを試す - kkamegawa&#039;s weblog <a href="https://t.co/24T68tN00y">https://t.co/24T68tN00y</a></p>&mdash; 情弱 (@pudding_info) <a href="https://twitter.com/pudding_info/status/757546244323495937">2016年7月25日</a></blockquote>
+
+そんなbashの組み込みコマンドには、超基本なcd (change directory) がありますよね。以外と知られていない （であろう）、ハイフンだけのオプションがあるの、ご存知でしょうか？
+<pre><code class="bash">tmp $ cd /var
+var $ pwd
+/var
+var $ cd /tmp
+tmp $ cd -
+/var
+var $ cd -
+/tmp
+</code></pre>
+要するに<strong>「元いた場所に戻る」</strong>オプションです。
+よく似た動作をするコマンドにpushd/popdがありますが、こちらはも少し高機能で、スタックにpush/popするようなイメージ。でもcdよりタイプ数が多くて面倒なので、個人的には使う機会少なめです。
+<pre><code class="bash">tmp $ pushd /var
+/var /tmp
+var $ pushd /var/log
+/var/log /var /tmp
+log $ pushd /usr/local/bin
+/usr/local/bin /var/log /var /tmp
+bin $ popd
+/var/log /var /tmp
+log $ popd
+/var /tmp
+var $ popd
+/tmp
+</code></pre>
+なんだかんだで使う機会の多いcdコマンド。ハイフンオプションを知っておくだけでも、日々の作業がかなり効率化した気がしますよ。

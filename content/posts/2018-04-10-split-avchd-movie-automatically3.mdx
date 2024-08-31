@@ -1,0 +1,82 @@
+---
+title: "SONYハンディカムHDR-PJ760で撮影したAVCHD動画を自動的にチャプタ毎分割するには（３）"
+description: "[前回](http://tech.uribou.tokyo/split-avchd-movie-automatically2/)の続き。色々試して調べるうちに、..."
+tags:
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2018-04-10T15:13:00.000Z
+author: takashi
+---
+
+
+[前回](http://tech.uribou.tokyo/split-avchd-movie-automatically2/)の続き。
+色々試して調べるうちに、`tsMuxeR`コマンドでMPLファイルをパースした結果を元にごにょごにょすることで、得られたチャプタ情報を元にMTSファイルを結合、mp4エンコードすることができました！
+そこそこ使いやすくbashスクリプトにまとめたので、必要なら使ってください。
+<code data-gist-id="a29a7e495b53e0548ccdc3da6f51e121" data-gist-line="1-16"></code>
+1. aaa
+2. bbb
+3. ccc
+そのパースしたデータを眺めていると、`Marks`というワードが出てくるセクション（と呼んでいいものか）と出てこないセクションがあることに気づきます。
+これ↓は全て`Marks`あり。
+```
+File #00000 name=/media/sdcard/PRIVATE/AVCHD/BDMV/STREAM/00003.MTS
+Duration: 00:00:45.545
+start-time: 45751
+Marks: 00:00:00.000
+File #00001 name=/media/sdcard/PRIVATE/AVCHD/BDMV/STREAM/00000.MTS
+Duration: 00:01:45.605
+start-time: 45751
+Marks: 00:00:45.545
+File #00002 name=/media/sdcard/PRIVATE/AVCHD/BDMV/STREAM/00001.MTS
+Duration: 00:00:29.028
+start-time: 45751
+Marks: 00:02:31.150
+```
+こちら↓は全て`Marks`なし。
+```
+File #00070 name=/media/sdcard/PRIVATE/AVCHD/BDMV/STREAM/00070.MTS
+Duration: 00:10:36.135
+start-time: 45751
+Marks: 03:58:19.785
+File #00071 name=/media/sdcard/PRIVATE/AVCHD/BDMV/STREAM/00071.MTS
+Duration: 00:10:35.634
+start-time: 45751
+File #00072 name=/media/sdcard/PRIVATE/AVCHD/BDMV/STREAM/00072.MTS
+Duration: 00:10:35.634
+start-time: 45751
+File #00073 name=/media/sdcard/PRIVATE/AVCHD/BDMV/STREAM/00073.MTS
+Duration: 00:09:49.589
+start-time: 45751
+File #00074 name=/media/sdcard/PRIVATE/AVCHD/BDMV/STREAM/00074.MTS
+Duration: 00:10:36.135
+start-time: 45751
+Marks: 04:39:56.779
+```
+`ls`してファイルサイズをチェックしてみると分かるんですが、
+```
+$ ls -alh /media/sdcard/PRIVATE/AVCHD/BDMV/STREAM/0007?.MTS
+-rwxrwxrwx 1 root root 2.0G 10月 29 11:51 /media/sdcard/PRIVATE/AVCHD/BDMV/STREAM/00070.MTS
+-rwxrwxrwx 1 root root 2.0G 10月 29 12:02 /media/sdcard/PRIVATE/AVCHD/BDMV/STREAM/00071.MTS
+-rwxrwxrwx 1 root root 2.0G 10月 29 12:13 /media/sdcard/PRIVATE/AVCHD/BDMV/STREAM/00072.MTS
+-rwxrwxrwx 1 root root 1.9G 10月 29 12:22 /media/sdcard/PRIVATE/AVCHD/BDMV/STREAM/00073.MTS
+-rwxrwxrwx 1 root root 2.0G 10月 29 13:09 /media/sdcard/PRIVATE/AVCHD/BDMV/STREAM/00074.MTS
+-rwxrwxrwx 1 root root 2.0G 10月 29 13:19 /media/sdcard/PRIVATE/AVCHD/BDMV/STREAM/00075.MTS
+-rwxrwxrwx 1 root root 2.0G 10月 29 13:30 /media/sdcard/PRIVATE/AVCHD/BDMV/STREAM/00076.MTS
+-rwxrwxrwx 1 root root 752M 10月 29 13:34 /media/sdcard/PRIVATE/AVCHD/BDMV/STREAM/00077.MTS
+-rwxrwxrwx 1 root root 2.0G 12月  7 10:06 /media/sdcard/PRIVATE/AVCHD/BDMV/STREAM/00078.MTS
+-rwxrwxrwx 1 root root 2.0G 12月  7 10:17 /media/sdcard/PRIVATE/AVCHD/BDMV/STREAM/00079.MTS
+```
+FAT16フォーマットされたメディアに記録することを考慮しての規格になっているんでしょうね。１つの動画をFAT16時代のファイルサイズ上限2GBで区切ってます。 <span class="strike">余計なことを…</span>
+```
+618 tsMuxeR /media/sdcard/PRIVATE/AVCHD/BDMV/PLAYLIST/00000.MPL | grep -A 3 -B 1 Duration | head -n 40
+619 tsMuxeR /media/sdcard/PRIVATE/AVCHD/BDMV/PLAYLIST/00000.MPL | grep -A 3 -B 1 Duration | head -n 20
+620 tsMuxeR /media/sdcard/PRIVATE/AVCHD/BDMV/PLAYLIST/00000.MPL | grep -A 3 -B 1 Duration
+621 cat /media/sdcard/PRIVATE/AVCHD/BDMV/STREAM/00015.MTS &gt; /symlinks/videos/temp.MTS
+622 cat /media/sdcard/PRIVATE/AVCHD/BDMV/STREAM/00016.MTS &gt;&gt; /symlinks/videos/temp.MTS
+623 ffmpeg -i /symlinks/videos/temp.MTS -profile:v baseline -level:v 3.1 temp.mp4
+624 ffmpeg -i /symlinks/videos/temp.MTS -profile:v baseline -level:v 3.1 -acodec aac -strict experimental temp.mp4
+625 ffmpeg -i /symlinks/videos/temp.MTS -profile:v baseline -level:v 3.1 -acodec aac -strict experimental -s 1280x720 -aspect 16:9 temp.mp4
+626 ffmpeg -i /symlinks/videos/temp.MTS -profile:v baseline -level:v 3.1 -acodec aac -strict experimental -s 1280x720 -aspect 16:9 -vf fps=29.97 temp.mp4
+627 mv temp.mp4 /symlinks/videos/
+```

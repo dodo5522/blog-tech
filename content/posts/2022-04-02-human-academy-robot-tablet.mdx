@@ -1,0 +1,106 @@
+---
+title: "ヒューマンアカデミー ロボット教室で使用するアプリに保存したプログラムをbackup/restoreするには"
+description: "娘が通うロボット教室、ヒューマンアカデミー。晴れてミドルコースに進み、ロボットプログラミング専用タブレットをいただきました。https://twitter.co..."
+tags:
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2022-04-02T15:50:27.000Z
+author: takashi
+---
+
+
+
+<p>娘が通うロボット教室、ヒューマンアカデミー。晴れてミドルコースに進み、ロボットプログラミング専用タブレットをいただきました。</p>
+
+
+
+<figure class="wp-block-embed-twitter wp-block-embed is-type-rich is-provider-twitter"><div class="wp-block-embed__wrapper">
+https://twitter.com/human_CECoE/status/1509822092749189125?ref_src=twsrc%5Etfw%7Ctwcamp%5Etweetembed%7Ctwterm%5E1509822092749189125%7Ctwgr%5E%7Ctwcon%5Es1_&amp;ref_url=https%3A%2F%2Fpublish.twitter.com%2F%3Fquery%3Dhttps3A2F2Ftwitter.com2Fhuman_CECoE2Fstatus2F1509822092749189125widget%3DTweet
+</div></figure>
+
+
+
+<p>ただ、このタブレットにインストールされたロボットプログラミング用アプリ、作成したプログラムに名前を付けることができず、プログラムNoと保存した日付のみで管理する仕様のため、将来的に間違えて上書きする事故が確実に発生する…。</p>
+
+
+
+<p>せめて作成したプログラムのバックアップを取れないだろうか？と調べてみたら意外と簡単にできたので、その手順をメモすることにした。</p>
+
+
+
+<p>まず、Android StudioやSDK等をインストールして、adbコマンドを使用可能にしたら、以下コマンドを実行する。引数に指定するpackage名は、事前にadb shellでshellに入り、topコマンド等で調べた。</p>
+
+
+
+<pre class="EnlighterJSRAW" data-enlighter-language="shell" data-enlighter-theme="" data-enlighter-highlight="" data-enlighter-linenumbers="" data-enlighter-lineoffset="" data-enlighter-title="" data-enlighter-group="">adb backup -apk jp.co.vstone.myapplicationgl2</pre>
+
+
+
+<p>上記実行すると、コマンド実行したディレクトリ下に backup.ab ファイルが生成される。これを元にアプリとデータをリストアするには以下コマンドを実行すれば良いはずだが、その後もアプリが正常動作可能か確信がないため、怖くてやっていない。</p>
+
+
+
+<pre class="EnlighterJSRAW" data-enlighter-language="generic" data-enlighter-theme="" data-enlighter-highlight="" data-enlighter-linenumbers="" data-enlighter-lineoffset="" data-enlighter-title="" data-enlighter-group="">$ adb restore backup.ab</pre>
+
+
+
+<p>backup.ab がどんなファイルを内包しているか、気になる場合は以下コマンドを実行すれば良い。ただし、実行するにはJava Runtimeと<a href="https://github.com/nelenkov/android-backup-extractor">abe (android backup extractor)</a>が必要。</p>
+
+
+
+<pre class="EnlighterJSRAW" data-enlighter-language="shell" data-enlighter-theme="" data-enlighter-highlight="" data-enlighter-linenumbers="" data-enlighter-lineoffset="" data-enlighter-title="" data-enlighter-group="">$ java -jar abe.jar unpack backup.ab backup.tar ""
+$ tar xvf backup.tar
+$ tree apps
+apps
+└── jp.co.vstone.myapplicationgl2
+    ├── _manifest
+    ├── a
+    │   └── RobotSchool.apk
+    ├── f
+    │   ├── PROGRAM01.SEQ
+    │   ├── PROGRAM02.SEQ
+    │   ├── PROGRAM03.SEQ
+    │   ├── PROGRAM04.SEQ
+    │   ├── PROGRAM05.SEQ
+    │   ├── PROGRAM06.SEQ
+    │   ├── PROGRAM07.SEQ
+    │   ├── PROGRAM08.SEQ
+    │   ├── PROGRAM09.SEQ
+    │   └── TEMPLETE.SEQ
+    └── sp
+        └── jp.co.vstone.myapplicationgl2_preferences.xml
+
+4 directories, 13 files</pre>
+
+
+
+<p>試しにプログラムNo.9を保存直後にバックアップしてみると、上記PROGRAM09.SEQが生成されたbackup.abが取得できたので、ちゃんと取れてそう。</p>
+
+
+
+<p>ちなみに各ファイルは以下のようにhuman readableではないので、中身まで解析する気は全く無い。</p>
+
+
+
+<pre class="EnlighterJSRAW" data-enlighter-language="shell" data-enlighter-theme="" data-enlighter-highlight="" data-enlighter-linenumbers="" data-enlighter-lineoffset="" data-enlighter-title="" data-enlighter-group="">$ hexdump -C apps/jp.co.vstone.myapplicationgl2/f/PROGRAM02.SEQ 
+00000000  ac ed 00 05 75 72 00 30  5b 4c 6a 70 2e 63 6f 2e  |....ur.0[Ljp.co.|
+00000010  76 73 74 6f 6e 65 2e 6d  79 61 70 70 6c 69 63 61  |vstone.myapplica|
+00000020  74 69 6f 6e 67 6c 32 2e  55 6e 64 6f 24 55 6e 64  |tiongl2.Undo$Und|
+00000030  6f 42 75 66 66 65 72 3b  6b 98 7c 6e 9c 87 ea 38  |oBuffer;k.|n...8|
+00000040  02 00 00 78 70 00 00 00  01 73 72 00 2d 6a 70 2e  |...xp....sr.-jp.|
+00000050  63 6f 2e 76 73 74 6f 6e  65 2e 6d 79 61 70 70 6c  |co.vstone.myappl|
+00000060  69 63 61 74 69 6f 6e 67  6c 32 2e 55 6e 64 6f 24  |icationgl2.Undo$|
+00000070  55 6e 64 6f 42 75 66 66  65 72 56 d0 e5 86 8f 78  |UndoBufferV....x|
+00000080  3c 93 02 00 09 49 00 05  67 72 6f 75 70 49 00 04  |&lt;....I..groupI..|
+00000090  6e 65 78 74 46 00 02 74  68 5a 00 0b 75 73 65 4f  |nextF..thZ..useO|
+000000a0  75 74 46 61 6c 73 65 46  00 01 78 46 00 01 79 5b  |utFalseF..xF..y[|
+000000b0  00 05 63 68 69 6c 64 74  00 02 5b 49 5b 00 09 73  |..childt..[I[..s|
+000000c0  6c 6f 74 49 6e 64 65 78  71 00 7e 00 03 4c 00 04  |lotIndexq.~..L..|
+000000d0  74 79 70 65 74 00 12 4c  6a 61 76 61 2f 6c 61 6e  |typet..Ljava/lan|
+000000e0  67 2f 53 74 72 69 6e 67  3b 78 70 00 00 00 00 ff  |g/String;xp.....|
+000000f0  ff ff ff 00 00 00 00 00  42 4e 00 00 40 55 55 4d  |........BN..@UUM|
+00000100  75 72 00 02 5b 49 4d ba  60 26 76 ea b2 a5 02 00  |ur..[IM.`&amp;v.....|
+00000110  00 78 70 00 00 00 00 75  71 00 7e 00 06 00 00 00  |.xp....uq.~.....|
+00000120  00 74 00 09 62 74 6e 5f  73 74 61 72 74           |.t..btn_start|
+0000012d</pre>

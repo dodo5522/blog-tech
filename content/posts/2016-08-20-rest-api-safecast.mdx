@@ -1,0 +1,100 @@
+---
+title: "空間放射線量データを公開しているSafecast。REST API経由で定点観測データを自動送信するには？"
+description: "[とらんじしょん昭島（地域活動）](http://nrda83.wix.com/ttakishima#!blank-3/g3o7j)の一環で、空間線量定点観測所..."
+tags:
+  - "python"
+  - "プログラミング"
+  - "可視化"
+  - "放射能"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-08-20T14:05:50.000Z
+author: takashi
+---
+
+
+[とらんじしょん昭島（地域活動）](http://nrda83.wix.com/ttakishima#!blank-3/g3o7j)の一環で、空間線量定点観測所があるといいよねって話になって、システム構成検討中。そのメモ記事です。
+## 全体の構成
+絵にしたいとこですが、今の所はざっくり箇条書きで。
+1. 空間放射線量計測センサー
+2. 計測データ集計・送信用マイコン
+3. データベースサーバ（Safecastさんのデータベースに蓄積したい）
+4. 計測データ閲覧用フロントエンド（WebブラウザだったりiPhoneアプリだったり）
+以下に詳細を書き留めます。
+### 空間放射線量計測センサー
+以下の３候補のうちの何れか。
+電子工作ではおなじみ？のSparkFunが出しているGeiger Counter。個人輸入すれば$149程度です。コンパクトなガイガーミュラー菅は、LND712だそうです。
+[![](http://www.marutsu.co.jp/contents/shop/marutsu/img/goods/020/580417/580417_2.jpg)](http://www.marutsu.co.jp/pc/i/580417/)
+探してみると、意外とありますね。こちらはAdafruit製。$100切ってます。安い。ガイガー菅はSbM20っぽい。
+[![](https://cdn-shop.adafruit.com/970x728/483-00.jpg)](https://www.adafruit.com/product/483)
+そしてGM-10。３つの中では一番高くて、$199。SparkFunのと同LND712を使っているようです。
+[![](http://www.blackcatsystems.com/pics/GM/GM10usb.jpg)](http://www.blackcatsystems.com/GM/products/GM10GeigerCounter.html)
+これらは全て、USBシリアル経由でASCII文字コードを出力するので、それらを1分間数えてあげればcpm（count per minute）単位でデータが取得できます。これをμSv/hに変換してやればいいわけですが、**[簡易なカウント数からシーベルトへの換算](http://www.utsunomia.com/y.utsunomia/Kansan.html)**で書かれているLND712の係数を参考にすれば良さそう。
+### 計測データ集計・送信用マイコン
+SparkFunのGeiger CounterにはArduinoが載っているので、Ethernetボード＋無線コンバータかませばいいかな？ と思ったんですが、コストかかりすぎるので、$5マイコンボード Raspberry Pi Zeroを採用したい。
+<blockquote class="twitter-tweet" data-lang="ja"><p lang="ja" dir="ltr">$5（約500円）Linuxボード、Raspberry Pi Zeroが再入荷してる！ <a href="https://t.co/LHmIE6eqc7">https://t.co/LHmIE6eqc7</a><a href="https://twitter.com/hashtag/LINUX?src=hash">#LINUX</a> <a href="https://twitter.com/hashtag/RASPBERRY?src=hash">#RASPBERRY</a>-PI-ZERO <a href="https://twitter.com/hashtag/ZERO?src=hash">#ZERO</a> <a href="https://twitter.com/hashtag/RASPBERRY?src=hash">#RASPBERRY</a> <a href="https://twitter.com/hashtag/ADAFRUIT?src=hash">#ADAFRUIT</a> <a href="https://twitter.com/hashtag/%E3%83%A9%E3%82%BA%E3%83%99%E3%83%AA%E3%83%BC%E3%83%91%E3%82%A4?src=hash">#ラズベリーパイ</a></p>&mdash; takashi ando (@takashi7ando) <a href="https://twitter.com/takashi7ando/status/764268275719020544">2016年8月13日</a></blockquote>
+
+コストが安いのもいいのだけど、この安さと小ささでLinuxが動くもんだから、何でもできてしまうのが良い。これに格安の無線LAN USBドングル付ければ、データ送信部の出来上がり。
+難点は、入手が困難ということか…。今のところ、一人当たり１ボードのみ購入できます、という状態。品薄状態が早く解消されないかなぁ。
+### データベースサーバ
+空間放射線量計測用キットを自前で設計、開発したり、そのキット制作ワークショップを開催したり、データを蓄積するデータベースをオープンにしていたりと、何かと先進的な取り組みをされているSafecastさんという団体を見つけまして。
+<blockquote class="twitter-tweet" data-lang="ja"><p lang="en" dir="ltr">Our poster with <a href="https://twitter.com/safecast">@safecast</a> called &quot;Citizen-based radiation measurement in Europe&quot; is here now <a href="https://t.co/7jSjZS03eY">https://t.co/7jSjZS03eY</a> <a href="https://t.co/7NPzfN5CoC">pic.twitter.com/7NPzfN5CoC</a></p>&mdash; Jan Helebrant (@jhelebrant) <a href="https://twitter.com/jhelebrant/status/756953915632025600">2016年7月23日</a></blockquote>
+
+こちらに全てのデータを提供しつつ、データベース等のインフラを間借りさせていただけないかなぁ…　と目論見中。そのうちコンタクトとってみようと思ってます。
+ただ、[Safecast API](https://api.safecast.org/en-US/measurements)でアカウント作成してAPI仕様を見ても、計測データをcurlとかでPOSTするのに必要なクエリが分からなかったので、Google Chromeのデベロッパツールや**[Safecastさん提供のgithubコード](https://github.com/Safecast/measurement_count/blob/master/safecast_measurement_count.js)**を参考に、コマンドベースでデータ送信できることを確認しました。
+Safecastさん提供のWebアプリ経由で観測データをアップロードするまでの操作をGoogle Chromeデベロッパツールでトレースしてみると、以下のようなデータをPOSTしていることが分かります。
+```
+[General]
+Request URL:https://api.safecast.org/en-US/measurements
+Request Method:POST
+Status Code:302 Found
+Remote Address:162.243.100.197:443
+[Response Headers]
+Access-Control-Allow-Methods:GET, OPTION
+Access-Control-Allow-Origin:*
+Cache-Control:no-cache
+Connection:keep-alive
+Content-Type:text/html; charset=utf-8
+Date:Fri, 19 Aug 2016 04:43:08 GMT
+Location:https://api.safecast.org/en-US/measurements/70276074
+...
+[Form Data]
+utf8:✓
+authenticity_token:xxxx
+measurement[value]:0.28
+measurement[unit]:usv
+measurement[captured_at]:25 December 2014, 14:00:00
+measurement[location_name]:栃木県那須塩原市二区町周辺
+measurement[latitude]:36.867139847134666
+measurement[longitude]:139.95172936359324
+measurement[device_id]:155
+measurement[height]:1m
+measurement[surface]:Soil
+measurement[radiation]:Air
+```
+これと、先ほどの[Safecastさん提供githubコード](https://github.com/Safecast/measurement_count/blob/master/safecast_measurement_count.js)に実装されているapi_keyクエリを追加したPythonコードが以下になります。
+```python
+data = {
+"utf8": "✓",
+"measurement[value]": 0.11,
+"measurement[unit]": "usv",
+"measurement[captured_at]": "25 December 2014, 14:00:00",
+"measurement[location_name]": "埼玉県羽生市大字弥勒周辺",
+"measurement[latitude]": 36.180948,
+"measurement[longitude]": 139.585453,
+"measurement[device_id]": 155,
+"measurement[height]": "1m",
+"measurement[surface]": "Soil",
+"measurement[radiation]": "Air",
+}
+requests.post("https://api.safecast.org/en-US/measurements?api_key=xxxx", data=data)
+```
+[この通り](https://api.safecast.org/en-US/measurements/70288333)、しっかり反映されました。
+![](https://farm9.staticflickr.com/8869/28805268700_e0cc160158_z_d.jpg)
+### 計測データ閲覧用フロントエンド（WebブラウザだったりiPhoneアプリだったり）
+Safecastさんとコラボさせてもらえれば、こんなカッコイイ線量マップが参照できてしまいます。すごい…。
+<blockquote class="twitter-tweet" data-lang="ja"><p lang="en" dir="ltr">I often refresh the data on the <a href="https://twitter.com/safecast">@safecast</a> iOS app and just scroll around seeing all the new data posted. <a href="https://t.co/gvkhAwnxzK">pic.twitter.com/gvkhAwnxzK</a></p>&mdash; Sean Bonner XⓋX (@seanbonner) <a href="https://twitter.com/seanbonner/status/738573123751006209">2016年6月3日</a></blockquote>
+
+## まとめ
+早いとこ全体構成図を描いて、Safecastさんにコンタクト取りたいと思います。

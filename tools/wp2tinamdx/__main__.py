@@ -31,6 +31,12 @@ def parse_args() -> Args:
         help="Author name",
     )
     parser.add_argument(
+        "-p",
+        "--published-only",
+        action="store_true",
+        help="Convert contents with pulished only",
+    )
+    parser.add_argument(
         "--debug",
         action="store_true",
         help="Print debug info",

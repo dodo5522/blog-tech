@@ -55,12 +55,16 @@ const Post: Collection = {
           value: 'programming',
         },
         {
-          label: '電子工作',
-          value: 'electronics',
+          label: '趣味',
+          value: 'hobby',
         },
         {
-          label: 'DIY',
-          value: 'diy',
+          label: 'ガジェット',
+          value: 'gadget',
+        },
+        {
+          label: '仕事',
+          value: 'work',
         },
         {
           label: '日常',

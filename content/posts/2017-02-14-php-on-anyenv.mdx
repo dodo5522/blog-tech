@@ -1,0 +1,155 @@
+---
+title: "PHP開発環境を整備しとこうと思ったら、anyenv最高だと思ったけど、OSX環境でうまくいかず泣きをみている件。"
+description: "知っとくと後々便利そうだと思い、最近いじり始めたPHP。ブラウザで手軽に実行できるのはいいのだけど、デバッガないのかな？とググってみたら、やっぱりありました。p..."
+tags:
+  - "PHP"
+  - "プログラミング"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2017-02-14T16:31:34.000Z
+author: takashi
+---
+
+
+知っとくと後々便利そうだと思い、最近いじり始めたPHP。
+ブラウザで手軽に実行できるのはいいのだけど、デバッガないのかな？とググってみたら、やっぱりありました。
+<blockquote class="twitter-tweet" data-lang="ja"><p lang="ja" dir="ltr">phpにもデバッガが同梱されていたとは知らなんだ。<br />PHP 5.6 に採用されるデバッガ phpdbg  を使ってみた <a href="https://t.co/xtMIFKtR4U">https://t.co/xtMIFKtR4U</a> <a href="https://twitter.com/shin1x1">@shin1x1</a>さんから</p>&mdash; takashi ando (@takashi7ando) <a href="https://twitter.com/takashi7ando/status/831637134133977088">2017年2月14日</a></blockquote>
+
+PHP5.6以降は実行環境に同梱されているんですね。
+ということで、OSX環境といえばbrewで・・・　とコマンド打つ前に立ち止まり、そういえばpyenvやrbenv、ndenvがあるくらいならphpenvもあるんじゃ？　と思ってコマンド打ってみると、やっぱりありました。
+anyenv便利。
+<pre><code class="bash">bash-3.2$ anyenv install -l
+Available **envs:
+  Renv
+  crenv
+  denv
+  erlenv
+  exenv
+  goenv
+  hsenv
+  jenv
+  luaenv
+  ndenv
+  nenv
+  nodenv
+  phpenv    &lt;- !
+  plenv
+  pyenv
+  rbenv
+  sbtenv
+  scalaenv
+bash-3.2$ anyenv install phpenv
+/var/folders/rz/f7770vgx54g24s5pxkrxqlm00000gn/T/phpenv.20170215074922.16799 ~/Development/study/udemy/Webエンシ_ニア講座/07_MySQL
+Cloning https://github.com/laprasdrum/phpenv.git...
+Cloning into 'phpenv'...
+bash-3.2$ exec -l $SHELL
+bash-3.2$ phpenv install -l
+...
+  5.6.30
+  5.6.3
+  5.6.4
+  5.6.5
+  5.6.6
+  5.6.7
+  5.6.8
+  5.6.9
+  5.6snapshot
+  7.0.0
+  7.0.10
+  7.0.11
+  7.0.12
+  7.0.13
+  7.0.14
+  7.0.15
+  7.0.1
+  7.0.2
+  7.0.3
+  7.0.4
+  7.0.5
+  7.0.6
+  7.0.7
+  7.0.8
+  7.0.9
+  7.0snapshot
+  7.1.0
+  7.1.1
+  7.1snapshot
+  master
+</code></pre>
+とりあえず5.6系の最新と、7.0系の最新を入れておこう。
+<blockquote class="twitter-tweet" data-lang="ja"><p lang="ja" dir="ltr">PHP 5.6.x から PHP 7.0.x の変更点。下位互換性のない変更が結構ある様子。エラーが例外に変換されたとか。<a href="https://t.co/KOzzCPWhja">https://t.co/KOzzCPWhja</a></p>&mdash; takashi ando (@takashi7ando) <a href="https://twitter.com/takashi7ando/status/831639266673336320">2017年2月14日</a></blockquote>
+
+・・・ところが、意気揚々と5.6.9をインストールしようとすると、こんなエラーが発生。
+<pre><code class="bash">$ phpenv install 5.6.9
+[Info]: Loaded extension plugin
+[Info]: Loaded apc Plugin.
+[Info]: Loaded composer Plugin.
+[Info]: Loaded github Plugin.
+[Info]: Loaded uprofiler Plugin.
+[Info]: Loaded xdebug Plugin.
+[Info]: Loaded xhprof Plugin.
+[Info]: Loaded zendopcache Plugin.
+[Info]: php.ini-production gets used as php.ini
+[Info]: Building 5.6.9 into /Users/takashi/.anyenv/envs/phpenv/versions/5.6.9
+[Downloading]: https://secure.php.net/distributions/php-5.6.9.tar.bz2
+[Preparing]: /var/tmp/php-build/source/5.6.9
+-----------------
+|  BUILD ERROR  |
+-----------------
+Here are the last 10 lines from the log:
+-----------------------------------------
+configure: WARNING: This bison version is not supported for regeneration of the Zend/PHP parsers (found: 2.3, min: 204, excluded: 3.0).
+configure: WARNING: You will need re2c 0.13.4 or later if you want to regenerate PHP parsers.
+configure: error: mcrypt.h not found. Please reinstall libmcrypt.
+-----------------------------------------
+The full Log is available at '/tmp/php-build.5.6.9.20170215080359.log'.
+[Warn]: Aborting build.
+</code></pre>
+libmcryptが足りんとな。
+brewですぐに見つかったのでインストール。
+<pre><code class="bash">$ brew install mcrypt
+</code></pre>
+これにて、PHPも無事インストール…　できませんでした。
+<pre><code class="bash">$ phpenv install 5.6.9
+[Info]: Loaded extension plugin
+[Info]: Loaded apc Plugin.
+[Info]: Loaded composer Plugin.
+[Info]: Loaded github Plugin.
+[Info]: Loaded uprofiler Plugin.
+[Info]: Loaded xdebug Plugin.
+[Info]: Loaded xhprof Plugin.
+[Info]: Loaded zendopcache Plugin.
+[Info]: php.ini-production gets used as php.ini
+[Info]: Building 5.6.9 into /Users/takashi/.anyenv/envs/phpenv/versions/5.6.9
+[Skipping]: Already downloaded and extracted https://secure.php.net/distributions/php-5.6.9.tar.bz2
+[Preparing]: /var/tmp/php-build/source/5.6.9
+[Compiling]: /var/tmp/php-build/source/5.6.9
+-----------------
+|  BUILD ERROR  |
+-----------------
+Here are the last 10 lines from the log:
+-----------------------------------------
+                 int (* _Nullable)(void *));
+                                        ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk/usr/include/stdio.h:475:6: warning: pointer is missing a nullability type specifier (_Nonnull, _Nullable, or _Null_unspecified) [-Wnullability-completeness]
+FILE    *funopen(const void *,
+        ^
+/var/tmp/php-build/source/5.6.9/ext/openssl/openssl.c:44:10: fatal error: 'openssl/evp.h' file not found
+#include &lt;openssl/evp.h&gt;
+         ^
+324 warnings and 1 error generated.
+make: *** [ext/openssl/openssl.lo] Error 1
+-----------------------------------------
+The full Log is available at '/tmp/php-build.5.6.9.20170215101310.log'.
+[Warn]: Aborting build.
+</code></pre>
+今度はopensslか… と、またbrewのお世話になろうとしたら、opensslは既存のものがすでに最新だよと警告される。
+<pre><code class="bash">$ brew install openssl
+Warning: openssl is a keg-only and another version is linked to opt.
+Use `brew install --force` if you want to install this version
+$ brew upgrade openssl
+Error: openssl 1.0.2k already installed
+</code></pre>
+ググってみると、どうもXcodeのcliツール関連っぽいので、とりあえずXcodeを立ち上げてみると…　なにやらコンポーネントがインストールされました。スクリーンショット取るの忘れた…。
+なかなかphpdbgを使うところまでたどり着かない・・・。

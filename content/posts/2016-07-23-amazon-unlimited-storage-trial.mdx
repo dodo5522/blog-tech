@@ -1,0 +1,80 @@
+---
+title: "Amazon Cloud Driveが無制限プラン開始"
+description: "Amazon Primeに入ると、自動的についてくるPrime Photoサービス。写真であれば、たとえRAWデータであれ、無制限にオンラインストレージに保存で..."
+tags:
+  - "amazon"
+  - "ツール"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-07-23T05:56:16.000Z
+author: takashi
+---
+
+
+<br />
+<a href="http://blog.rinka-blossom.com/xie-zhen-detabatukuatupuniamazon-cloud-drivewoshi-ukotonomerituto/">Amazon Primeに入ると、自動的についてくるPrime Photoサービス。</a>写真であれば、たとえRAWデータであれ、無制限にオンラインストレージに保存できます。年額3900円、月額に直すとたったの325円のPrime会費で、このオンラインストレージがついてくるのだから驚きです。
+それが今度は、別途料金にはなりますが、<strong><a href="https://www.amazon.co.jp/clouddrive/home">無制限オンラインストレージサービスを開始しました。</a></strong>お値段13800円/年、月額に直すと、たったの1150円にて。大丈夫か？ Amazon。
+以前<a href="https://www.bitcasa.com/ja-JP/personal/">Bitcasa</a>というサービスで、月1000円で無制限ストレージを提供したことがありましたが、あれよあれよと無制限プランは消えて無くなってしまいました。採算が合わなかったんですかね…。
+Amazonはいつまで継続できるのかわかりませんが、３ヶ月の無料試用期間があるので、試してみました。
+<h1>まずは申し込み</h1>
+無料試用期間が３ヶ月もあるので、まずは試してみましょう。<a href="https://www.amazon.co.jp/clouddrive/home">ここ</a>から申し込みます。
+<img src="https://farm9.staticflickr.com/8681/28404734631_54aaa0c595_z_d.jpg" alt="" />
+既にクレジットカード情報を登録済みであれば、そのまま確定。なければ「クレジットカードを追加」から登録します。
+<img src="https://farm9.staticflickr.com/8740/28404734921_327e78dc3f_z_d.jpg" alt="" />
+たったこれだけで、無料トライアルが開始されます。
+<img src="https://farm8.staticflickr.com/7529/28199930580_da3b404cbf_z_d.jpg" alt="" />
+<h1>自動契約更新の解除</h1>
+が、このままだと３ヶ月後に自動的に契約が継続され、使用料が発生するので、まずはそれを解除します。<strong><a href="https://www.amazon.co.jp/clouddrive">私のAmazon Drive</a></strong>の右上にある<strong>ストレージの管理</strong>をクリック。
+<img src="https://farm9.staticflickr.com/8416/28199930950_5c32fb18e5_o_d.png" alt="" />
+以下のように、現在のプランが表示されます。<strong>継続しない</strong>をクリック。
+<img src="https://farm9.staticflickr.com/8468/28404736301_bd59d49933_z_d.jpg" alt="" />
+すると、以下のように<strong>登録を再開始</strong>となれば設定完了。
+<img src="https://farm9.staticflickr.com/8558/28404736631_7192f794ed_o_d.png" alt="" />
+と同時に以下のようなメールが届いて、<strong>「無料体験をキャンセルしました」</strong>？！ と一瞬ビビりますが、ちゃんと継続されています。３ヶ月の間は無料試用期間が継続するのでご安心を。
+<img src="https://farm9.staticflickr.com/8131/28483158585_437e024002_o_d.png" alt="" />
+<h1>Amazon Cloud Driveのコマンドライン操作</h1>
+以前の記事で、<a href="http://blog.rinka-blossom.com/amazonkuraudodoraibunikomandodeakusesusurufang-fa/">Amazon Cloud Driveにコマンドラインでファイルアップロードする方法</a>を紹介しましたが、Unlimited版でもまんま使えます。
+unlimited切り替え前。
+<pre><code class="bash">~ $ acdcli usage
+Documents:   15273,  162.1 MiB
+Other:         233,   42.8 MiB
+Photos:      81413,  283.8 GiB
+Videos:          0,    0.0 B
+Total:       96919,  284.0 GiB
+</code></pre>
+切り替え後。特に変化はないです。
+<pre><code class="bash">~ $ acdcli usage
+Documents:   15273,  162.1 MiB
+Other:         233,   42.8 MiB
+Photos:      81413,  283.8 GiB
+Videos:          0,    0.0 B
+Total:       96919,  284.0 GiB
+</code></pre>
+が、切り替え前、写真以外のファイルは5GBまでしかアップロードできませんでした。それが以下のように、61GBの動画ファイルをアップロードできます。
+<pre><code class="bash">[takashi@espresso:private]$ du -hs 2016
+61G     2016
+[takashi@espresso:private]$ time acdcli ul -o 2016 /ビデオ/
+[#########################] 100.0% of   61GiB  443/443     0.0B/s       0s
+real    154m51.236s
+user    31m35.016s
+sys     7m4.204s
+</code></pre>
+単純計算で、平均53Mbpsのアップ速度。
+Bitcasaの時とはえらい違いです。あの時は遅すぎてひどかった…　計測データは残ってないんですが、ここまで出なかったのは確かです。
+<h1>60fpsのFullHD動画がそのまま閲覧可能</h1>
+これは驚きました。FullHDビデオカメラで撮影した、60fpsのFullHD MTS動画もそのままCloud Driveにアップしたんですが、ブラウザ経由で開くと、コマ落ちや音ズレもなく、きれいに再生できました。
+パソコンでMTS動画ファイルを開くと、動画が重すぎて音ズレやコマ落ちが発生してしまうんですよね…。
+<img src="https://farm9.staticflickr.com/8587/27875917083_d5110dc10f_z_d.jpg" alt="" />
+ちなみに、その激重動画を撮影したのは以下のビデオカメラ。SONY製HDR-PJ760です。
+<div class="kaerebalink-box"><div class="kaerebalink-image"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB006YFH3MS%2Fref%3Dnosim" target="_blank" rel="noopener"><img src="http://ecx.images-amazon.com/images/I/51u1H-tz4bL._SL160_.jpg" style="border: none" /></a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="kaerebalink-info"><div class="kaerebalink-name"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB006YFH3MS%2Fref%3Dnosim" target="_blank" rel="noopener">SONY ビデオカメラ Handycam PJ760V 内蔵メモリ96GB ブラック HDR-PJ760V</a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"><div class="kaerebalink-powered-date">posted with <a href="http://kaereba.com" rel="nofollow noopener" target="_blank">カエレバ</a></div></div><div class="kaerebalink-detail"> ソニー 2012-03-09    </div><div class="kaerebalink-link1"><div class="shoplinkamazon"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fgp%2Fsearch%3Fkeywords%3DSONY%2520%2583r%2583f%2583I%2583J%2583%2581%2583%2589%2520Handycam%2520PJ760V%2520%2593%25E0%2591%25A0%2583%2581%2583%2582%2583%258A96GB%2520%2583u%2583%2589%2583b%2583N%2520HDR-PJ760V%26__mk_ja_JP%3D%2583J%2583%255E%2583J%2583i" target="_blank" rel="noopener">Amazonで購入</a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="shoplinkrakuten"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=54&amp;pc_id=54&amp;pl_id=616&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fsearch.rakuten.co.jp%2Fsearch%2Fmall%2FSONY%2520%25E3%2583%2593%25E3%2583%2587%25E3%2582%25AA%25E3%2582%25AB%25E3%2583%25A1%25E3%2583%25A9%2520Handycam%2520PJ760V%2520%25E5%2586%2585%25E8%2594%25B5%25E3%2583%25A1%25E3%2583%25A2%25E3%2583%25AA96GB%2520%25E3%2583%2596%25E3%2583%25A9%25E3%2583%2583%25E3%2582%25AF%2520HDR-PJ760V%2F-%2Ff.1-p.1-s.1-sf.0-st.A-v.2%3Fx%3D0" target="_blank" rel="noopener">楽天市場で購入</a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=54&amp;pc_id=54&amp;pl_id=616" width="1" height="1" style="border:none"></div></div></div><div class="booklink-footer" style="clear: left"></div></div>
+もしかしてiPhoneのAmazon Cloud Driveアプリでも再生可能か？！と期待したんですが、さすがにこちらは無理でした。
+<img src="https://farm8.staticflickr.com/7306/28386398332_edafaea7a2_z_d.jpg" alt="" />
+上のようにアイコン表示は可能ですが、MTS動画ファイルをタップすると再生できず。
+<img src="https://farm9.staticflickr.com/8282/28491460625_09d73a9eb5_z_d.jpg" alt="" />
+以下のようにmp4動画に変換済みのファイルは正常に再生できました。
+<img src="https://farm9.staticflickr.com/8677/28459320196_00f2c07d25_z_d.jpg" alt="" />
+<h1>まとめ</h1>
+バックボーンがAWSだからか、さすがのAmazon品質の無制限オンラインストレージサービス。
+これが月額1150円で使えるのだから、<strong>買い</strong>だとは思いますが…　Bitcasaの例を知っているだけに、いつまでこの料金でこの品質を維持できるのか？ が心配なところではあります。
+現時点では、動画の適切なバックアップ先に困っていたところなので、継続して契約してしまうかなぁ・・。

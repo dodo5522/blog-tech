@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -19,6 +20,7 @@ class Converter:
         self.output_dir = Path(args.output_dir)
         self.input_xml = Path(args.input_xml)
         self.author = args.set_author
+        self.published_only = args.published_only
 
     def get_map(self, file_path: str) -> dict[str, str]:
         """Category変換マップファイルのデータを取得して返す"""
@@ -47,10 +49,14 @@ class Converter:
 
         # 各アイテム（投稿）を処理
         for item in root.findall("./channel/item"):
-            title = item.find("title").text
+            title = item.find("title").text.replace('"', "")
             content = item.find(
                 "{http://purl.org/rss/1.0/modules/content/}encoded"
             ).text
+            content = content if content else ""
+            content = re.sub(r"<!-- [/]*wp:[a-zA-Z0-9 #?%&@:;/=_~\-\"\.,\{\}\\]+ -->", "", content)
+            description = content.replace("\n", "").replace('"', "")
+            description = re.sub(r"<[a-zA-Z0-9 #?%&@:;/=_~\-\"\.]+>", "", description)
             post_name = item.find("{http://wordpress.org/export/1.2/}post_name").text
 
             categories = [
@@ -64,10 +70,10 @@ class Converter:
                 if c.attrib.get("domain") == "post_tag"
             ]
 
-            all_category.extend(categories)
-            all_tag.extend(tags)
-
             pub_date = item.find("pubDate").text
+            if self.published_only and not pub_date:
+                continue
+
             published_date = (
                 datetime.strptime(pub_date, "%a, %d %b %Y %H:%M:%S +0000")
                 if pub_date
@@ -80,23 +86,25 @@ class Converter:
                 / f"{published_date.strftime('%Y-%m-%d')}-{post_name}.mdx"
             )
             with md.open("w", encoding="utf-8") as md_f:
-                title_ = title.replace('"', "")
-                content = [
+                contents = [
                     "---",
-                    f'title: "{title_}"',
-                    'description: "hoge"',
+                    f'title: "{title}"',
+                    f'description: "{description[:80]}..."',
                     "tags:",
-                    "  - electricity",
+                    *[f'  - "{t}"' for t in tags],
                     "categories:",
                     *[f"  - {self.map_category.get(c, c)}" for c in categories],
                     "image: /images/software-developer.jpg",
-                    f"date: {published_date.isoformat()}",
+                    f"date: {published_date.isoformat()}.000Z",
                     f"author: {self.author}",
                     "---",
                     "\n",
                     content if content is not None else "",
                 ]
-                md_f.write("\n".join(content))
+                md_f.write("\n".join(contents))
+
+            all_category.extend(categories)
+            all_tag.extend(tags)
 
         self.logger.debug(f"category: {sorted(set(all_category))}")
         self.logger.debug(f"tags: {sorted(set(all_tag))}")

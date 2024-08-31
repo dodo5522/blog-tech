@@ -1,0 +1,43 @@
+---
+title: "pyenv install時にzlibがコンパイルされていないよエラーが出た場合の対処方法。"
+description: "OSX + anyenv + pyenv環境下で新しいPython環境をインストールしようとして、以下のようなエラーが起きた時。Maverics時代に遭遇した覚..."
+tags:
+  - "python"
+  - "プログラミング"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-08-16T03:23:52.000Z
+author: takashi
+---
+
+
+OSX + anyenv + pyenv環境下で新しいPython環境をインストールしようとして、以下のようなエラーが起きた時。Maverics時代に遭遇した覚えがないので、Capitanに更新したせいかなぁ？
+<pre><code class="bash">$ pyenv install 3.3.6
+Downloading Python-3.3.6.tgz...
+-&gt; https://www.python.org/ftp/python/3.3.6/Python-3.3.6.tgz
+Installing Python-3.3.6...
+WARNING: The Python sqlite3 extension was not compiled. Missing the SQLite3 lib?
+ERROR: The Python zlib extension was not compiled. Missing the zlib?
+</code></pre>
+ご丁寧に、以下のメッセージも出力されます。問題解決するには以下を見ろと。
+<pre><code class="bash">Please consult to the Wiki page to fix the problem.
+https://github.com/yyuu/pyenv/wiki/Common-build-problems
+</code></pre>
+解決方法として、以下の手順が上がっていました。
+<ul>
+<li>Mac OS X: <code>brew install readline xz</code></li>
+<li>On Mac OS X 10.9, 10.10 and 10.11 you may need to set the CFLAGS environment variable when installing a new version in order for configure to find the zlib headers (XCode command line tools must be installed first):<code>CFLAGS="-I$(xcrun --show-sdk-path)/usr/include" pyenv install -v 2.7.7</code></li>
+</ul>
+readlineやxzはインストール済みだったので、次のCFLAGS設定を試そうとしましたが、以下の記述もあり。
+<ul>
+<li>Alternatively, try reinstalling XCode command line tools for your OS (especially if you just upgraded your OS)<code>xcode-select --install</code></li>
+</ul>
+pyenv installするたびにCFLAGS設定したりエイリアス設定するのは面倒なので、おとなしくxcode-selectしてみると…。
+<pre><code class="bash">$ pyenv install 3.3.6
+Installing Python-3.3.6...
+Installing pip from https://bootstrap.pypa.io/get-pip.py...
+Installed Python-3.3.6 to /Users/takashi/.anyenv/envs/pyenv/versions/3.3.6
+</code></pre>
+うまくいきました。
+XCode command line toolsって、いろんなところに影響するなぁ。

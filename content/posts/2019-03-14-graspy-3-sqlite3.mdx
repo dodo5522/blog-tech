@@ -1,0 +1,1226 @@
+---
+title: "Graspy 3. SQLite3"
+description: "3.データベース(SQLite)3-1. SQLiteについてRails では SQLite が標準のデータベースになっており、db/development.s..."
+tags:
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2019-03-14T16:03:55.000Z
+author: takashi
+---
+
+
+<h1 class="c-title--primary">3.データベース(SQLite)</h1>
+<div class="l-content--detail p-lesson"></div>
+<div class="l-content--detail p-lesson">
+<div>3-1. SQLiteについて</div>
+<div class="l-content--detail p-lesson">
+Rails では SQLite が標準のデータベースになっており、db/development.sqlite3 がそのデータベースファイルであることはすでに学びました。このレッスンでは SQLite を使って、データベースの操作を学んでいきます。
+SQLite は MySQL や PostgreSQL などのクライアントサーバー型のデータベースとは異なり、サーバーを起動する必要がありません。データは全てSQLite のファイルに書き込まれます。
+開発段階では、頻繁にデータベースに対する変更、修正が生じます。 Rails では開発段階で SQLite を用い、デプロイ時に MySQL や PostgreSQL などを用いるといった、状況に応じて使うデータベースを個別設定することができます。
+開発段階では扱いやすい SQLite を用いることで、効率よく開発や学習を進めることができます。
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-2. データベースの作成</div>
+<div class="l-content--detail p-lesson">
+まずSQLiteを単体で使いながらデータベースの操作を学んでいきましょう。
+新たにデータベースを作成するには以下のようにsqlite3コマンドを実行します。
+<pre><code class="ruby hljs">
+sqlite3 データベース名
+</code></pre>
+workspace配下に、mybook.sqlite3というデータベースを作成してみましょう。ターミナルで下記のコマンドを実行してください。
+<pre><code class="hljs css">
+<span class="hljs-selector-tag">sqlite3</span> <span class="hljs-selector-tag">mybook</span><span class="hljs-selector-class">.sqlite3</span>
+</code></pre>
+実行例：
+<pre><code class="ruby hljs">itpro-<span class="hljs-symbol">college:</span>~<span class="hljs-regexp">/workspace $ sqlite3 mybook.sqlite3
+SQLite version 3.8.2 2013-12-06 14:53:30
+Enter ".help" for instructions
+Enter SQL statements terminated with a ";"</span></code></pre>
+新たにデータベースが作成され、そのデータベースに接続された状態になります。ここで.tableコマンドを実行し、データベース内にテーブルがないことを確認しましょう。
+<pre><code class="hljs css"><span class="hljs-selector-class">.table</span></code></pre>
+実行例：
+<pre><code class="hljs css">
+<span class="hljs-selector-tag">sqlite</span>&gt; <span class="hljs-selector-class">.table</span>
+<span class="hljs-selector-tag">sqlite</span>&gt;</code></pre>
+.qコマンドを実行し、データベースの接続を閉じましょう。
+<pre><code class="hljs">
+sqlite&gt; .q
+itpro-college:~/workspace $
+</code></pre>
+この時点で、Cloud9の左のディレクトリツリーにmybook.sqlite3というファイルが作成されているはずです。このファイルはデータベースファイルですので、ファイルを開いても文字化けしているようにみえます。このファイルは直接編集しないようにしましょう。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2017/04/993610da520ffc55db91211857b87dfd-1.png" alt="sqlite3" />このようにSQLiteはファイル単位で管理しますので、データベースを削除したい場合はそのファイルを削除すれば良いだけです。また、データベースのバックアップもデータベースファイルをコピーするだけですみます。
+※ データベース名に.sqlite3と拡張子をつけましたが、つけなくてもかまいません。ただし、分かりやすい名前にしないとSQLiteのデータベースファイルだとわからなくなってしまいますので、SQLiteを使う場合はデータベース名には.sqlite3と拡張子をつけることをオススメします。
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-3. データベースへの接続</div>
+<div class="l-content--detail p-lesson">
+作成したデータベースを操作するためにはデータベースに接続する必要があります。データベースに接続するためには以下のようにsqlite3コマンドを実行します。
+<pre><code class="hljs">
+  sqlite3 データベース名
+</code></pre>
+sqlite3コマンドは先ほどデータベースを作成する時にも使いました。もし指定したデータベース名のファイルがなければ、データベースを作成し、すでにファイルがあればそのデータベースファイルに接続することになります。
+実行例：
+<pre><code class="hljs python">
+itpro-college:~/workspace $ sqlite3 mybook.sqlite3
+SQLite version <span class="hljs-number">3.8</span><span class="hljs-number">.2</span> <span class="hljs-number">2013</span><span class="hljs-number">-12</span><span class="hljs-number">-06</span> <span class="hljs-number">14</span>:<span class="hljs-number">53</span>:<span class="hljs-number">30</span>
+Enter <span class="hljs-string">".help"</span> <span class="hljs-keyword">for</span> instructions
+Enter SQL statements terminated <span class="hljs-keyword">with</span> a <span class="hljs-string">";"</span>
+sqlite&gt;
+</code></pre>
+この状態でデータベースを操作します。
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-4. テーブルの作成</div>
+<div class="l-content--detail p-lesson">
+テーブルを作成するにはCREATE TABLEを使います。
+<pre><code class="hljs sql">
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> テーブル名(カラム<span class="hljs-number">1</span> データ型, カラム<span class="hljs-number">2</span> データ型...);
+</code></pre>
+以下のようにusersテーブルを作成してみましょう。
+<pre><code class="hljs sql">
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> <span class="hljs-keyword">users</span>(<span class="hljs-keyword">id</span> <span class="hljs-built_in">integer</span>, <span class="hljs-keyword">name</span> <span class="hljs-built_in">varchar</span>);
+</code></pre>
+実行例：
+<pre><code class="hljs java">
+sqlite&gt; <span class="hljs-function">CREATE TABLE <span class="hljs-title">users</span><span class="hljs-params">(id integer, name varchar)</span></span>;
+sqlite&gt;
+</code></pre>
+以下のように.tablesコマンドを実行するとデータベース内に作成されているテーブル名が確認できます。
+<pre><code class="hljs css"><span class="hljs-selector-class">.tables</span></code></pre>
+実行例：
+<pre><code class="hljs css">
+<span class="hljs-selector-tag">sqlite</span>&gt; <span class="hljs-selector-class">.tables</span>
+<span class="hljs-selector-tag">users</span>
+<span class="hljs-selector-tag">sqlite</span>&gt;
+</code></pre>
+usersテーブルが作成されていることがわかります。
+以下のように.schemaコマンドを実行すると指定したテーブルの構造が確認できます。
+<pre><code class="hljs css">
+<span class="hljs-selector-class">.schema</span> テーブル名
+</code></pre>
+実行例：
+<pre><code class="hljs java">
+sqlite&gt; .<span class="hljs-function">schema users
+CREATE TABLE <span class="hljs-title">users</span><span class="hljs-params">(id integer, name varchar)</span></span>;
+sqlite&gt;
+</code></pre>
+※ integerは整数、varcharは文字列を意味します。つまり、idには整数が入り、nameには文字列がデータとして入ることになります。
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-5. テーブルの削除</div>
+<div class="l-content--detail p-lesson">
+テーブルを削除するにはDROP TABLEを使います。
+<pre><code class="hljs sql">
+<span class="hljs-keyword">DROP</span> <span class="hljs-keyword">TABLE</span> テーブル名
+</code></pre>
+以下のように先ほど作成したusersテーブルを削除してみましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">DROP</span> <span class="hljs-keyword">TABLE</span> <span class="hljs-keyword">users</span></code></pre>
+実行例：
+<pre><code class="hljs">sqlite&gt; DROP TABLE users;
+sqlite&gt; </code></pre>
+.tablesコマンドでusersテーブルが削除されているか確認しましょう。
+<pre><code class="hljs css"><span class="hljs-selector-class">.tables</span></code></pre>
+実行例：
+<pre><code class="hljs css"><span class="hljs-selector-tag">sqlite</span>&gt; <span class="hljs-selector-class">.tables</span>
+<span class="hljs-selector-tag">sqlite</span>&gt; </code></pre>
+テーブルが存在しないので何も表示されていません。
+次以降で必要ですので、改めてusersテーブルを作成しておきましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> <span class="hljs-keyword">users</span>(<span class="hljs-keyword">id</span> <span class="hljs-built_in">integer</span>, <span class="hljs-keyword">name</span> <span class="hljs-built_in">varchar</span>);</code></pre>
+実行例：
+<pre><code class="hljs java">sqlite&gt; <span class="hljs-function">CREATE TABLE <span class="hljs-title">users</span><span class="hljs-params">(id integer, name varchar)</span></span>;
+sqlite&gt; </code></pre>
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-6. カラムの追加</div>
+<div class="l-content--detail p-lesson">
+.schemaコマンドを使ってもう一度usersテーブルの構造を確認しましょう。
+<pre><code class="hljs css"><span class="hljs-selector-class">.schema</span> <span class="hljs-selector-tag">users</span></code></pre>
+実行例：
+<pre><code class="hljs java">sqlite&gt; .<span class="hljs-function">schema users
+CREATE TABLE <span class="hljs-title">users</span><span class="hljs-params">(id integer, name varchar)</span></span>;
+sqlite&gt; </code></pre>
+このusersテーブルにemailカラムを追加します。カラムを追加するにはALTER TABLEを使います。
+<pre><code class="hljs sql"><span class="hljs-keyword">ALTER</span> <span class="hljs-keyword">TABLE</span> テーブル名 <span class="hljs-keyword">ADD</span> <span class="hljs-keyword">COLUMN</span> カラム名 データ型</code></pre>
+以下を実行し、usersテーブルにemailを追加しましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">ALTER</span> <span class="hljs-keyword">TABLE</span> <span class="hljs-keyword">users</span> <span class="hljs-keyword">ADD</span> <span class="hljs-keyword">COLUMN</span> email <span class="hljs-built_in">varchar</span>;</code></pre>
+実行例：
+<pre><code class="hljs">sqlite&gt; ALTER TABLE users ADD COLUMN email varchar;
+sqlite&gt; </code></pre>
+.schemaコマンドを使ってusersテーブルの構造を確認してみましょう。
+<pre><code class="hljs css"><span class="hljs-selector-class">.schema</span></code></pre>
+実行例：
+<pre><code class="hljs java">sqlite&gt; .<span class="hljs-function">schema users
+CREATE TABLE <span class="hljs-title">users</span><span class="hljs-params">(id integer, name varchar, email varchar)</span></span>;
+sqlite&gt; </code></pre>
+emailカラムが追加されていることがわかります。
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-7. データの追加</div>
+<div class="l-content--detail p-lesson">
+usersテーブルにデータを登録しましょう。データを登録するにはINSERT INTOを使います。
+<pre><code class="hljs sql"><span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> テーブル名(カラム<span class="hljs-number">1</span>, カラム<span class="hljs-number">2.</span>..) <span class="hljs-keyword">values</span> (値<span class="hljs-number">1</span>, 値<span class="hljs-number">2.</span>..)</code></pre>
+以下、実行しましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> <span class="hljs-keyword">users</span>(<span class="hljs-keyword">id</span>, <span class="hljs-keyword">name</span>, email) <span class="hljs-keyword">values</span> (<span class="hljs-number">1</span>, <span class="hljs-string">"James"</span>, <span class="hljs-string">"007@test.jp"</span>);</code></pre>
+実行例：
+<pre><code class="hljs java">sqlite&gt; <span class="hljs-function">INSERT INTO <span class="hljs-title">users</span><span class="hljs-params">(id, name, email)</span> <span class="hljs-title">values</span> <span class="hljs-params">(<span class="hljs-number">1</span>, <span class="hljs-string">"James"</span>, <span class="hljs-string">"007@test.jp"</span>)</span></span>;
+sqlite&gt; </code></pre>
+これでデータが登録できました。登録したデータを見るには次節のSELECT文を使います。
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-8. データの取得</div>
+<div class="l-content--detail p-lesson">
+データを取得するにはSELECT文を使います。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> カラム<span class="hljs-number">1</span>, カラム<span class="hljs-number">2.</span>.. <span class="hljs-keyword">FROM</span> テーブル名;</code></pre>
+全てのカラムの情報を取得するには、*を使います。
+以下を実行し、usersテーブルの情報を取得しましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span>;</code></pre>
+実行例：
+<pre><code class="hljs ruby">sqlite&gt; SELECT * FROM users;
+<span class="hljs-number">1</span><span class="hljs-params">|James|</span><span class="hljs-number">007</span>@test.jp
+sqlite&gt; </code></pre>
+さらにデータを追加してからSELECT文を実行してみましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> <span class="hljs-keyword">users</span>(<span class="hljs-keyword">id</span>, <span class="hljs-keyword">name</span>, email) <span class="hljs-keyword">values</span> (<span class="hljs-number">2</span>, <span class="hljs-string">"Nielsen"</span>, <span class="hljs-string">"008@test.jp"</span>);
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> <span class="hljs-keyword">users</span>(<span class="hljs-keyword">id</span>, <span class="hljs-keyword">name</span>, email) <span class="hljs-keyword">values</span> (<span class="hljs-number">3</span>, <span class="hljs-string">"Lorre"</span>, <span class="hljs-string">"009@test.jp"</span>);
+<span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span>;</code></pre>
+実行例：
+<pre><code class="hljs ruby">sqlite&gt; INSERT INTO users(id, name, email) values (<span class="hljs-number">2</span>, <span class="hljs-string">"Nielsen"</span>, <span class="hljs-string">"008@test.jp"</span>);
+sqlite&gt; INSERT INTO users(id, name, email) values (<span class="hljs-number">3</span>, <span class="hljs-string">"Lorre"</span>, <span class="hljs-string">"009@test.jp"</span>);
+sqlite&gt; SELECT * FROM users;
+<span class="hljs-number">1</span><span class="hljs-params">|James|</span><span class="hljs-number">007</span>@test.jp
+<span class="hljs-number">2</span><span class="hljs-params">|Nielsen|</span><span class="hljs-number">00</span>8@test.jp
+<span class="hljs-number">3</span><span class="hljs-params">|Lorre|</span><span class="hljs-number">00</span>9@test.jp
+sqlite&gt; </code></pre>
+以下のように.header onと.mode columnを実行しておくと、データの取得結果が見やすくなります。
+<pre><code class="hljs sql">.header on
+.mode column
+<span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span>;</code></pre>
+実行例：
+<pre><code class="hljs css"><span class="hljs-selector-tag">sqlite</span>&gt; <span class="hljs-selector-class">.header</span> <span class="hljs-selector-tag">on</span>
+<span class="hljs-selector-tag">sqlite</span>&gt; <span class="hljs-selector-class">.mode</span> <span class="hljs-selector-tag">column</span>
+<span class="hljs-selector-tag">sqlite</span>&gt; <span class="hljs-selector-tag">SELECT</span> * <span class="hljs-selector-tag">FROM</span> <span class="hljs-selector-tag">users</span>;
+<span class="hljs-selector-tag">id</span>          <span class="hljs-selector-tag">name</span>        <span class="hljs-selector-tag">email</span>
+<span class="hljs-selector-tag">----------</span>  <span class="hljs-selector-tag">----------</span>  <span class="hljs-selector-tag">-----------</span>
+1           <span class="hljs-selector-tag">James</span>       007@<span class="hljs-keyword">test</span>.<span class="hljs-keyword">jp</span>
+<span class="hljs-number">2</span>           Nielsen     <span class="hljs-number">008</span>@test.jp
+<span class="hljs-number">3</span>           Lorre       <span class="hljs-number">009</span>@test.jp
+sqlite&gt; </code></pre>
+nameだけ取得したい場合は、以下のようにします。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> <span class="hljs-keyword">name</span> <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span>;</code></pre>
+実行例：
+<pre><code class="hljs">sqlite&gt; SELECT name FROM users;
+name
+----------
+James
+Nielsen
+Lorre
+sqlite&gt; </code></pre>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-9. データの取得（WHERE句）</div>
+<div class="l-content--detail p-lesson">
+データを絞り込んで取得するにはSELECT文のWHERE句で条件をつけます。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> カラム<span class="hljs-number">1</span>, カラム<span class="hljs-number">2.</span>.. <span class="hljs-keyword">FROM</span> テーブル名 <span class="hljs-keyword">WHERE</span> 条件;</code></pre>
+以下を実行し、nameがJamesのものだけを取得してみましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span> <span class="hljs-keyword">WHERE</span> <span class="hljs-keyword">name</span>=<span class="hljs-string">"James"</span>;</code></pre>
+実行例：
+<pre><code class="hljs java">sqlite&gt; SELECT * FROM users WHERE name=<span class="hljs-string">"James"</span>;
+id          name        email
+----------  ----------  -----------
+<span class="hljs-number">1</span>           James       <span class="hljs-number">007</span><span class="hljs-meta">@test</span>.jp
+sqlite&gt; </code></pre>
+WERE句には以下の比較演算子を使うことができます。
+<table>
+<tbody>
+<tr>
+<td>比較演算子</td>
+<td>使用例</td>
+<td>意味</td>
+</tr>
+<tr>
+<td>=</td>
+<td>a = b</td>
+<td>aとbは等しい</td>
+</tr>
+<tr>
+<td>&lt;&gt;</td>
+<td>a&lt;&gt;b</td>
+<td>aとbは等しくない</td>
+</tr>
+<tr>
+<td>&gt;</td>
+<td>a &gt; b</td>
+<td>aはbより大きい</td>
+</tr>
+<tr>
+<td>&gt;=</td>
+<td>a &gt;= b</td>
+<td>aはb以上</td>
+</tr>
+<tr>
+<td>&lt;</td>
+<td>a &lt; b</td>
+<td>aはbより小さい</td>
+</tr>
+<tr>
+<td>&lt;=</td>
+<td>a &lt;= b</td>
+<td>aはb以下</td>
+</tr>
+</tbody>
+</table>
+以下を実行し、idが2以下のものだけを取得してみましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span> <span class="hljs-keyword">WHERE</span> <span class="hljs-keyword">id</span>&lt;=<span class="hljs-number">2</span>;</code></pre>
+実行例：
+<pre><code class="hljs java">
+sqlite&gt; SELECT * FROM users WHERE id&lt;=<span class="hljs-number">2</span>;
+id          name        email
+----------  ----------  -----------
+<span class="hljs-number">1</span>           James       <span class="hljs-number">007</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">2</span>           Nielsen     <span class="hljs-number">008</span><span class="hljs-meta">@test</span>.jp
+sqlite&gt;
+</code></pre>
+AND句を使って条件を複数設定することもできます。
+以下を実行し、idが2以下で名前がJamesのものを取得してみましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span> <span class="hljs-keyword">WHERE</span> <span class="hljs-keyword">id</span>&lt;=<span class="hljs-number">2</span> <span class="hljs-keyword">AND</span> <span class="hljs-keyword">name</span>=<span class="hljs-string">"James"</span>;</code></pre>
+<pre><code class="hljs java">
+sqlite&gt; SELECT * FROM users WHERE id&lt;=<span class="hljs-number">2</span> AND name=<span class="hljs-string">"James"</span>;
+id          name        email
+----------  ----------  -----------
+<span class="hljs-number">1</span>           James       <span class="hljs-number">007</span><span class="hljs-meta">@test</span>.jp
+sqlite&gt;
+</code></pre>
+OR句を使って条件を複数設定することもできます。
+以下を実行し、idが1または3のものを取得してみましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span> <span class="hljs-keyword">WHERE</span> <span class="hljs-keyword">id</span>=<span class="hljs-number">1</span> <span class="hljs-keyword">OR</span> <span class="hljs-keyword">id</span>=<span class="hljs-number">3</span>;</code></pre>
+実行例：
+<pre><code class="hljs java">sqlite&gt; SELECT * FROM users WHERE id=<span class="hljs-number">1</span> OR id=<span class="hljs-number">3</span>;
+id          name        email
+----------  ----------  -----------
+<span class="hljs-number">1</span>           James       <span class="hljs-number">007</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">3</span>           Lorre       <span class="hljs-number">009</span><span class="hljs-meta">@test</span>.jp
+sqlite&gt; </code></pre>
+NOT句を使って条件に合わないものを取得することもできます。
+以下を実行し、idが1でないものを取得してみましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span> <span class="hljs-keyword">WHERE</span> <span class="hljs-keyword">NOT</span> <span class="hljs-keyword">id</span>=<span class="hljs-number">1</span>;</code></pre>
+実行例：
+<pre><code class="hljs java">sqlite&gt; SELECT * FROM users WHERE NOT id=<span class="hljs-number">1</span>;
+id          name        email
+----------  ----------  -----------
+<span class="hljs-number">2</span>           Nielsen     <span class="hljs-number">008</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">3</span>           Lorre       <span class="hljs-number">009</span><span class="hljs-meta">@test</span>.jp
+sqlite&gt; </code></pre>
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-10. データの更新</div>
+<div class="l-content--detail p-lesson">
+usersテーブルに登録されている情報を更新しましょう。データの情報を更新するにはUPDATE文を使います。
+<pre><code class="hljs sql"><span class="hljs-keyword">UPDATE</span> テーブル名 <span class="hljs-keyword">SET</span> カラム<span class="hljs-number">1</span>=値<span class="hljs-number">1</span>, カラム<span class="hljs-number">2</span>=値<span class="hljs-number">2</span>…;</code></pre>
+以下を実行し、JamesをBondに変更してみましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">UPDATE</span> <span class="hljs-keyword">users</span> <span class="hljs-keyword">SET</span> <span class="hljs-keyword">name</span>=<span class="hljs-string">"Bond"</span> <span class="hljs-keyword">WHERE</span> <span class="hljs-keyword">name</span>=“James<span class="hljs-string">";</span></code></pre>
+実行例：
+<pre><code class="hljs java">sqlite&gt; UPDATE users SET name=<span class="hljs-string">"Bond"</span> WHERE name=<span class="hljs-string">"James"</span>;
+sqlite&gt; </code></pre>
+usersテーブルの情報を取得し、nameが変更されたことを確認しましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span>;</code></pre>
+実行例：
+<pre><code class="hljs java">sqlite&gt; SELECT * FROM users;
+id          name        email
+----------  ----------  -----------
+<span class="hljs-number">1</span>           Bond        <span class="hljs-number">007</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">2</span>           Nielsen     <span class="hljs-number">008</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">3</span>           Lorre       <span class="hljs-number">009</span><span class="hljs-meta">@test</span>.jp
+sqlite&gt; </code></pre>
+※ WHERE句で条件をしぼらないと全てのデータが変更対象となってしまうので注意してください。
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-11. データの削除</div>
+<div class="l-content--detail p-lesson">
+usersテーブルに登録されている情報を削除してみましょう。データの情報を削除するにはDELETE文を使います。
+<pre><code class="hljs sql"><span class="hljs-keyword">DELETE</span> <span class="hljs-keyword">FROM</span> テーブル名;</code></pre>
+以下を実行し、nameがBondの情報を削除してみましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">DELETE</span> <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span> <span class="hljs-keyword">WHERE</span> <span class="hljs-keyword">name</span>=<span class="hljs-string">"Bond"</span>;</code></pre>
+実行例：
+<pre><code class="hljs java">sqlite&gt; DELETE FROM users WHERE name=<span class="hljs-string">"Bond"</span>;
+sqlite&gt; </code></pre>
+usersテーブルの情報を取得し、nameがBondの情報が削除されていることを確認しましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span>;</code></pre>
+実行例：
+<pre><code class="hljs java">sqlite&gt;sqlite&gt; SELECT * FROM users;
+id          name        email
+----------  ----------  -----------
+<span class="hljs-number">2</span>           Nielsen     <span class="hljs-number">008</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">3</span>           Lorre       <span class="hljs-number">009</span><span class="hljs-meta">@test</span>.jp
+sqlite&gt; </code></pre>
+※ WHERE句で条件をしぼらないと全てのデータが削除対象となってしまうので注意してください。テーブルの情報全てを削除したい場合はWHERE句でしぼらずにDELETE文を実行しましょう。
+以降の説明のために以下のINSERT文を実行してデータを追加しておきましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> <span class="hljs-keyword">users</span>(<span class="hljs-keyword">id</span>, <span class="hljs-keyword">name</span>, email) <span class="hljs-keyword">values</span> (<span class="hljs-number">1</span>, <span class="hljs-string">"James"</span>, <span class="hljs-string">"007@test.jp"</span>);
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> <span class="hljs-keyword">users</span>(<span class="hljs-keyword">id</span>, <span class="hljs-keyword">name</span>, email) <span class="hljs-keyword">values</span> (<span class="hljs-number">4</span>, <span class="hljs-string">"James"</span>, <span class="hljs-string">"006@test.jp"</span>);
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> <span class="hljs-keyword">users</span>(<span class="hljs-keyword">id</span>, <span class="hljs-keyword">name</span>, email) <span class="hljs-keyword">values</span> (<span class="hljs-number">5</span>, <span class="hljs-string">"Monica"</span>, <span class="hljs-string">"010@test.jp"</span>);
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> <span class="hljs-keyword">users</span>(<span class="hljs-keyword">id</span>, <span class="hljs-keyword">name</span>, email) <span class="hljs-keyword">values</span> (<span class="hljs-number">6</span>, <span class="hljs-string">"Berenice"</span>, <span class="hljs-string">"011@test.jp"</span>);
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> <span class="hljs-keyword">users</span>(<span class="hljs-keyword">id</span>, <span class="hljs-keyword">name</span>, email) <span class="hljs-keyword">values</span> (<span class="hljs-number">7</span>, <span class="hljs-string">"Gemma"</span>, <span class="hljs-string">"012@test.jp"</span>);
+<span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span>;</code></pre>
+実行例：
+<pre><code class="hljs java">sqlite&gt; <span class="hljs-function">INSERT INTO <span class="hljs-title">users</span><span class="hljs-params">(id, name, email)</span> <span class="hljs-title">values</span> <span class="hljs-params">(<span class="hljs-number">1</span>, <span class="hljs-string">"James"</span>, <span class="hljs-string">"007@test.jp"</span>)</span></span>;
+sqlite&gt; <span class="hljs-function">INSERT INTO <span class="hljs-title">users</span><span class="hljs-params">(id, name, email)</span> <span class="hljs-title">values</span> <span class="hljs-params">(<span class="hljs-number">4</span>, <span class="hljs-string">"James"</span>, <span class="hljs-string">"006@test.jp"</span>)</span></span>;
+sqlite&gt; <span class="hljs-function">INSERT INTO <span class="hljs-title">users</span><span class="hljs-params">(id, name, email)</span> <span class="hljs-title">values</span> <span class="hljs-params">(<span class="hljs-number">5</span>, <span class="hljs-string">"Monica"</span>, <span class="hljs-string">"010@test.jp"</span>)</span></span>;
+sqlite&gt; <span class="hljs-function">INSERT INTO <span class="hljs-title">users</span><span class="hljs-params">(id, name, email)</span> <span class="hljs-title">values</span> <span class="hljs-params">(<span class="hljs-number">6</span>, <span class="hljs-string">"Berenice"</span>, <span class="hljs-string">"011@test.jp"</span>)</span></span>;
+sqlite&gt; <span class="hljs-function">INSERT INTO <span class="hljs-title">users</span><span class="hljs-params">(id, name, email)</span> <span class="hljs-title">values</span> <span class="hljs-params">(<span class="hljs-number">7</span>, <span class="hljs-string">"Gemma"</span>, <span class="hljs-string">"012@test.jp"</span>)</span></span>;
+sqlite&gt; SELECT * FROM users;
+id          name        email
+----------  ----------  -----------
+<span class="hljs-number">2</span>           Nielsen     <span class="hljs-number">008</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">3</span>           Lorre       <span class="hljs-number">009</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">1</span>           James       <span class="hljs-number">007</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">4</span>           James       <span class="hljs-number">006</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">5</span>           Monica      <span class="hljs-number">010</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">6</span>           Berenice    <span class="hljs-number">011</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">7</span>           Gemma       <span class="hljs-number">012</span><span class="hljs-meta">@test</span>.jp
+sqlite&gt; </code></pre>
+ここまででデータベースの基本的な操作(データの登録/取得/更新/削除)を学びました。以降はより詳細なデータ取得方法やカラムに制約をつける方法を学んでいきます。
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-12. データの取得（ORDER BY句）</div>
+<div class="l-content--detail p-lesson">
+データをソートした状態で取得するにはSELECT文のORDER BY句でソート対象のカラムを指定します。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> カラム<span class="hljs-number">1</span>, カラム<span class="hljs-number">2.</span>.. <span class="hljs-keyword">FROM</span> テーブル名 <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> カラム<span class="hljs-number">1</span> [<span class="hljs-keyword">ASC</span>/<span class="hljs-keyword">DESC</span>], カラム<span class="hljs-number">2</span> [<span class="hljs-keyword">ASC</span>/<span class="hljs-keyword">DESC</span>]...;</code></pre>
+昇順でソートしたければASC、降順でソートする場合はDESCを指定します。省略した場合は昇順でソートされます。
+以下を実行し、nameでソートして情報を取得してみましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span> <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> <span class="hljs-keyword">name</span>;</code></pre>
+実行例：
+<pre><code class="hljs java">
+sqlite&gt; SELECT * FROM users ORDER BY name;
+id          name        email
+----------  ----------  -----------
+<span class="hljs-number">6</span>           Berenice    <span class="hljs-number">011</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">7</span>           Gemma       <span class="hljs-number">012</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">4</span>           James       <span class="hljs-number">006</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">1</span>           James       <span class="hljs-number">007</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">3</span>           Lorre       <span class="hljs-number">009</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">5</span>           Monica      <span class="hljs-number">010</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">2</span>           Nielsen     <span class="hljs-number">008</span><span class="hljs-meta">@test</span>.jp
+sqlite&gt; </code></pre>
+次に、降順でソートしてみましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span> <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> <span class="hljs-keyword">name</span> <span class="hljs-keyword">DESC</span>;</code></pre>
+実行例：
+<pre><code class="hljs java">sqlite&gt; SELECT * FROM users ORDER BY name DESC;
+id          name        email
+----------  ----------  -----------
+<span class="hljs-number">2</span>           Nielsen     <span class="hljs-number">008</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">5</span>           Monica      <span class="hljs-number">010</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">3</span>           Lorre       <span class="hljs-number">009</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">4</span>           James       <span class="hljs-number">006</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">1</span>           James       <span class="hljs-number">007</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">7</span>           Gemma       <span class="hljs-number">012</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">6</span>           Berenice    <span class="hljs-number">011</span><span class="hljs-meta">@test</span>.jp
+sqlite&gt; </code></pre>
+Jamesが２人いますので、idでのソートを追加してみましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span> <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> <span class="hljs-keyword">name</span> <span class="hljs-keyword">DESC</span>, <span class="hljs-keyword">id</span>;</code></pre>
+実行例：
+<pre><code class="hljs java">sqlite&gt; SELECT * FROM users ORDER BY name DESC, id;
+id          name        email
+----------  ----------  -----------
+<span class="hljs-number">2</span>           Nielsen     <span class="hljs-number">008</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">5</span>           Monica      <span class="hljs-number">010</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">3</span>           Lorre       <span class="hljs-number">009</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">1</span>           James       <span class="hljs-number">007</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">4</span>           James       <span class="hljs-number">006</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">7</span>           Gemma       <span class="hljs-number">012</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">6</span>           Berenice    <span class="hljs-number">011</span><span class="hljs-meta">@test</span>.jp
+sqlite&gt; </code></pre>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-13. データの取得（BETWEEN句）</div>
+<div class="l-content--detail p-lesson">
+値の範囲を限定してデータを取得するにはSELECT文のBETWEEN句で値の範囲を指定します。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> カラム<span class="hljs-number">1</span>, カラム<span class="hljs-number">2.</span>.. <span class="hljs-keyword">FROM</span> テーブル名 <span class="hljs-keyword">WHERE</span> カラム <span class="hljs-keyword">BETWEEN</span> 値<span class="hljs-number">1</span> <span class="hljs-keyword">AND</span> 値<span class="hljs-number">2</span>;</code></pre>
+以下を実行し、idの範囲を限定してデータを取得してみましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span> <span class="hljs-keyword">WHERE</span> <span class="hljs-keyword">id</span> <span class="hljs-keyword">BETWEEN</span> <span class="hljs-number">2</span> <span class="hljs-keyword">AND</span> <span class="hljs-number">5</span> <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> <span class="hljs-keyword">id</span>;</code></pre>
+実行例：
+<pre><code class="hljs java">
+sqlite&gt; SELECT * FROM users WHERE id BETWEEN <span class="hljs-number">2</span> AND <span class="hljs-number">5</span> ORDER BY id;
+id          name        email
+----------  ----------  -----------
+<span class="hljs-number">2</span>           Nielsen     <span class="hljs-number">008</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">3</span>           Lorre       <span class="hljs-number">009</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">4</span>           James       <span class="hljs-number">006</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">5</span>           Monica      <span class="hljs-number">010</span><span class="hljs-meta">@test</span>.jp
+sqlite&gt; </code></pre>
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-14. データの取得（IN句）</div>
+<div class="l-content--detail p-lesson">
+指定した値のいずれかに一致したデータを取得するにはSELECT文のIN句で値を指定します。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> カラム<span class="hljs-number">1</span>, カラム<span class="hljs-number">2.</span>.. <span class="hljs-keyword">FROM</span> テーブル名 <span class="hljs-keyword">WHERE</span> カラム <span class="hljs-keyword">IN</span>(値<span class="hljs-number">1</span>, 値<span class="hljs-number">2.</span>..);</code></pre>
+以下を実行し、idの範囲を限定してデータを取得してみましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span> <span class="hljs-keyword">WHERE</span> <span class="hljs-keyword">id</span> <span class="hljs-keyword">IN</span>(<span class="hljs-number">1</span>, <span class="hljs-number">3</span>, <span class="hljs-number">5</span>, <span class="hljs-number">7</span>) <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> <span class="hljs-keyword">id</span>;</code></pre>
+実行例：
+<pre><code class="hljs java">
+sqlite&gt; SELECT * <span class="hljs-function">FROM users WHERE id <span class="hljs-title">IN</span><span class="hljs-params">(<span class="hljs-number">1</span>, <span class="hljs-number">3</span>, <span class="hljs-number">5</span>, <span class="hljs-number">7</span>)</span> ORDER BY id</span>;
+id          name        email
+----------  ----------  -----------
+<span class="hljs-number">1</span>           James       <span class="hljs-number">007</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">3</span>           Lorre       <span class="hljs-number">009</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">5</span>           Monica      <span class="hljs-number">010</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">7</span>           Gemma       <span class="hljs-number">012</span><span class="hljs-meta">@test</span>.jp
+sqlite&gt; </code></pre>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-15. データの取得（LIKE句）</div>
+<div class="l-content--detail p-lesson">
+指定したパターンにマッチした文字列に一致したデータを取得するにはSELECT文のLIKE句で文字列のパターンを指定します。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> カラム<span class="hljs-number">1</span>, カラム<span class="hljs-number">2.</span>.. <span class="hljs-keyword">FROM</span> テーブル名 <span class="hljs-keyword">WHERE</span> カラム <span class="hljs-keyword">LIKE</span> 文字列のパターン;</code></pre>
+以下を実行し、nameに”a”が含まれているデータを取得してみましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span> <span class="hljs-keyword">WHERE</span> <span class="hljs-keyword">name</span> <span class="hljs-keyword">LIKE</span> <span class="hljs-string">"%a%"</span> <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> <span class="hljs-keyword">id</span>;</code></pre>
+実行例：
+<pre><code class="hljs java">
+sqlite&gt; SELECT * FROM users WHERE name LIKE <span class="hljs-string">"%a%"</span> ORDER BY id;
+id          name        email
+----------  ----------  -----------
+<span class="hljs-number">1</span>           James       <span class="hljs-number">007</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">4</span>           James       <span class="hljs-number">006</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">5</span>           Monica      <span class="hljs-number">010</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">7</span>           Gemma       <span class="hljs-number">012</span><span class="hljs-meta">@test</span>.jp
+sqlite&gt; </code></pre>
+%は、0個以上の任意の文字列を表します。
+同様に、emailに”00”が含まれているデータを取得してみましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span> <span class="hljs-keyword">WHERE</span> email <span class="hljs-keyword">LIKE</span> <span class="hljs-string">"%00%"</span> <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> <span class="hljs-keyword">id</span>;</code></pre>
+実行例：
+<pre><code class="hljs java">
+sqlite&gt; SELECT * FROM users WHERE email LIKE <span class="hljs-string">"%00%"</span> ORDER BY id;
+id          name        email
+----------  ----------  -----------
+<span class="hljs-number">1</span>           James       <span class="hljs-number">007</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">2</span>           Nielsen     <span class="hljs-number">008</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">3</span>           Lorre       <span class="hljs-number">009</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">4</span>           James       <span class="hljs-number">006</span><span class="hljs-meta">@test</span>.jp
+sqlite&gt; </code></pre>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-16. データの取得（IS NULL句）</div>
+<div class="l-content--detail p-lesson">
+値が入っていない(NULL)のデータを取得するにはSELECT文のNULL句を指定します。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> カラム<span class="hljs-number">1</span>, カラム<span class="hljs-number">2.</span>.. <span class="hljs-keyword">FROM</span> テーブル名 <span class="hljs-keyword">WHERE</span> カラム <span class="hljs-keyword">IS</span> <span class="hljs-literal">NULL</span>;</code></pre>
+まず、以下のidがNULLのデータを登録しておきましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> <span class="hljs-keyword">users</span>(<span class="hljs-keyword">name</span>, email) <span class="hljs-keyword">values</span> (<span class="hljs-string">"Rosamund"</span>, <span class="hljs-string">"013@test.jp"</span>);
+<span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span> <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> <span class="hljs-keyword">id</span>;</code></pre>
+実行例：
+<pre><code class="hljs java">sqlite&gt; <span class="hljs-function">INSERT INTO <span class="hljs-title">users</span><span class="hljs-params">(name, email)</span> <span class="hljs-title">values</span> <span class="hljs-params">(<span class="hljs-string">"Rosamund"</span>, <span class="hljs-string">"013@test.jp"</span>)</span></span>;
+sqlite&gt; SELECT * FROM users ORDER BY id;
+id          name        email
+----------  ----------  -----------
+            Rosamund    <span class="hljs-number">013</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">1</span>           James       <span class="hljs-number">007</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">2</span>           Nielsen     <span class="hljs-number">008</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">3</span>           Lorre       <span class="hljs-number">009</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">4</span>           James       <span class="hljs-number">006</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">5</span>           Monica      <span class="hljs-number">010</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">6</span>           Berenice    <span class="hljs-number">011</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">7</span>           Gemma       <span class="hljs-number">012</span><span class="hljs-meta">@test</span>.jp
+sqlite&gt; </code></pre>
+以下を実行し、idがNULLのデータを取得してみましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span> <span class="hljs-keyword">WHERE</span> <span class="hljs-keyword">id</span> <span class="hljs-keyword">IS</span> <span class="hljs-literal">NULL</span>;</code></pre>
+実行例：
+<pre><code class="hljs css">
+<span class="hljs-selector-tag">sqlite</span>&gt; <span class="hljs-selector-tag">SELECT</span> * <span class="hljs-selector-tag">FROM</span> <span class="hljs-selector-tag">users</span> <span class="hljs-selector-tag">WHERE</span> <span class="hljs-selector-tag">id</span> <span class="hljs-selector-tag">IS</span> <span class="hljs-selector-tag">NULL</span>;
+<span class="hljs-selector-tag">id</span>          <span class="hljs-selector-tag">name</span>        <span class="hljs-selector-tag">email</span>
+<span class="hljs-selector-tag">----------</span>  <span class="hljs-selector-tag">----------</span>  <span class="hljs-selector-tag">-----------</span>
+            <span class="hljs-selector-tag">Rosamund</span>    013@<span class="hljs-keyword">test</span>.<span class="hljs-keyword">jp</span>
+sqlite&gt; </code></pre>
+次に、idがNULLではないデータを取得してみましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span> <span class="hljs-keyword">WHERE</span> <span class="hljs-keyword">id</span> <span class="hljs-keyword">IS</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span> <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> <span class="hljs-keyword">id</span>;</code></pre>
+実行例：
+<pre><code class="hljs java">sqlite&gt; SELECT * FROM users WHERE id IS NOT NULL ORDER BY id;
+id          name        email
+----------  ----------  -----------
+<span class="hljs-number">1</span>           James       <span class="hljs-number">007</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">2</span>           Nielsen     <span class="hljs-number">008</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">3</span>           Lorre       <span class="hljs-number">009</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">4</span>           James       <span class="hljs-number">006</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">5</span>           Monica      <span class="hljs-number">010</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">6</span>           Berenice    <span class="hljs-number">011</span><span class="hljs-meta">@test</span>.jp
+<span class="hljs-number">7</span>           Gemma       <span class="hljs-number">012</span><span class="hljs-meta">@test</span>.jp
+sqlite&gt; </code></pre>
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-17. データの取得（DISTINCT句）</div>
+<div class="l-content--detail p-lesson">
+重複したデータを排除してデータを取得するにはSELECT文のDISTINCT句を指定します。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> <span class="hljs-keyword">DISTINCT</span>カラム<span class="hljs-number">1</span>, カラム<span class="hljs-number">2.</span>.. <span class="hljs-keyword">FROM</span> テーブル名;</code></pre>
+まずDISTINCTを指定せずにnameを取得してみましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> <span class="hljs-keyword">name</span> <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span> <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> <span class="hljs-keyword">name</span>;</code></pre>
+実行例：
+<pre><code class="hljs javascript">
+sqlite&gt; select name <span class="hljs-keyword">from</span> users order by name;
+name
+----------
+Berenice
+Gemma
+James
+James
+Lorre
+Monica
+Nielsen
+Rosamund
+sqlite&gt; </code></pre>
+Jamesが２人登録されているので、重複して２回表示されています。
+次にDISTINCTを指定してnameを取得してみましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> <span class="hljs-keyword">DISTINCT</span> <span class="hljs-keyword">name</span> <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span> <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> <span class="hljs-keyword">name</span>;</code></pre>
+実行例：
+<pre><code class="hljs">
+sqlite&gt; SELECT DISTINCT name FROM users ORDER BY name;
+name
+----------
+Berenice
+Gemma
+James
+Lorre
+Monica
+Nielsen
+Rosamund
+sqlite&gt; </code></pre>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-18. PRIMARY KEY制約</div>
+<div class="l-content--detail p-lesson">
+テーブルのカラムには様々な制約を事前に設定しておくことができます。
+データを一意に識別するカラム(主キー)にはPRIMARY KEY制約を設定しておきましょう。
+以下を実行して、新しくbooksテーブルを作成しましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> books(<span class="hljs-keyword">id</span> <span class="hljs-built_in">integer</span> PRIMARY <span class="hljs-keyword">KEY</span> AUTOINCREMENT, title <span class="hljs-built_in">varchar</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span> <span class="hljs-keyword">UNIQUE</span>, author <span class="hljs-keyword">DEFAULT</span> <span class="hljs-string">"不明"</span> );</code></pre>
+実行例：
+<pre><code class="hljs php">
+sqlite&gt; CREATE TABLE books(id integer PRIMARY KEY AUTOINCREMENT, title varchar NOT <span class="hljs-keyword">NULL</span> UNIQUE, author <span class="hljs-keyword">DEFAULT</span> <span class="hljs-string">"不明"</span> );
+sqlite&gt; </code></pre>
+.tablesコマンドを実行してテーブルが作成されていることを確認します。
+<pre><code class="hljs css"><span class="hljs-selector-class">.tables</span></code></pre>
+実行例：
+<pre><code class="hljs css"><span class="hljs-selector-tag">sqlite</span>&gt; <span class="hljs-selector-class">.tables</span>
+<span class="hljs-selector-tag">books</span>  <span class="hljs-selector-tag">users</span>
+<span class="hljs-selector-tag">sqlite</span>&gt; </code></pre>
+booksテーブルに以下のデータを登録しましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> books (title, author) <span class="hljs-keyword">VALUES</span> (<span class="hljs-string">"Ruby on Railsカリキュラム"</span>, <span class="hljs-string">"さいとう"</span>);
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> books (title, author) <span class="hljs-keyword">VALUES</span> (<span class="hljs-string">"PHPカリキュラム"</span>, <span class="hljs-string">"すずき"</span>);
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> books (title, author) <span class="hljs-keyword">VALUES</span> (<span class="hljs-string">"SQLカリキュラム"</span>, <span class="hljs-string">"たなか"</span>);
+<span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> books <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> <span class="hljs-keyword">id</span>;
+</code></pre>
+実行例：
+<pre><code class="hljs">
+sqlite&gt; SELECT * FROM books ORDER BY id;
+id          title                            author
+----------  -------------------------------  ------------
+1           Ruby on Railsカリキュラム  さいとう
+2           PHPカリキュラム            すずき
+3           SQLカリキュラム            たなか
+sqlite&gt; </code></pre>
+booksテーブルのidカラムにはPRIMARY KEY制約を設定しました。またAUTOINCREMENTを設定しているので、自動的に採番され番号が振られています。
+この状態で、すでに登録されているidと同じ値のデータを追加してみましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> books (<span class="hljs-keyword">id</span>, title, author) <span class="hljs-keyword">VALUES</span> (<span class="hljs-number">1</span>, <span class="hljs-string">"Javaカリキュラム"</span>, <span class="hljs-string">"こだか"</span>);</code></pre>
+実行例：
+<pre><code class="hljs java">
+sqlite&gt; <span class="hljs-function">INSERT INTO <span class="hljs-title">books</span> <span class="hljs-params">(id, title, author)</span> <span class="hljs-title">VALUES</span> <span class="hljs-params">(<span class="hljs-number">1</span>, <span class="hljs-string">"Javaカリキュラム"</span>, <span class="hljs-string">"こだか"</span>)</span></span>;
+Error: UNIQUE constraint failed: books.id
+sqlite&gt; </code></pre>
+このように、PRIMARY KEY制約を設定しているので、idが同じものはエラーとなり登録されません。
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-19. NOT NULL制約</div>
+<div class="l-content--detail p-lesson">
+値を必ず設定しておく必要があるカラムにはNOT NULL制約を設定しておきましょう。
+まず、.schemaでbooksテーブルの設定をもう一度確認しましょう。
+<pre><code class="hljs css"><span class="hljs-selector-class">.schema</span> <span class="hljs-selector-tag">books</span></code></pre>
+実行例：
+<pre><code class="hljs php">sqlite&gt; .schema books
+CREATE TABLE books(id integer PRIMARY KEY AUTOINCREMENT, title varchar NOT <span class="hljs-keyword">NULL</span> UNIQUE, author <span class="hljs-keyword">DEFAULT</span> <span class="hljs-string">"不明"</span> );
+sqlite&gt; </code></pre>
+このようにtitleにはNOT NULL制約が設定されていました。
+以下を実行して、titleがNULLのデータを登録してみましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> books (author) <span class="hljs-keyword">VALUES</span> (<span class="hljs-string">"わたなべ"</span>);</code></pre>
+実行例：
+<pre><code class="hljs java">
+sqlite&gt; <span class="hljs-function">INSERT INTO <span class="hljs-title">books</span> <span class="hljs-params">(author)</span> <span class="hljs-title">VALUES</span> <span class="hljs-params">(<span class="hljs-string">"わたなべ"</span>)</span></span>;
+Error: NOT NULL constraint failed: books.title
+sqlite&gt; </code></pre>
+このように、titleカラムがNULLのものはエラーとなり登録されません。
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-20. UNIQUE制約</div>
+<div class="l-content--detail p-lesson">
+重複した値を登録させたくないカラムにはUNIQUE制約を設定しておきましょう。
+まず、.schemaでbooksテーブルの設定をもう一度確認しましょう。
+<pre><code class="hljs css"><span class="hljs-selector-class">.schema</span> <span class="hljs-selector-tag">books</span></code></pre>
+実行例：
+<pre><code class="hljs php">sqlite&gt; .schema books
+CREATE TABLE books(id integer PRIMARY KEY AUTOINCREMENT, title varchar NOT <span class="hljs-keyword">NULL</span> UNIQUE, author <span class="hljs-keyword">DEFAULT</span> <span class="hljs-string">"不明"</span> );
+sqlite&gt; </code></pre>
+このようにtitleにはUNIQUE制約も設定されていました。
+以下を実行して、titleが同じデータを登録してみましょう。
+<pre><code class="hljs sql">
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> books (title, author) <span class="hljs-keyword">VALUES</span> (<span class="hljs-string">"Ruby on Railsカリキュラム"</span>, <span class="hljs-string">"さいとう"</span>);
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> books (title, author) <span class="hljs-keyword">VALUES</span> (<span class="hljs-string">"Ruby on Railsカリキュラム"</span>, <span class="hljs-string">"わたなべ"</span>);</code></pre>
+実行例：
+<pre><code class="hljs java">
+sqlite&gt; <span class="hljs-function">INSERT INTO <span class="hljs-title">books</span> <span class="hljs-params">(title, author)</span> <span class="hljs-title">VALUES</span> <span class="hljs-params">(<span class="hljs-string">"Ruby on Railsカリキュラム"</span>, <span class="hljs-string">"わたなべ"</span>)</span></span>;
+Error: UNIQUE constraint failed: books.title
+sqlite&gt; </code></pre>
+このように、同じtitleのものはエラーとなり登録されません。
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-21. DEFAULT制約</div>
+<div class="l-content--detail p-lesson">
+値が指定されていない場合、自動的にデフォルトの値を設定しておきたいカラムにはDEFAULT制約を設定しておきましょう。
+まず、.schemaでbooksテーブルの設定をもう一度確認しましょう。
+<pre><code class="hljs css"><span class="hljs-selector-class">.schema</span> <span class="hljs-selector-tag">books</span></code></pre>
+実行例：
+<pre><code class="hljs php">sqlite&gt; .schema books
+CREATE TABLE books(id integer PRIMARY KEY AUTOINCREMENT, title varchar NOT <span class="hljs-keyword">NULL</span> UNIQUE, author <span class="hljs-keyword">DEFAULT</span> <span class="hljs-string">"不明"</span> );
+sqlite&gt; </code></pre>
+このようにauthorにはDEFAULT制約が設定されていました。
+以下を実行して、authorに値を指定せずにデータを登録してみましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> books (title) <span class="hljs-keyword">VALUES</span> (<span class="hljs-string">"Goカリキュラム"</span>);
+<span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> books;</code></pre>
+実行例：
+<pre><code class="hljs java">
+sqlite&gt; <span class="hljs-function">INSERT INTO <span class="hljs-title">books</span> <span class="hljs-params">(title)</span> <span class="hljs-title">VALUES</span> <span class="hljs-params">(<span class="hljs-string">"Goカリキュラム"</span>)</span></span>;
+sqlite&gt; SELECT * FROM books;
+id          title                            author
+----------  -------------------------------  ------------
+<span class="hljs-number">1</span>           Ruby on Railsカリキュラム  さいとう
+<span class="hljs-number">2</span>           PHPカリキュラム            すずき
+<span class="hljs-number">3</span>           SQLカリキュラム            たなか
+<span class="hljs-number">4</span>           Goカリキュラム             不明
+sqlite&gt; </code></pre>
+このように、authorにDEFAULT制約で設定した値が入ります。
+様々な制約を設定しておくことで、不正なデータを登録させないようにブロックしたり、自動的に値を設定できることを学びました。次節以降は複数のテーブルを使ってデータを取得する方法を学んでいきます。その準備として以下のように今までのusersテーブルを削除し、再度制約をつけて作成しなおしましょう。また、新しくcompaniesテーブルとreviewsテーブルも作成しておきます。
+まず以下を実行し、usersテーブルを削除し、再度制約をつけて作成しなおしましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">DROP</span> <span class="hljs-keyword">TABLE</span> <span class="hljs-keyword">users</span>;
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> <span class="hljs-keyword">users</span>(<span class="hljs-keyword">id</span> <span class="hljs-built_in">integer</span> PRIMARY <span class="hljs-keyword">KEY</span> AUTOINCREMENT, <span class="hljs-keyword">name</span> <span class="hljs-built_in">varchar</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span>, email <span class="hljs-built_in">varchar</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span> <span class="hljs-keyword">UNIQUE</span>, company_id <span class="hljs-built_in">integer</span> );
+.tables</code></pre>
+実行例：
+<pre><code class="hljs php">
+sqlite&gt; DROP TABLE users;
+sqlite&gt; CREATE TABLE users(id integer PRIMARY KEY AUTOINCREMENT, name varchar NOT <span class="hljs-keyword">NULL</span>, email varchar NOT <span class="hljs-keyword">NULL</span> UNIQUE, company_id integer );
+sqlite&gt; .tables
+books  users
+sqlite&gt; </code></pre>
+次に以下を実行し、companiesテーブルとreviewsテーブルを作成しましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> companies(<span class="hljs-keyword">id</span> <span class="hljs-built_in">integer</span> PRIMARY <span class="hljs-keyword">KEY</span> AUTOINCREMENT, <span class="hljs-keyword">name</span> <span class="hljs-built_in">varchar</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span>);
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> reviews(<span class="hljs-keyword">id</span> <span class="hljs-built_in">integer</span> PRIMARY <span class="hljs-keyword">KEY</span> AUTOINCREMENT, user_id <span class="hljs-built_in">integer</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span>, book_id <span class="hljs-built_in">integer</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span>, description <span class="hljs-built_in">text</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span>);
+.tables</code></pre>
+実行例：
+<pre><code class="hljs php">
+sqlite&gt; CREATE TABLE companies(id integer PRIMARY KEY AUTOINCREMENT, name varchar NOT <span class="hljs-keyword">NULL</span>);
+sqlite&gt; CREATE TABLE reviews(id integer PRIMARY KEY AUTOINCREMENT, user_id integer NOT <span class="hljs-keyword">NULL</span>, book_id integer NOT <span class="hljs-keyword">NULL</span>, description text NOT <span class="hljs-keyword">NULL</span>);
+sqlite&gt; .tables
+books      companies  reviews    users
+sqlite&gt; </code></pre>
+さらに以下を実行し、データを追加しておきましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> companies (<span class="hljs-keyword">name</span>) <span class="hljs-keyword">VALUES</span> (<span class="hljs-string">"株式会社AAA"</span>);
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> companies (<span class="hljs-keyword">name</span>) <span class="hljs-keyword">VALUES</span> (<span class="hljs-string">"株式会社BBB"</span>);
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> companies (<span class="hljs-keyword">name</span>) <span class="hljs-keyword">VALUES</span> (<span class="hljs-string">"株式会社CCC"</span>);
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> <span class="hljs-keyword">users</span> (<span class="hljs-keyword">name</span>, email, company_id) <span class="hljs-keyword">VALUES</span> (<span class="hljs-string">"James"</span>, <span class="hljs-string">"007@test.jp"</span>, <span class="hljs-number">1</span>);
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> <span class="hljs-keyword">users</span> (<span class="hljs-keyword">name</span>, email, company_id) <span class="hljs-keyword">VALUES</span> (<span class="hljs-string">"Nielsen"</span>, <span class="hljs-string">"008@test.jp"</span>, <span class="hljs-number">1</span>);
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> <span class="hljs-keyword">users</span> (<span class="hljs-keyword">name</span>, email, company_id) <span class="hljs-keyword">VALUES</span> (<span class="hljs-string">"Lorre"</span>, <span class="hljs-string">"009@test.jp"</span>, <span class="hljs-number">1</span>);
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> <span class="hljs-keyword">users</span> (<span class="hljs-keyword">name</span>, email, company_id) <span class="hljs-keyword">VALUES</span> (<span class="hljs-string">"Monica"</span>, <span class="hljs-string">"010@test.jp"</span>, <span class="hljs-number">4</span>);
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> <span class="hljs-keyword">users</span> (<span class="hljs-keyword">name</span>, email, company_id) <span class="hljs-keyword">VALUES</span> (<span class="hljs-string">"Berenice"</span>, <span class="hljs-string">"011@test.jp"</span>, <span class="hljs-number">2</span>);
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> <span class="hljs-keyword">users</span> (<span class="hljs-keyword">name</span>, email, company_id) <span class="hljs-keyword">VALUES</span> (<span class="hljs-string">"Gemma"</span>, <span class="hljs-string">"012@test.jp"</span>, <span class="hljs-number">2</span>);
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> reviews (user_id, book_id, description) <span class="hljs-keyword">VALUES</span> (<span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-string">"Great!"</span>);
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> reviews (user_id, book_id, description) <span class="hljs-keyword">VALUES</span> (<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-string">"Good Book!"</span>);
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> reviews (user_id, book_id, description) <span class="hljs-keyword">VALUES</span> (<span class="hljs-number">1</span>, <span class="hljs-number">3</span>, <span class="hljs-string">"How sweet!"</span>);
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> reviews (user_id, book_id, description) <span class="hljs-keyword">VALUES</span> (<span class="hljs-number">2</span>, <span class="hljs-number">2</span>, <span class="hljs-string">"Good job!"</span>);
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> reviews (user_id, book_id, description) <span class="hljs-keyword">VALUES</span> (<span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-string">"Amaging!"</span>);
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> reviews (user_id, book_id, description) <span class="hljs-keyword">VALUES</span> (<span class="hljs-number">3</span>, <span class="hljs-number">1</span>, <span class="hljs-string">"Boring!"</span>);
+<span class="hljs-keyword">INSERT</span> <span class="hljs-keyword">INTO</span> reviews (user_id, book_id, description) <span class="hljs-keyword">VALUES</span> (<span class="hljs-number">4</span>, <span class="hljs-number">1</span>, <span class="hljs-string">"Great!"</span>);
+</code></pre>
+実行例：
+<pre><code class="hljs java">
+sqlite&gt; <span class="hljs-function">INSERT INTO <span class="hljs-title">companies</span> <span class="hljs-params">(name)</span> <span class="hljs-title">VALUES</span> <span class="hljs-params">(<span class="hljs-string">"株式会社AAA"</span>)</span></span>;
+sqlite&gt; <span class="hljs-function">INSERT INTO <span class="hljs-title">companies</span> <span class="hljs-params">(name)</span> <span class="hljs-title">VALUES</span> <span class="hljs-params">(<span class="hljs-string">"株式会社BBB"</span>)</span></span>;
+sqlite&gt; <span class="hljs-function">INSERT INTO <span class="hljs-title">companies</span> <span class="hljs-params">(name)</span> <span class="hljs-title">VALUES</span> <span class="hljs-params">(<span class="hljs-string">"株式会社CCC"</span>)</span></span>;
+sqlite&gt; <span class="hljs-function">INSERT INTO <span class="hljs-title">users</span> <span class="hljs-params">(name, email, company_id)</span> <span class="hljs-title">VALUES</span> <span class="hljs-params">(<span class="hljs-string">"James"</span>, <span class="hljs-string">"007@test.jp"</span>, <span class="hljs-number">1</span>)</span></span>;
+sqlite&gt; <span class="hljs-function">INSERT INTO <span class="hljs-title">users</span> <span class="hljs-params">(name, email, company_id)</span> <span class="hljs-title">VALUES</span> <span class="hljs-params">(<span class="hljs-string">"Nielsen"</span>, <span class="hljs-string">"008@test.jp"</span>, <span class="hljs-number">1</span>)</span></span>;
+sqlite&gt; <span class="hljs-function">INSERT INTO <span class="hljs-title">users</span> <span class="hljs-params">(name, email, company_id)</span> <span class="hljs-title">VALUES</span> <span class="hljs-params">(<span class="hljs-string">"Lorre"</span>, <span class="hljs-string">"009@test.jp"</span>, <span class="hljs-number">1</span>)</span></span>;
+sqlite&gt; <span class="hljs-function">INSERT INTO <span class="hljs-title">users</span> <span class="hljs-params">(name, email, company_id)</span> <span class="hljs-title">VALUES</span> <span class="hljs-params">(<span class="hljs-string">"Monica"</span>, <span class="hljs-string">"010@test.jp"</span>, <span class="hljs-number">4</span>)</span></span>;
+sqlite&gt; <span class="hljs-function">INSERT INTO <span class="hljs-title">users</span> <span class="hljs-params">(name, email, company_id)</span> <span class="hljs-title">VALUES</span> <span class="hljs-params">(<span class="hljs-string">"Berenice"</span>, <span class="hljs-string">"011@test.jp"</span>, <span class="hljs-number">2</span>)</span></span>;
+sqlite&gt; <span class="hljs-function">INSERT INTO <span class="hljs-title">users</span> <span class="hljs-params">(name, email, company_id)</span> <span class="hljs-title">VALUES</span> <span class="hljs-params">(<span class="hljs-string">"Gemma"</span>, <span class="hljs-string">"012@test.jp"</span>, <span class="hljs-number">2</span>)</span></span>;
+sqlite&gt; <span class="hljs-function">INSERT INTO <span class="hljs-title">reviews</span> <span class="hljs-params">(user_id, book_id, description)</span> <span class="hljs-title">VALUES</span> <span class="hljs-params">(<span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-string">"Great!"</span>)</span></span>;
+sqlite&gt; <span class="hljs-function">INSERT INTO <span class="hljs-title">reviews</span> <span class="hljs-params">(user_id, book_id, description)</span> <span class="hljs-title">VALUES</span> <span class="hljs-params">(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-string">"Good Book!"</span>)</span></span>;
+sqlite&gt; <span class="hljs-function">INSERT INTO <span class="hljs-title">reviews</span> <span class="hljs-params">(user_id, book_id, description)</span> <span class="hljs-title">VALUES</span> <span class="hljs-params">(<span class="hljs-number">1</span>, <span class="hljs-number">3</span>, <span class="hljs-string">"How sweet!"</span>)</span></span>;
+sqlite&gt; <span class="hljs-function">INSERT INTO <span class="hljs-title">reviews</span> <span class="hljs-params">(user_id, book_id, description)</span> <span class="hljs-title">VALUES</span> <span class="hljs-params">(<span class="hljs-number">2</span>, <span class="hljs-number">2</span>, <span class="hljs-string">"Good job!"</span>)</span></span>;
+sqlite&gt; <span class="hljs-function">INSERT INTO <span class="hljs-title">reviews</span> <span class="hljs-params">(user_id, book_id, description)</span> <span class="hljs-title">VALUES</span> <span class="hljs-params">(<span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-string">"Amaging!"</span>)</span></span>;
+sqlite&gt; <span class="hljs-function">INSERT INTO <span class="hljs-title">reviews</span> <span class="hljs-params">(user_id, book_id, description)</span> <span class="hljs-title">VALUES</span> <span class="hljs-params">(<span class="hljs-number">3</span>, <span class="hljs-number">1</span>, <span class="hljs-string">"Boring!"</span>)</span></span>;
+sqlite&gt; <span class="hljs-function">INSERT INTO <span class="hljs-title">reviews</span> <span class="hljs-params">(user_id, book_id, description)</span> <span class="hljs-title">VALUES</span> <span class="hljs-params">(<span class="hljs-number">4</span>, <span class="hljs-number">1</span>, <span class="hljs-string">"Great!"</span>)</span></span>;
+sqlite&gt; SELECT * FROM companies;
+id          name
+----------  ---------------
+<span class="hljs-number">1</span>           株式会社AAA
+<span class="hljs-number">2</span>           株式会社BBB
+<span class="hljs-number">3</span>           株式会社CCC
+sqlite&gt; SELECT * FROM users;
+id          name        email        company_id
+----------  ----------  -----------  ----------
+<span class="hljs-number">1</span>           James       <span class="hljs-number">007</span><span class="hljs-meta">@test</span>.jp  <span class="hljs-number">1</span>
+<span class="hljs-number">2</span>           Nielsen     <span class="hljs-number">008</span><span class="hljs-meta">@test</span>.jp  <span class="hljs-number">1</span>
+<span class="hljs-number">3</span>           Lorre       <span class="hljs-number">009</span><span class="hljs-meta">@test</span>.jp  <span class="hljs-number">1</span>
+<span class="hljs-number">4</span>           Monica      <span class="hljs-number">010</span><span class="hljs-meta">@test</span>.jp  <span class="hljs-number">4</span>
+<span class="hljs-number">5</span>           Berenice    <span class="hljs-number">011</span><span class="hljs-meta">@test</span>.jp  <span class="hljs-number">2</span>
+<span class="hljs-number">6</span>           Gemma       <span class="hljs-number">012</span><span class="hljs-meta">@test</span>.jp  <span class="hljs-number">2</span>
+sqlite&gt; SELECT * FROM reviews;
+id          user_id     book_id     description
+----------  ----------  ----------  -----------
+<span class="hljs-number">1</span>           <span class="hljs-number">1</span>           <span class="hljs-number">1</span>           Great!
+<span class="hljs-number">2</span>           <span class="hljs-number">1</span>           <span class="hljs-number">2</span>           Good Book!
+<span class="hljs-number">3</span>           <span class="hljs-number">1</span>           <span class="hljs-number">3</span>           How sweet!
+<span class="hljs-number">4</span>           <span class="hljs-number">2</span>           <span class="hljs-number">2</span>           Good job!
+<span class="hljs-number">5</span>           <span class="hljs-number">2</span>           <span class="hljs-number">3</span>           Amaging!
+<span class="hljs-number">6</span>           <span class="hljs-number">3</span>           <span class="hljs-number">1</span>           Boring!
+<span class="hljs-number">7</span>           <span class="hljs-number">4</span>           <span class="hljs-number">1</span>           Great!
+sqlite&gt; </code></pre>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-22. 複数テーブルからの情報取得</div>
+<div class="l-content--detail p-lesson">
+複数のテーブルから情報を取得する方法を学びます。
+まず、companiesテーブルの内容を確認しましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> companies;</code></pre>
+実行例：
+<pre><code class="hljs">
+sqlite&gt; SELECT * FROM companies;
+id          name
+----------  ---------------
+1           株式会社AAA
+2           株式会社BBB
+3           株式会社CCC
+sqlite&gt; </code></pre>
+次に、usersテーブルの内容を確認しましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span>;</code></pre>
+実行例：
+<pre><code class="hljs java">
+sqlite&gt; SELECT * FROM users;
+id          name        email        company_id
+----------  ----------  -----------  ----------
+<span class="hljs-number">1</span>           James       <span class="hljs-number">007</span><span class="hljs-meta">@test</span>.jp  <span class="hljs-number">1</span>
+<span class="hljs-number">2</span>           Nielsen     <span class="hljs-number">008</span><span class="hljs-meta">@test</span>.jp  <span class="hljs-number">1</span>
+<span class="hljs-number">3</span>           Lorre       <span class="hljs-number">009</span><span class="hljs-meta">@test</span>.jp  <span class="hljs-number">1</span>
+<span class="hljs-number">5</span>           Berenice    <span class="hljs-number">011</span><span class="hljs-meta">@test</span>.jp  <span class="hljs-number">2</span>
+<span class="hljs-number">6</span>           Gemma       <span class="hljs-number">012</span><span class="hljs-meta">@test</span>.jp  <span class="hljs-number">2</span>
+sqlite&gt; </code></pre>
+usersテーブルのcompany_idは、companiesテーブルのidを指します。WHERE句にそれぞれが一致する条件（users.company_id=companies.id）を設定することで情報を取得することができます。
+以下を実行して、usersテーブルのnameとそのユーザーが所属するcompaniesのnameを取得しましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> users.name, companies.name <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span>, companies <span class="hljs-keyword">WHERE</span> users.company_id=companies.id;</code></pre>
+実行例：
+<pre><code class="hljs">
+sqlite&gt; SELECT users.name, companies.name FROM users, companies WHERE users.company_id=companies.id;
+name        name
+----------  ---------------
+James       株式会社AAA
+Nielsen     株式会社AAA
+Lorre       株式会社AAA
+Berenice    株式会社BBB
+Gemma       株式会社BBB
+sqlite&gt; </code></pre>
+SELECT文の中でテーブルに別名(エイリアス)を設定することもできます。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> u.name, c.name <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span> u, companies c <span class="hljs-keyword">WHERE</span> u.company_id=c.id;</code></pre>
+実行例：
+<pre><code class="hljs">
+sqlite&gt; SELECT u.name, c.name FROM users u, companies c WHERE u.company_id=c.id;
+name        name
+----------  ---------------
+James       株式会社AAA
+Nielsen     株式会社AAA
+Lorre       株式会社AAA
+Berenice    株式会社BBB
+Gemma       株式会社BBB
+sqlite&gt; </code></pre>
+表示されたnameもどちらのnameか区別したい場合には、カラム名に別名(エイリアス)を設定することもできます。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> u.name <span class="hljs-keyword">AS</span> user_name, c.name <span class="hljs-keyword">AS</span> company_name <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span> u, companies c <span class="hljs-keyword">WHERE</span> u.company_id=c.id;</code></pre>
+実行例：
+<pre><code class="hljs php">
+sqlite&gt; SELECT u.name <span class="hljs-keyword">AS</span> user_name, c.name <span class="hljs-keyword">AS</span> company_name FROM users u, companies c WHERE u.company_id=c.id;
+user_name   company_name
+----------  ---------------
+James       株式会社AAA
+Nielsen     株式会社AAA
+Lorre       株式会社AAA
+Berenice    株式会社BBB
+Gemma       株式会社BBB
+sqlite&gt;  </code></pre>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-23. INNER JOIN句</div>
+<div class="l-content--detail p-lesson">
+複数のテーブルから指定したそれぞれのカラムが一致するデータのみを取得する場合には、内部結合（INNER JOIN）が使えます。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> カラム<span class="hljs-number">1</span>, カラム<span class="hljs-number">2.</span>.. <span class="hljs-keyword">FROM</span> テーブル<span class="hljs-number">1</span> <span class="hljs-keyword">INNER</span> <span class="hljs-keyword">JOIN</span> テーブル<span class="hljs-number">2</span> <span class="hljs-keyword">ON</span> 条件;</code></pre>
+以下を実行し、usersテーブルのcompany_idとcompaniesテーブルのidで内部結合させた情報を取得しましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span> u <span class="hljs-keyword">INNER</span> <span class="hljs-keyword">JOIN</span> companies c <span class="hljs-keyword">ON</span> u.company_id=c.id;</code></pre>
+実行例：
+<pre><code class="hljs java">sqlite&gt; SELECT * FROM users u INNER JOIN companies c ON u.company_id=c.id;
+id          name        email        company_id  id          name
+----------  ----------  -----------  ----------  ----------  ---------------
+<span class="hljs-number">1</span>           James       <span class="hljs-number">007</span><span class="hljs-meta">@test</span>.jp  <span class="hljs-number">1</span>           <span class="hljs-number">1</span>           株式会社AAA
+<span class="hljs-number">2</span>           Nielsen     <span class="hljs-number">008</span><span class="hljs-meta">@test</span>.jp  <span class="hljs-number">1</span>           <span class="hljs-number">1</span>           株式会社AAA
+<span class="hljs-number">3</span>           Lorre       <span class="hljs-number">009</span><span class="hljs-meta">@test</span>.jp  <span class="hljs-number">1</span>           <span class="hljs-number">1</span>           株式会社AAA
+<span class="hljs-number">5</span>           Berenice    <span class="hljs-number">011</span><span class="hljs-meta">@test</span>.jp  <span class="hljs-number">2</span>           <span class="hljs-number">2</span>           株式会社BBB
+<span class="hljs-number">6</span>           Gemma       <span class="hljs-number">012</span><span class="hljs-meta">@test</span>.jp  <span class="hljs-number">2</span>           <span class="hljs-number">2</span>           株式会社BBB
+sqlite&gt; </code></pre>
+もちろん、前節のようにnameだけ取り出すこともできます。以下を実行してみましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> u.name <span class="hljs-keyword">AS</span> user_name, c.name <span class="hljs-keyword">AS</span> company_name <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span> u <span class="hljs-keyword">INNER</span> <span class="hljs-keyword">JOIN</span> companies c <span class="hljs-keyword">ON</span> u.company_id=c.id;</code></pre>
+実行例
+<pre><code class="hljs php">
+sqlite&gt; SELECT u.name <span class="hljs-keyword">AS</span> user_name, c.name <span class="hljs-keyword">AS</span> company_name FROM users u INNER JOIN companies c ON u.company_id=c.id;
+user_name   company_name
+----------  ---------------
+James       株式会社AAA
+Nielsen     株式会社AAA
+Lorre       株式会社AAA
+Berenice    株式会社BBB
+Gemma       株式会社BBB
+sqlite&gt; </code></pre>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-24. OUTER JOIN句</div>
+<div class="l-content--detail p-lesson">
+複数のテーブルからどちらか一方のテーブルにデータがあれば取得するような場合には、外部結合（LEFT OUTER JOIN）が使えます。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> カラム<span class="hljs-number">1</span>, カラム<span class="hljs-number">2.</span>.. <span class="hljs-keyword">FROM</span> テーブル<span class="hljs-number">1</span> <span class="hljs-keyword">LEFT</span> <span class="hljs-keyword">OUTER</span> <span class="hljs-keyword">JOIN</span> テーブル<span class="hljs-number">2</span> <span class="hljs-keyword">ON</span> 条件;</code></pre>
+以下を実行し、usersテーブルのcompany_idとcompaniesテーブルのidで外部結合させた情報を取得しましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span> u <span class="hljs-keyword">LEFT</span> <span class="hljs-keyword">OUTER</span> <span class="hljs-keyword">JOIN</span> companies c <span class="hljs-keyword">ON</span> u.company_id=c.id;</code></pre>
+実行例：
+<pre><code class="hljs java">
+sqlite&gt; SELECT * FROM users u LEFT OUTER JOIN companies c ON u.company_id=c.id;
+id          name        email        company_id  id          name
+----------  ----------  -----------  ----------  ----------  ---------------
+<span class="hljs-number">1</span>           James       <span class="hljs-number">007</span><span class="hljs-meta">@test</span>.jp  <span class="hljs-number">1</span>           <span class="hljs-number">1</span>           株式会社AAA
+<span class="hljs-number">2</span>           Nielsen     <span class="hljs-number">008</span><span class="hljs-meta">@test</span>.jp  <span class="hljs-number">1</span>           <span class="hljs-number">1</span>           株式会社AAA
+<span class="hljs-number">3</span>           Lorre       <span class="hljs-number">009</span><span class="hljs-meta">@test</span>.jp  <span class="hljs-number">1</span>           <span class="hljs-number">1</span>           株式会社AAA
+<span class="hljs-number">4</span>           Monica      <span class="hljs-number">010</span><span class="hljs-meta">@test</span>.jp  <span class="hljs-number">4</span>
+<span class="hljs-number">5</span>           Berenice    <span class="hljs-number">011</span><span class="hljs-meta">@test</span>.jp  <span class="hljs-number">2</span>           <span class="hljs-number">2</span>           株式会社BBB
+<span class="hljs-number">6</span>           Gemma       <span class="hljs-number">012</span><span class="hljs-meta">@test</span>.jp  <span class="hljs-number">2</span>           <span class="hljs-number">2</span>           株式会社BBB
+sqlite&gt; </code></pre>
+idが4のデータはcompaniesテーブルには存在しませんが、usersテーブルにはcompany_idが4のデータが存在しますので、上記のように表示されます。
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-25. 多対多のデータの取得</div>
+<div class="l-content--detail p-lesson">
+usersテーブルのデータが1つのcompany_idを持っているのは、ユーザーは必ず1つの会社に属しているという関係を表すのに適切です。しかし、図書館のように、複数の本があり、それぞれの本を複数のユーザーが借りてレビューするような場合はどのようなテーブルやカラムを作れば良いでしょうか。
+このように複数のデータが他の複数のデータと結びつく関係を、多対多の関係といいます。
+多対多の関係を表すにはusersテーブルとbooksテーブルの間に中間テーブルを作成し、それぞれのidを設定できるように設定します。ここでは中間テーブルをreviewsテーブルとしてデータを確認してみましょう。
+まず、reviewsテーブルのデータを取得します。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> reviews;</code></pre>
+実行例：
+<pre><code class="hljs">
+sqlite&gt; SELECT * FROM reviews;
+id          user_id     book_id     description
+----------  ----------  ----------  -----------
+1           1           1           Great!
+2           1           2           Good Book!
+3           1           3           How sweet!
+4           2           2           Good job!
+5           2           3           Amaging!
+6           3           1           Boring!
+7           4           1           Great!
+sqlite&gt; </code></pre>
+user_idが1のユーザーがbook_id1, 2, 3の複数の本を借りている状態を表現できています。またbook_idからみても、book_idが1の本がuser_id1, 3, 4の複数のユーザーに借りられている状態も表現できていそうです。
+それではより具体的に、以下を実行し、user_idが1のユーザーが借りた本の情報を取得してみましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> <span class="hljs-keyword">name</span>, title, description <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span> u, books b, reviews r <span class="hljs-keyword">WHERE</span> u.id=<span class="hljs-number">1</span> <span class="hljs-keyword">AND</span> u.id=r.user_id <span class="hljs-keyword">AND</span> b.id=r.book_id; </code></pre>
+実行例：
+<pre><code class="hljs php">
+sqlite&gt; SELECT name, title, description FROM users u, books b, reviews r WHERE u.id=<span class="hljs-number">1</span> <span class="hljs-keyword">AND</span> u.id=r.user_id <span class="hljs-keyword">AND</span> b.id=r.book_id;
+name        title                            description
+----------  -------------------------------  -----------
+James       Ruby on Railsカリキュラム  Great!
+James       PHPカリキュラム            Good Book!
+James       SQLカリキュラム            How sweet!
+sqlite&gt;  </code></pre>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-26. GROUP BY句</div>
+<div class="l-content--detail p-lesson">
+登録されているユーザーの人数を確認したい場合などにSQLiteで用意されているCOUNT関数を使うことができます。以下、実行してみましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> <span class="hljs-keyword">COUNT</span>(*) <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span>;</code></pre>
+実行例：
+<pre><code class="hljs java">
+sqlite&gt; <span class="hljs-function">SELECT <span class="hljs-title">COUNT</span><span class="hljs-params">(*)</span> FROM users</span>;
+COUNT(*)
+----------
+<span class="hljs-number">6</span>
+sqlite&gt;  </code></pre>
+さらにcompany_id毎に人数を集計したい場合、GROUP BY句でグルーピングすることができます。以下、実行してみましょう。
+<pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> c.name <span class="hljs-keyword">AS</span> company_name, <span class="hljs-keyword">COUNT</span>(*) <span class="hljs-keyword">AS</span> user_count <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">users</span> u, companies c <span class="hljs-keyword">WHERE</span> u.company_id=c.id <span class="hljs-keyword">GROUP</span> <span class="hljs-keyword">BY</span> u.company_id;  </code></pre>
+実行例：
+<pre><code class="hljs php">
+sqlite&gt; SELECT c.name <span class="hljs-keyword">AS</span> company_name, COUNT(*) <span class="hljs-keyword">AS</span> user_count FROM users u, companies c WHERE u.company_id=c.id GROUP BY u.company_id;
+company_name     user_count
+---------------  ----------
+株式会社AAA  <span class="hljs-number">3</span>
+株式会社BBB  <span class="hljs-number">2</span>
+sqlite&gt; </code></pre>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-27. 【課題】カテゴリで検索できるようにしよう！</div>
+<div class="l-content--detail p-lesson">
+条件１：categoriesテーブルを作成し、本のカテゴリ名を登録しましょう。
+条件２：booksテーブルとcategoriesテーブルは多対多の関係として、中間テーブルにbooks_categoriesテーブルを作成しましょう。
+条件３：booksテーブルに新しく本を登録し、それぞれの本に複数のカテゴリを設定しましょう。
+ヒント１：categoriesテーブルはnameカラムを持ちます。
+ヒント２：books_categoriesテーブルはbooks_idとcategory_idを持ちます。
+</div>
+</div>

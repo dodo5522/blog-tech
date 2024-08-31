@@ -1,0 +1,101 @@
+---
+title: "Python製WebアプリフレームワークFlaskとお供することが多いSQLAlchemyを使ったWHERE句のOR指定方法の注意点。"
+description: "一時期Djangoを触っていて挫折して、その後Bottleを弄ってたらあまりにシンプルすぎるフレームワークでやること多すぎて挫折して、Flaskに流れ着いたとこ..."
+tags:
+  - "flask"
+  - "python"
+  - "プログラミング"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2017-05-27T19:12:55.000Z
+author: takashi
+---
+
+
+一時期Djangoを触っていて挫折して、その後Bottleを弄ってたらあまりにシンプルすぎるフレームワークでやること多すぎて挫折して、Flaskに流れ着いたところ。
+けっこう良い気がします、Flask。
+<div class="kaerebalink-box" style="text-align:left;padding-bottom:20px;font-size:small;overflow: hidden"><div class="kaerebalink-image" style="float:left;margin:0 15px 10px 0"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB00XZTYMG6%2Fref%3Dnosim" target="_blank" rel="noopener"><img src="https://images-fe.ssl-images-amazon.com/images/I/51sRmBNqesL._SL160_.jpg" style="border: none" /></a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="kaerebalink-info" style="line-height:120%;overflow: hidden"><div class="kaerebalink-name" style="margin-bottom:10px;line-height:120%"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB00XZTYMG6%2Fref%3Dnosim" target="_blank" rel="noopener">Pythonプロフェッショナルプログラミング 第2版</a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"><div class="kaerebalink-powered-date" style="font-size:8pt;margin-top:5px;font-family:verdana;line-height:120%">posted with <a href="http://kaereba.com" rel="nofollow noopener" target="_blank">カエレバ</a></div></div><div class="kaerebalink-detail" style="margin-bottom:5px">株式会社ビープラウド 秀和システム 2015-05-21    </div><div class="kaerebalink-link1" style="margin-top:10px"><div class="shoplinkamazon" style="margin:5px 0"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fgp%2Fsearch%3Fkeywords%3DPython%25E3%2583%2597%25E3%2583%25AD%25E3%2583%2595%25E3%2582%25A7%25E3%2583%2583%25E3%2582%25B7%25E3%2583%25A7%25E3%2583%258A%25E3%2583%25AB%25E3%2583%2597%25E3%2583%25AD%25E3%2582%25B0%25E3%2583%25A9%25E3%2583%259F%25E3%2583%25B3%25E3%2582%25B0%26__mk_ja_JP%3D%25E3%2582%25AB%25E3%2582%25BF%25E3%2582%25AB%25E3%2583%258A" target="_blank" rel="noopener">Amazon</a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="shoplinkrakuten" style="margin:5px 0"><a href="//af.moshimo.com/af/c/click?a_id=602828&amp;p_id=54&amp;pc_id=54&amp;pl_id=616&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fsearch.rakuten.co.jp%2Fsearch%2Fmall%2FPython%25E3%2583%2597%25E3%2583%25AD%25E3%2583%2595%25E3%2582%25A7%25E3%2583%2583%25E3%2582%25B7%25E3%2583%25A7%25E3%2583%258A%25E3%2583%25AB%25E3%2583%2597%25E3%2583%25AD%25E3%2582%25B0%25E3%2583%25A9%25E3%2583%259F%25E3%2583%25B3%25E3%2582%25B0%2F-%2Ff.1-p.1-s.1-sf.0-st.A-v.2%3Fx%3D0" target="_blank" rel="noopener">楽天市場</a><img src="//i.moshimo.com/af/i/impression?a_id=602828&amp;p_id=54&amp;pc_id=54&amp;pl_id=616" width="1" height="1" style="border:none"></div></div></div><div class="booklink-footer" style="clear: left"></div></div>
+でも今回は、Flaskではなくて、MySQLとの繋ぎに使っているSQLAlchemyについて。
+<h1>SQLAlchemyでSELECT ... WHERE ... OR/ANDするには</h1>
+SQLAlchemy経由でquery実行する際のWHERE句のORやANDでデータを引っ張る方法は、以下の公式ドキュメントで詳細に解説されている。
+英語だけど。
+<ul>
+<li><a href="http://docs.sqlalchemy.org/en/latest/core/tutorial.html">SQL Expression Language Tutorial</a>
+<ul>
+<li>Selecting</li>
+<li>Conjunctions</li>
+</ul></li>
+</ul>
+特にWHERE句で使用する<code>WHERE clause</code>クラスのor/andオペレータについて、以下のように具体的に記載されている。
+ふつーに<code>|</code>や<code>&amp;</code>を指定すればいいらしい。
+<blockquote>
+  So that looks a lot better, we added an expression to our <code>select()</code> which had the effect of adding <code>WHERE users.id = addresses.user_id</code> to our statement, and our results were managed down so that the join of users and addresses rows made sense. But let’s look at that expression? It’s using just a Python equality operator between two different Column objects. It should be clear that something is up. Saying <code>1 == 1</code> produces True, and <code>1 == 2</code> produces <code>False</code>, not a WHERE clause. So lets see exactly what that expression is doing:
+</blockquote>
+実際にやってみると、結果は確かに<code>True</code>や<code>False</code>でなくてオブジェクトが返ってくる。
+[code lang=python]
+(Pdb) self._db.User.c.id_ == self._db.Profile.c.userId
+&lt;sqlalchemy.sql.elements.BinaryExpression object at 0x10d460eb8&gt;
+(Pdb) type(self._db.User.c.id_ == self._db.Profile.c.userId)
+&lt;class &#039;sqlalchemy.sql.elements.BinaryExpression&#039;&gt;
+(Pdb) type(self._db.User.c.id_)
+&lt;class &#039;sqlalchemy.sql.schema.Column&#039;&gt;
+[/code]
+<code>c</code>メンバは<code>sqlalchemy.sql.schema.Column</code>クラス。C++みたく、なんらかのオペレータがオーバーライドされているはず。
+と思って<code>dir()</code>したら、そのまんまなメソッド発見。
+[code lang=python]
+(Pdb) for i in dir(self._db.User.c.id_): print(i)
+__and__
+...
+__or__
+[/code]
+なるほど。
+[code lang=python]
+In [115]: sqlalchemy.sql.schema.Column.__or__??
+Signature: sqlalchemy.sql.schema.Column.__or__(self, other)
+Source:
+    def __or__(self, other):
+        &quot;&quot;&quot;Implement the ``|`` operator.
+        When used with SQL expressions, results in an
+        OR operation, equivalent to
+        :func:`~.expression.or_`, that is::
+            a | b
+        is equivalent to::
+            from sqlalchemy import or_
+            or_(a, b)
+        Care should be taken when using ``|`` regarding
+        operator precedence; the ``|`` operator has the highest precedence.
+        The operands should be enclosed in parenthesis if they contain
+        further sub expressions::
+            (a == 2) | (b == 4)
+        &quot;&quot;&quot;
+        return self.operate(or_, other)
+[/code]
+ということで、公式チュートリアルの通り、例えばWHERE+ORしてデータを引っ張るには以下のようにすれば良い。
+[code lang=python]
+    filter_ = None
+    if user_ids:
+        import pdb; pdb.set_trace()  # for debug
+        filter_ = self._db.User.c.id_ == user_ids[0]
+        for user_id in user_ids[1:]:
+            filter_ |= self._db.User.c.id_ == user_id
+    joined_query = self._db.User.join(self._db.Profile, self._db.User.c.id_ == self._db.Profile.c.userId)
+    joined_query = joined_query.join(self._db.UsersAbility, self._db.User.c.id_ == self._db.UsersAbility.c.userId)
+    joined_query = joined_query.join(self._db.Ability, self._db.UsersAbility.c.abilityId == self._db.Ability.c.id_)
+    selected_query = joined_query.select()
+    # if filter_:  # not operated... why?
+    if filter_ is not None:
+        selected_query = selected_query.where(filter_)
+    executed = selected_query.with_only_columns(db_columns).execute()
+    for record in executed.fetchall():
+        yield record
+[/code]
+例えば<code>user_ids = [1,2,3]</code>として、上記コードの<code>set_trace()</code>辺りで<code>filter_</code>をダンプしてみると下記の通りで、想定通りのSQL queryが実行されそうな雰囲気。
+[code lang=python]
+(Pdb) str(filter_)
+&#039;&quot;User&quot;.id_ = :id__1 OR &quot;User&quot;.id_ = :id__2 OR &quot;User&quot;.id_ = :id__3&#039;
+[/code]
+雰囲気だけでなく、もちろん<code>fetchall()</code>結果も想定通りのデータが返る。
+<h1>注意点</h1>
+<code>filter_</code>周辺で回りくどいことをしているのは、両方とも<code>sqlalchemy.sql.schema.Column</code>オブジェクトとした上でないと<code>__or__</code>メソッドが動作しないため。
+例えば初期値として数値オブジェクトが入ってたりすると、想定通りに動作しない。ってまぁ当たり前なんだけど。

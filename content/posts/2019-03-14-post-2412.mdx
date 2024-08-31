@@ -1,0 +1,1776 @@
+---
+title: "Graspy 4. ruby on rails 本棚アプリ"
+description: "4.【最終書】本棚アプリを作ってみよう4-1. 本棚アプリこのレッスンではRuby on Railsのより実践的なアプリケーションとして、マイ本棚を作成していき..."
+tags:
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2019-03-14T16:05:04.000Z
+author: takashi
+---
+
+
+<h1 class="c-title--primary">4.【最終書】本棚アプリを作ってみよう</h1>
+<div class="l-content--detail p-lesson"></div>
+<div class="l-content--detail p-lesson">
+<div>4-1. 本棚アプリ</div>
+<div class="l-content--detail p-lesson">
+このレッスンではRuby on Railsのより実践的なアプリケーションとして、マイ本棚を作成していきます。
+アプリケーションを作成しながら、Ruby on Railsの開発で良く使われるGemも解説していきます。
+マイ本棚完成イメージ
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/%E6%9C%AC%E6%A3%9A%E5%AE%8C%E6%88%90%E3%82%A4%E3%83%A1%E3%83%BC%E3%82%B7%E3%82%99-1024x543.png" alt="%e6%9c%ac%e6%a3%9a%e5%ae%8c%e6%88%90%e3%82%a4%e3%83%a1%e3%83%bc%e3%82%b7%e3%82%99" width="840" height="445" />マイ本棚は、自分の本を登録できるだけでなく他の人の本やレビューも共有できるアプリです。ぜひ完成を目指して進めていきましょう。
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-2. GitHubのリポジトリ作成</div>
+<div class="l-content--detail p-lesson">
+GitHubで「BookShelf」という新しいリポジトリを作成します。 GitHubページを開き、右上の「＋」から
+<pre><code class="hljs php"><span class="hljs-keyword">New</span> repository</code></pre>
+を選択します。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/Github-select-create-repository.png" alt="github-select-create-repository" width="254" height="291" />Repository nameに
+<pre><code class="hljs">BookShelf</code></pre>
+を入力して
+<pre><code class="hljs sql"><span class="hljs-keyword">Create</span> repository</code></pre>
+ボタンをクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/Github-create-bookshelf.png" alt="github-create-bookshelf" width="1020" height="724" />リポジトリが正常に作成されたら、以下の画面になります。これでリポジトリの作成は完了です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/Github-after-create-bookshelf.png" alt="github-after-create-bookshelf" width="1017" height="769" /></div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-3. アプリケーションの作成</div>
+<div class="l-content--detail p-lesson">
+Cloud9のターミナルで、
+<pre><code class="hljs java">rails <span class="hljs-keyword">new</span></code></pre>
+コマンドを実行してRuby on Railsアプリケーションを作成します。
+下記のコマンドを実行してください。
+<pre><code class="hljs java">$ rails <span class="hljs-keyword">new</span> BookShelf</code></pre>
+<pre><code class="hljs">cd</code></pre>
+コマンドで、作成したBookShelfフォルダに移動しましょう。ターミナルで下記のコマンドを実行してください。
+<pre><code class="hljs ruby">$ cd BookShelf</code></pre>
+以下、実行例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/rails-new-BookShelf.png" alt="rails-new-bookshelf" width="533" height="141" /></div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-4. Railsサーバの起動</div>
+<div class="l-content--detail p-lesson">
+<pre><code class="hljs">rails s</code></pre>
+コマンドで Railsサーバを起動します。ターミナルで下記のコマンドを実行してください。
+<pre><code class="hljs ruby">$ rails s -p $PORT -b $IP
+</code></pre>
+コマンドを実行すると、以下のようなメッセージが表示され、Railsサーバーが起動したことがわかります。
+<pre><code class="hljs php">=&gt; Booting Puma
+=&gt; Rails <span class="hljs-number">5.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span> application starting in development on http:<span class="hljs-comment">//0.0.0.0:8080</span>
+=&gt; Run `rails server -h` <span class="hljs-keyword">for</span> more startup options
+Puma starting in single mode...
+* Version <span class="hljs-number">3.6</span><span class="hljs-number">.0</span> (ruby <span class="hljs-number">2.3</span><span class="hljs-number">.0</span>-p0), codename: Sleepy Sunday Serenity
+* Min threads: <span class="hljs-number">5</span>, max threads: <span class="hljs-number">5</span>
+* Environment: development
+* Listening on tcp:<span class="hljs-comment">//0.0.0.0:8080</span>
+<span class="hljs-keyword">Use</span> <span class="hljs-title">Ctrl</span>-<span class="hljs-title">C</span> <span class="hljs-title">to</span> <span class="hljs-title">stop</span></code></pre>
+Cloud9のメニュー→Preview→Preview Running Applicationをクリックし、Railsアプリケーションを表示しましょう。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/Preview-Running-Application.png" alt="preview-running-application" width="200" height="73" />以下、表示される画面です。この時点ではRailsのデフォルトのトップ画面が表示されます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/Rails-s-1024x589.png" alt="rails-s" width="840" height="483" /></div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-5. Railsサーバの停止</div>
+<div class="l-content--detail p-lesson">
+ターミナルで「Ctrl + c」を実行してRailsサーバを停止してください。
+※ Railsサーバを起動したままでも開発することができます。
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-6. GitHubへpush</div>
+<div class="l-content--detail p-lesson">
+<pre><code class="hljs">git init</code></pre>
+コマンドでCloud9上にGitリポジトリを作成しましょう。
+ターミナルで下記のコマンドを実行してください。
+<pre><code class="ruby hljs">$ git init
+</code></pre>
+これでCloud9上にGitリポジトリが作成されました。次にRailsアプリケーションをCloud9上のGitリポジトリにコミットします。 ターミナルで下記のコマンドを実行してください。
+<pre><code class="hljs ruby">$ git add .
+$ git commit -m <span class="hljs-string">"first commit"</span>
+</code></pre>
+以下、実行例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/git-init.png" alt="git-init" width="574" height="214" />新しく作成したBookShelfフォルダ内のファイルがコミットされました。最後にCloud9上のGitリポジトリにコミットした内容をGitHubにpushします。
+ターミナルで下記のコマンドを実行してください。
+<pre><code class="hljs ruby">$ git remote add origin <span class="hljs-symbol">https:</span>/<span class="hljs-regexp">/github.com/</span>GitHubのユーザ名/BookShelf.git
+$ git remote -v
+$ git push origin master</code></pre>
+以下、実行例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/12/git-push.png" alt="git-push" width="855" height="334" />
+<pre><code class="hljs">git push origin master</code></pre>
+コマンド実行後、GitHubのユーザー名とパスワードを要求されます。パスワードは入力しても表示されないようになっています。もし、ユーザー名やパスワードを間違えた場合、fatal: Authentication failed for ...と表示されますので、
+<pre><code class="hljs">git push origin master</code></pre>
+コマンドを再度実行し、正しいユーザー名とパスワードを入力しなおしましょう。
+GitHubへのpushが正常終了したら、GitHubのBookShelfリポジトリにRailsアプリケーションのファイルが正しく反映されていることを確認しましょう。
+<a href="https://writing.itprocollege.com/wp-content/uploads/2016/11/BookShelf-repository-after-push.png"><img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/BookShelf-repository-after-push.png" alt="bookshelf-repository-after-push" width="746" height="712" /></a></div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-7. Deviseを使ったユーザー管理</div>
+<div class="l-content--detail p-lesson">
+Deviseについて：Deviseとはユーザーの登録、ログイン・ログアウトを簡単に実装するためのGemです。パスワードを忘れた時にリカバリメールを送る機能やパスワードを何回か間違えるとロックする機能など、たくさんの機能が盛り込まれています。しかもそれらが別々に実装されているので、必要な機能を選択して利用することができます。
+<blockquote>参考URL:
+<a href="https://github.com/plataformatec/devise" target="_blank" rel="noopener noreferrer">https://github.com/plataformatec/devise</a></blockquote>
+RailsアプリケーションにDeviseというgemをインストールします。
+それでは実際にDeviseを使ってみましょう。
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-8. Deviseの準備</div>
+<div class="l-content--detail p-lesson">
+GemfileにDeviseのインストールに必要なgemを記述します。Gemfileの3行目に以下の記述を追記しましょう。
+Gemfile
+<pre><code class="ruby hljs">...
+gem <span class="hljs-string">'devise'</span>
+gem <span class="hljs-string">'devise-bootstrap-views'</span>
+gem <span class="hljs-string">'devise-i18n'</span>
+gem <span class="hljs-string">'devise-i18n-views'</span>
+...</code></pre>
+以下、記入例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/Gem-devise.png" alt="gem-devise" width="992" height="413" />bundle installコマンドでGemfileに追記したgemをインストールします。
+ターミナルで下記のコマンドを実行してください。
+<pre><code class="hljs sql">$ bundle <span class="hljs-keyword">install</span></code></pre>
+次にrails generate devise:install コマンドでDeviseをインストールします。
+ターミナルで下記のコマンドを実行してください。
+<pre><code class="hljs sql">$ rails generate devise:<span class="hljs-keyword">install</span></code></pre>
+実行すると以下のように表示され、インストールが正常に完了します。
+<pre><code class="hljs xml">Running via Spring preloader in process 2380
+      create  config/initializers/devise.rb
+      create  config/locales/devise.en.yml
+===============================================================================
+Some setup you must do manually if you haven't yet:
+  1. Ensure you have defined default url options in your environments files. Here
+     is an example of default_url_options appropriate for a development environment
+     in config/environments/development.rb:
+       config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
+     In production, :host should be set to the actual host of your application.
+  2. Ensure you have defined root_url to *something* in your config/routes.rb.
+     For example:
+       root to: "home#index"
+  3. Ensure you have flash messages in app/views/layouts/application.html.erb.
+     For example:
+       <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"notice"</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">%=</span> <span class="hljs-attr">notice</span> %&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+       <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"alert"</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">%=</span> <span class="hljs-attr">alert</span> %&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+  4. You can copy Devise views (for customization) to your app by running:
+       rails g devise:views
+===============================================================================
+</code></pre>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-9. Userモデルの作成</div>
+<div class="l-content--detail p-lesson">
+Deviseを使ってUserモデルを作成します。
+<pre><code class="hljs">rails generate devise User</code></pre>
+コマンドでdeviseを利用したUserモデルを作成します。ターミナルで下記のコマンドを実行してください。
+<pre><code class="hljs ruby">$ rails generate devise User
+</code></pre>
+以下、実行例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/rails-generate-devise-User.png" alt="rails-generate-devise-user" width="561" height="176" />実行すると
+<pre><code class="hljs">app/models/user.rb</code></pre>
+が以下の内容で自動生成されていることを確認しましょう。
+app/models/user.rb
+<pre><code class="ruby hljs"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">User</span> &lt; ApplicationRecord</span>
+  <span class="hljs-comment"># Include default devise modules. Others available are:</span>
+  <span class="hljs-comment"># :confirmable, :lockable, :timeoutable and :omniauthable</span>
+  devise <span class="hljs-symbol">:database_authenticatable</span>, <span class="hljs-symbol">:registerable</span>,
+         <span class="hljs-symbol">:recoverable</span>, <span class="hljs-symbol">:rememberable</span>, <span class="hljs-symbol">:trackable</span>, <span class="hljs-symbol">:validatable</span>
+<span class="hljs-keyword">end</span>
+</code></pre>
+また、
+<pre><code class="hljs">db/migrate/xxxxxxxxxxxxxx_devise_create_users.rb</code></pre>
+が自動生成されます。32行目に以下の記述を追加しましょう。
+db/migrate/xxxxxxxxxxxxxx_devise_create_users.rb
+<pre><code class="ruby hljs"><span class="hljs-comment"># 追加</span>
+t.string <span class="hljs-symbol">:name</span>, <span class="hljs-symbol">null:</span> <span class="hljs-literal">false</span></code></pre>
+追記後のファイルの内容が下記のようになっていることを確認しましょう。
+db/migrate/xxxxxxxxxxxxxx_devise_create_users.rb
+<pre><code class="ruby hljs"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">DeviseCreateUsers</span> &lt; ActiveRecord::Migration[5.0]</span>
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">change</span></span>
+    create_table <span class="hljs-symbol">:users</span> <span class="hljs-keyword">do</span> <span class="hljs-params">|t|</span>
+      <span class="hljs-comment">## Database authenticatable</span>
+      t.string <span class="hljs-symbol">:email</span>,              <span class="hljs-symbol">null:</span> <span class="hljs-literal">false</span>, <span class="hljs-symbol">default:</span> <span class="hljs-string">""</span>
+      t.string <span class="hljs-symbol">:encrypted_password</span>, <span class="hljs-symbol">null:</span> <span class="hljs-literal">false</span>, <span class="hljs-symbol">default:</span> <span class="hljs-string">""</span>
+      <span class="hljs-comment">## Recoverable</span>
+      t.string   <span class="hljs-symbol">:reset_password_token</span>
+      t.datetime <span class="hljs-symbol">:reset_password_sent_at</span>
+      <span class="hljs-comment">## Rememberable</span>
+      t.datetime <span class="hljs-symbol">:remember_created_at</span>
+      <span class="hljs-comment">## Trackable</span>
+      t.integer  <span class="hljs-symbol">:sign_in_count</span>, <span class="hljs-symbol">default:</span> <span class="hljs-number">0</span>, <span class="hljs-symbol">null:</span> <span class="hljs-literal">false</span>
+      t.datetime <span class="hljs-symbol">:current_sign_in_at</span>
+      t.datetime <span class="hljs-symbol">:last_sign_in_at</span>
+      t.string   <span class="hljs-symbol">:current_sign_in_ip</span>
+      t.string   <span class="hljs-symbol">:last_sign_in_ip</span>
+      <span class="hljs-comment">## Confirmable</span>
+      <span class="hljs-comment"># t.string   :confirmation_token</span>
+      <span class="hljs-comment"># t.datetime :confirmed_at</span>
+      <span class="hljs-comment"># t.datetime :confirmation_sent_at</span>
+      <span class="hljs-comment"># t.string   :unconfirmed_email # Only if using reconfirmable</span>
+      <span class="hljs-comment">## Lockable</span>
+      <span class="hljs-comment"># t.integer  :failed_attempts, default: 0, null: false # Only if lock strategy is :failed_attempts</span>
+      <span class="hljs-comment"># t.string   :unlock_token # Only if unlock strategy is :email or :both</span>
+      <span class="hljs-comment"># t.datetime :locked_at</span>
+      <span class="hljs-comment"># 追加</span>
+      t.string <span class="hljs-symbol">:name</span>, <span class="hljs-symbol">null:</span> <span class="hljs-literal">false</span>
+      t.timestamps <span class="hljs-symbol">null:</span> <span class="hljs-literal">false</span>
+    <span class="hljs-keyword">end</span>
+    add_index <span class="hljs-symbol">:users</span>, <span class="hljs-symbol">:email</span>,                <span class="hljs-symbol">unique:</span> <span class="hljs-literal">true</span>
+    add_index <span class="hljs-symbol">:users</span>, <span class="hljs-symbol">:reset_password_token</span>, <span class="hljs-symbol">unique:</span> <span class="hljs-literal">true</span>
+    <span class="hljs-comment"># add_index :users, :confirmation_token,   unique: true</span>
+    <span class="hljs-comment"># add_index :users, :unlock_token,         unique: true</span>
+  <span class="hljs-keyword">end</span>
+<span class="hljs-keyword">end</span>
+</code></pre>
+このmigrationファイルをデータベースに反映します。 ターミナルで下記のコマンドを実行してください。
+<pre><code class="hljs ruby">$ rails <span class="hljs-symbol">db:</span>migrate
+</code></pre>
+以下、実行例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/rails-db-migrate-for-user.png" alt="rails-db-migrate-for-user" width="592" height="151" />これで、Userモデルが使えるようになりました。
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-10. アクセス制限の設定</div>
+<div class="l-content--detail p-lesson">
+Deviseを使ってログインしていないユーザーがページを見られないようにします。
+before_actionを使ってdeviseで提供されるメソッドであるauthenticate_user!メソッドがユーザーからのアクセスの最初に呼ばれるように設定します。deviseのコントローラ時に許可するストロングパラメータも設定します。
+<pre><code class="hljs">app/controllers/application_controller.rb</code></pre>
+を下記のように修正しましょう。
+app/controllers/application_controller.rb
+<pre><code class="ruby hljs"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ApplicationController</span> &lt; ActionController::Base</span>
+  protect_from_forgery <span class="hljs-symbol">with:</span> <span class="hljs-symbol">:exception</span>
+  before_action <span class="hljs-symbol">:authenticate_user!</span>
+  before_action <span class="hljs-symbol">:configure_permitted_parameters</span>, <span class="hljs-symbol">if:</span> <span class="hljs-symbol">:devise_controller?</span>
+  protected
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">configure_permitted_parameters</span></span>
+    devise_parameter_sanitizer.permit(<span class="hljs-symbol">:sign_up</span>) <span class="hljs-keyword">do</span> <span class="hljs-params">|user_params|</span>
+      user_params.permit(<span class="hljs-symbol">:name</span>, <span class="hljs-symbol">:email</span>, <span class="hljs-symbol">:password</span>, <span class="hljs-symbol">:password_confirmation</span>)
+    <span class="hljs-keyword">end</span>
+    devise_parameter_sanitizer.permit(<span class="hljs-symbol">:account_update</span>) <span class="hljs-keyword">do</span> <span class="hljs-params">|user_params|</span>
+      user_params.permit(<span class="hljs-symbol">:name</span>, <span class="hljs-symbol">:email</span>, <span class="hljs-symbol">:password</span>, <span class="hljs-symbol">:password_confirmation</span>, <span class="hljs-symbol">:current_password</span>)
+    <span class="hljs-keyword">end</span>
+  <span class="hljs-keyword">end</span>
+<span class="hljs-keyword">end</span>
+</code></pre>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-11. Bootstrapの設定</div>
+<div class="l-content--detail p-lesson">
+ここで表示用に使うBootstrapを設定しておきます。Bootstrapに必要なgemをGemfileの3行目に
+<pre><code class="hljs java">gem <span class="hljs-string">'bootstrap-sass'</span>, <span class="hljs-string">'~&gt; 3.3.6'</span></code></pre>
+を追記しましょう。
+Gemfile
+<pre><code class="ruby hljs">source <span class="hljs-string">'https://rubygems.org'</span>
+gem <span class="hljs-string">'bootstrap-sass'</span>, <span class="hljs-string">'~&gt; 3.3.6'</span>
+gem <span class="hljs-string">'devise'</span>
+gem <span class="hljs-string">'devise-bootstrap-views'</span>
+gem <span class="hljs-string">'devise-i18n'</span>
+gem <span class="hljs-string">'devise-i18n-views'</span>
+<span class="hljs-comment"># Bundle edge Rails instead: gem 'rails', github: 'rails/rails'</span>
+gem <span class="hljs-string">'rails'</span>, <span class="hljs-string">'~&gt; 5.0.0'</span>, <span class="hljs-string">'&gt;= 5.0.0.1'</span>
+...</code></pre>
+<pre><code class="hljs sql">bundle <span class="hljs-keyword">install</span></code></pre>
+コマンドでGemfileに追記したgemをインストールします。ターミナルで下記のコマンドを実行してください。
+<pre><code class="hljs sql">$ bundle <span class="hljs-keyword">install</span></code></pre>
+<pre><code class="hljs">mv</code></pre>
+コマンドでファイル名を変更し、application.cssの拡張子をscssにします。ターミナルで下記のコマンドを実行してください。
+<pre><code class="hljs ruby">$ mv app/assets/stylesheets/application.css app/assets/stylesheets/application.scss</code></pre>
+※ フォルダツリーからapplication.cssを選択し、ファイル名をapplication.scssに変更していただいても同じです。
+<pre><code class="hljs">app/assets/stylesheets/application.scss</code></pre>
+の内容を削除し、下記のように修正します。
+app/assets/stylesheets/application.scss
+<pre><code class="ruby hljs">@import <span class="hljs-string">"bootstrap-sprockets"</span>;
+@import <span class="hljs-string">'bootstrap'</span>;
+@import <span class="hljs-string">'devise_bootstrap_views'</span>;</code></pre>
+<pre><code class="hljs">app/assets/javascripts/application.js</code></pre>
+の内容を削除し、下記のように修正します。
+app/assets/javascripts/application.js
+<pre><code class="ruby hljs">/<span class="hljs-regexp">/= require jquery
+/</span><span class="hljs-regexp">/= require jquery_ujs
+/</span><span class="hljs-regexp">/= require turbolinks
+/</span><span class="hljs-regexp">/= require bootstrap-sprockets</span></code></pre>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-12. i18nの設定</div>
+<div class="l-content--detail p-lesson">
+i18nについて：i18nとは異なる言語を表示できるようにするためのRails標準で実装されている機能です。internationalization（１８文字）が名前の由来です。国際的なアプリケーションを作るときだけでなく、一つの言語でも利用することによって以下のようなメリットがあります。
+<ol>
+ 	<li>多くのgemは英語だがi18nを利用すれば日本語化できること。</li>
+ 	<li>文言を一箇所で管理できるため変更する際に便利であること。</li>
+</ol>
+<blockquote>参考URL:
+<a href="http://railsguides.jp/i18n.html" target="_blank" rel="noopener noreferrer">http://railsguides.jp/i18n.html</a></blockquote>
+i18nの設定i18nの初期設定ファイル
+<pre><code class="hljs">config/initializers/locale.rb</code></pre>
+を新規作成し、ファイル内に下記のように記述しましょう。
+config/initializers/locale.rb
+<pre><code class="ruby hljs">I18n.default_locale = <span class="hljs-symbol">:ja</span></code></pre>
+その後、
+<pre><code class="hljs css"><span class="hljs-selector-tag">rails</span> <span class="hljs-selector-tag">g</span> <span class="hljs-selector-tag">devise</span><span class="hljs-selector-pseudo">:views</span><span class="hljs-selector-pseudo">:locale</span> <span class="hljs-selector-tag">ja</span></code></pre>
+コマンドでDevise用の日本語ファイルを生成します。 ターミナルで下記のコマンドを実行してください。
+<pre><code class="ruby hljs">$ rails g <span class="hljs-symbol">devise:</span><span class="hljs-symbol">views:</span>locale ja</code></pre>
+以下、実行例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/configlocalesdevise.views_.ja_.yml_.png" alt="configlocalesdevise-views-ja-yml" width="579" height="82" />コマンドを実行すると
+<pre><code class="hljs">config/locales/devise.views.ja.yml</code></pre>
+が以下の内容で自動生成されます。
+config/locales/devise.views.ja.yml
+<pre><code class="ruby hljs"><span class="hljs-symbol">ja:</span>
+  <span class="hljs-symbol">activerecord:</span>
+    <span class="hljs-symbol">attributes:</span>
+      <span class="hljs-symbol">user:</span>
+        <span class="hljs-symbol">current_password:</span> <span class="hljs-string">"現在のパスワード"</span>
+        <span class="hljs-symbol">email:</span> <span class="hljs-string">"メールアドレス"</span>
+        <span class="hljs-symbol">password:</span> <span class="hljs-string">"パスワード"</span>
+        <span class="hljs-symbol">password_confirmation:</span> <span class="hljs-string">"確認用パスワード"</span>
+        <span class="hljs-symbol">remember_me:</span> <span class="hljs-string">"ログインを記憶"</span>
+    <span class="hljs-symbol">models:</span>
+      <span class="hljs-symbol">user:</span> <span class="hljs-string">"ユーザ"</span>
+  <span class="hljs-symbol">devise:</span>
+    <span class="hljs-symbol">confirmations:</span>
+      <span class="hljs-symbol">new:</span>
+        <span class="hljs-symbol">resend_confirmation_instructions:</span> <span class="hljs-string">"アカウント確認メール再送"</span>
+    <span class="hljs-symbol">mailer:</span>
+      <span class="hljs-symbol">confirmation_instructions:</span>
+        <span class="hljs-symbol">action:</span> <span class="hljs-string">"アカウント確認"</span>
+        <span class="hljs-symbol">greeting:</span> <span class="hljs-string">"ようこそ、%{recipient}さん!"</span>
+        <span class="hljs-symbol">instruction:</span> <span class="hljs-string">"次のリンクでメールアドレスの確認が完了します:"</span>
+      <span class="hljs-symbol">reset_password_instructions:</span>
+        <span class="hljs-symbol">action:</span> <span class="hljs-string">"パスワード変更"</span>
+        <span class="hljs-symbol">greeting:</span> <span class="hljs-string">"こんにちは、%{recipient}さん!"</span>
+        <span class="hljs-symbol">instruction:</span> <span class="hljs-string">"誰かがパスワードの再設定を希望しました。次のリンクでパスワードの再設定が出来ます。"</span>
+        <span class="hljs-symbol">instruction_2:</span> <span class="hljs-string">"あなたが希望したのではないのなら、このメールは無視してください。"</span>
+        <span class="hljs-symbol">instruction_3:</span> <span class="hljs-string">"上のリンクにアクセスして新しいパスワードを設定するまで、パスワードは変更されません。"</span>
+      <span class="hljs-symbol">unlock_instructions:</span>
+        <span class="hljs-symbol">action:</span> <span class="hljs-string">"アカウントのロック解除"</span>
+        <span class="hljs-symbol">greeting:</span> <span class="hljs-string">"こんにちは、%{recipient}さん!"</span>
+        <span class="hljs-symbol">instruction:</span> <span class="hljs-string">"アカウントのロックを解除するには下のリンクをクリックしてください。"</span>
+        <span class="hljs-symbol">message:</span> <span class="hljs-string">"ログイン失敗が繰り返されたため、アカウントはロックされています。"</span>
+    <span class="hljs-symbol">passwords:</span>
+      <span class="hljs-symbol">edit:</span>
+        <span class="hljs-symbol">change_my_password:</span> <span class="hljs-string">"パスワードを変更する"</span>
+        <span class="hljs-symbol">change_your_password:</span> <span class="hljs-string">"パスワードを変更"</span>
+        <span class="hljs-symbol">confirm_new_password:</span> <span class="hljs-string">"確認用新しいパスワード"</span>
+        <span class="hljs-symbol">new_password:</span> <span class="hljs-string">"新しいパスワード"</span>
+      <span class="hljs-symbol">new:</span>
+        <span class="hljs-symbol">forgot_your_password:</span> <span class="hljs-string">"パスワードを忘れましたか?"</span>
+        <span class="hljs-symbol">send_me_reset_password_instructions:</span> <span class="hljs-string">"パスワードの再設定方法を送信する"</span>
+    <span class="hljs-symbol">registrations:</span>
+      <span class="hljs-symbol">edit:</span>
+        <span class="hljs-symbol">are_you_sure:</span> <span class="hljs-string">"本当に良いですか?"</span>
+        <span class="hljs-symbol">cancel_my_account:</span> <span class="hljs-string">"アカウント削除"</span>
+        <span class="hljs-symbol">currently_waiting_confirmation_for_email:</span> <span class="hljs-string">"%{email} の確認待ち"</span>
+        <span class="hljs-symbol">leave_blank_if_you_don_t_want_to_change_it:</span> <span class="hljs-string">"空欄のままなら変更しません"</span>
+        <span class="hljs-symbol">title:</span> <span class="hljs-string">"%{resource}編集"</span>
+        <span class="hljs-symbol">unhappy:</span> <span class="hljs-string">"気に入りません"</span>
+        <span class="hljs-symbol">update:</span> <span class="hljs-string">"更新"</span>
+        <span class="hljs-symbol">we_need_your_current_password_to_confirm_your_changes:</span> <span class="hljs-string">"変更を反映するには現在のパスワードを入力してください"</span>
+      <span class="hljs-symbol">new:</span>
+        <span class="hljs-symbol">sign_up:</span> <span class="hljs-string">"アカウント登録"</span>
+    <span class="hljs-symbol">sessions:</span>
+      <span class="hljs-symbol">new:</span>
+        <span class="hljs-symbol">sign_in:</span> <span class="hljs-string">"ログイン"</span>
+    <span class="hljs-symbol">shared:</span>
+      <span class="hljs-symbol">links:</span>
+        <span class="hljs-symbol">back:</span> <span class="hljs-string">"戻る"</span>
+        <span class="hljs-symbol">didn_t_receive_confirmation_instructions:</span> <span class="hljs-string">"アカウント確認のメールを受け取っていませんか?"</span>
+        <span class="hljs-symbol">didn_t_receive_unlock_instructions:</span> <span class="hljs-string">"アカウントの凍結解除方法のメールを受け取っていませんか?"</span>
+        <span class="hljs-symbol">forgot_your_password:</span> <span class="hljs-string">"パスワードを忘れましたか?"</span>
+        <span class="hljs-symbol">sign_in:</span> <span class="hljs-string">"ログイン"</span>
+        <span class="hljs-symbol">sign_in_with_provider:</span> <span class="hljs-string">"%{provider}でログイン"</span>
+        <span class="hljs-symbol">sign_up:</span> <span class="hljs-string">"アカウント登録"</span>
+    <span class="hljs-symbol">unlocks:</span>
+      <span class="hljs-symbol">new:</span>
+        <span class="hljs-symbol">resend_unlock_instructions:</span> <span class="hljs-string">"アカウントの凍結解除方法を再送する"</span></code></pre>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-13. ユーザー登録・編集画面の作成</div>
+<div class="l-content--detail p-lesson">
+<pre><code class="hljs css"><span class="hljs-selector-tag">rails</span> <span class="hljs-selector-tag">g</span> <span class="hljs-selector-tag">devise</span><span class="hljs-selector-pseudo">:views</span><span class="hljs-selector-pseudo">:bootstrap_templates</span></code></pre>
+コマンドでUserのsignup画面を自動生成します。
+ターミナルで下記のコマンドを実行してください。
+<pre><code class="hljs ruby">$ rails g <span class="hljs-symbol">devise:</span><span class="hljs-symbol">views:</span>bootstrap_templates</code></pre>
+<pre><code class="hljs">app/views/devise</code></pre>
+フォルダ内にファイルが自動生成されます。
+<pre><code class="hljs">config/locales/devise.views.ja.yaml</code></pre>
+のuser:の下に
+<pre><code class="hljs java">name: <span class="hljs-string">"名前"</span></code></pre>
+の記述追加します。
+config/locales/devise.views.ja.yaml
+<pre><code class="hljs php">ja:
+  activerecord:
+    attributes:
+      user:
+        name: <span class="hljs-string">"名前"</span>
+        current_password: <span class="hljs-string">"現在のパスワード"</span>
+        email: <span class="hljs-string">"メールアドレス"</span>
+        password: <span class="hljs-string">"パスワード"</span>
+        password_confirmation: <span class="hljs-string">"確認用パスワード"</span>
+        remember_me: <span class="hljs-string">"ログインを記憶"</span>
+    models:
+      user: <span class="hljs-string">"ユーザ"</span>
+<span class="hljs-comment"># 以下省略</span></code></pre>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-14. フォームの編集</div>
+<div class="l-content--detail p-lesson">
+ユーザーの登録時に名前を入力できるようにフォームを編集します。
+<pre><code class="hljs java">app/views/devise/registrations/<span class="hljs-keyword">new</span>.html.erb</code></pre>
+の内容を下記のように修正してください。
+<pre><code class="ruby hljs">&lt;%= bootstrap_devise_error_messages! %&gt;
+&lt;div <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">panel</span> <span class="hljs-title">panel</span>-<span class="hljs-title">default</span> <span class="hljs-title">devise</span>-<span class="hljs-title">bs</span>"&gt;</span>
+  &lt;div <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">panel</span>-<span class="hljs-title">heading</span>"&gt;</span>
+    &lt;h4&gt;&lt;%= t(<span class="hljs-string">'.sign_up'</span>, <span class="hljs-symbol">:default</span> =&gt; <span class="hljs-string">"Sign up"</span>) %&gt;&lt;<span class="hljs-regexp">/h4&gt;
+  &lt;/div</span>&gt;
+  &lt;div <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">panel</span>-<span class="hljs-title">body</span>"&gt;</span>
+    &lt;%= form_for(resource, <span class="hljs-symbol">:as</span> =&gt; resource_name, <span class="hljs-symbol">:url</span> =&gt; registration_path(resource_name), <span class="hljs-symbol">html:</span> { <span class="hljs-symbol">role:</span> <span class="hljs-string">"form"</span> }) <span class="hljs-keyword">do</span> <span class="hljs-params">|f|</span> %&gt;
+      &lt;div <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">form</span>-<span class="hljs-title">group</span>"&gt;</span>
+        &lt;%= f.label <span class="hljs-symbol">:name</span> %&gt;
+        &lt;%= f.text_field <span class="hljs-symbol">:name</span>, <span class="hljs-symbol">autofocus:</span> <span class="hljs-literal">true</span>, <span class="hljs-class"><span class="hljs-keyword">class</span>: "<span class="hljs-title">form</span>-<span class="hljs-title">control</span>" %&gt;</span>
+      &lt;<span class="hljs-regexp">/div&gt;
+      &lt;div class="form-group"&gt;
+        &lt;%= f.label :email %&gt;
+        &lt;%= f.email_field :email, class: "form-control" %&gt;
+      &lt;/div</span>&gt;
+      &lt;div <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">form</span>-<span class="hljs-title">group</span>"&gt;</span>
+        &lt;%= f.label <span class="hljs-symbol">:password</span> %&gt;
+        &lt;%= f.password_field <span class="hljs-symbol">:password</span>, <span class="hljs-class"><span class="hljs-keyword">class</span>: "<span class="hljs-title">form</span>-<span class="hljs-title">control</span>" %&gt;</span>
+      &lt;<span class="hljs-regexp">/div&gt;
+      &lt;div class="form-group"&gt;
+        &lt;%= f.label :password_confirmation %&gt;
+        &lt;%= f.password_field :password_confirmation, class: "form-control" %&gt;
+      &lt;/div</span>&gt;
+      &lt;%= f.submit t(<span class="hljs-string">'.sign_up'</span>, <span class="hljs-symbol">:default</span> =&gt; <span class="hljs-string">"Sign up"</span>), <span class="hljs-class"><span class="hljs-keyword">class</span>: "<span class="hljs-title">btn</span> <span class="hljs-title">btn</span>-<span class="hljs-title">primary</span>" %&gt;</span>
+    &lt;% <span class="hljs-keyword">end</span> %&gt;
+  &lt;<span class="hljs-regexp">/div&gt;
+&lt;/div</span>&gt;
+&lt;%= render <span class="hljs-string">"devise/shared/links"</span> %&gt;</code></pre>
+編集時にも同じように名前を入力できるようにフォームを編集します。
+<pre><code class="hljs">app/views/devise/registrations/edit.html.erb</code></pre>
+の内容を下記のように修正してください。
+app/views/devise/registrations/edit.html.erb
+<pre><code class="ruby hljs">&lt;%= bootstrap_devise_error_messages! %&gt;
+&lt;div <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">panel</span> <span class="hljs-title">panel</span>-<span class="hljs-title">default</span> <span class="hljs-title">devise</span>-<span class="hljs-title">bs</span>"&gt;</span>
+  &lt;div <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">panel</span>-<span class="hljs-title">heading</span>"&gt;</span>
+    &lt;h4&gt;&lt;%= t(<span class="hljs-string">'.title'</span>, <span class="hljs-symbol">:resource</span> =&gt; resource_class.model_name.human , <span class="hljs-symbol">:default</span> =&gt; <span class="hljs-string">"Edit <span class="hljs-subst">#{resource_name.to_s.humanize}</span>"</span>) %&gt;&lt;<span class="hljs-regexp">/h4&gt;
+  &lt;/div</span>&gt;
+  &lt;div <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">panel</span>-<span class="hljs-title">body</span>"&gt;</span>
+    &lt;%= form_for(resource, <span class="hljs-symbol">:as</span> =&gt; resource_name, <span class="hljs-symbol">:url</span> =&gt; registration_path(resource_name), <span class="hljs-symbol">:html</span> =&gt; { <span class="hljs-symbol">:method</span> =&gt; <span class="hljs-symbol">:put</span> }) <span class="hljs-keyword">do</span> <span class="hljs-params">|f|</span> %&gt;
+      &lt;div <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">form</span>-<span class="hljs-title">group</span>"&gt;</span>
+        &lt;%= f.label <span class="hljs-symbol">:name</span> %&gt;
+        &lt;%= f.text_field <span class="hljs-symbol">:name</span>, <span class="hljs-symbol">autofocus:</span> <span class="hljs-literal">true</span>, <span class="hljs-class"><span class="hljs-keyword">class</span>: "<span class="hljs-title">form</span>-<span class="hljs-title">control</span>" %&gt;</span>
+      &lt;<span class="hljs-regexp">/div&gt;
+      &lt;div class="form-group"&gt;
+        &lt;%= f.label :email %&gt;
+        &lt;%= f.email_field :email, class: "form-control" %&gt;
+      &lt;/div</span>&gt;
+      &lt;div <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">form</span>-<span class="hljs-title">group</span>"&gt;</span>
+        &lt;%= f.label <span class="hljs-symbol">:password</span> %&gt; &lt;i&gt;(&lt;%= t(<span class="hljs-string">'.leave_blank_if_you_don_t_want_to_change_it'</span>, <span class="hljs-symbol">:default</span> =&gt; <span class="hljs-string">"leave blank if you don't want to change it"</span>) %&gt;)&lt;<span class="hljs-regexp">/i&gt;
+        &lt;%= f.password_field :password, :autocomplete =&gt; "off", class: "form-control" %&gt;
+      &lt;/div</span>&gt;
+      &lt;div <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">form</span>-<span class="hljs-title">group</span>"&gt;</span>
+        &lt;%= f.label <span class="hljs-symbol">:password_confirmation</span> %&gt;
+        &lt;%= f.password_field <span class="hljs-symbol">:password_confirmation</span>, <span class="hljs-class"><span class="hljs-keyword">class</span>: "<span class="hljs-title">form</span>-<span class="hljs-title">control</span>"  %&gt;</span>
+      &lt;<span class="hljs-regexp">/div&gt;
+      &lt;div class="form-group"&gt;
+        &lt;%= f.label :current_password %&gt; &lt;i&gt;(&lt;%= t('.we_need_your_current_password_to_confirm_your_changes', :default =&gt; 'we need your current password to confirm your changes') %&gt;)&lt;/i</span>&gt;
+        &lt;%= f.password_field <span class="hljs-symbol">:current_password</span>, <span class="hljs-class"><span class="hljs-keyword">class</span>: "<span class="hljs-title">form</span>-<span class="hljs-title">control</span>" %&gt;</span>
+      &lt;<span class="hljs-regexp">/div&gt;
+      &lt;%= f.submit t('.update', :default =&gt; "Update"), class: "btn btn-primary" %&gt;
+    &lt;% end %&gt;
+  &lt;/div</span>&gt;
+&lt;<span class="hljs-regexp">/div&gt;
+&lt;p&gt;&lt;%= t('.unhappy', :default =&gt; 'Unhappy') %&gt;? &lt;%= link_to t('.cancel_my_account', :default =&gt; "Cancel my account"), registration_path(resource_name), :data =&gt; { :confirm =&gt; t('.are_you_sure', :default =&gt; "Are you sure?") }, :method =&gt; :delete %&gt;.&lt;/p</span>&gt;
+&lt;%= link_to t(<span class="hljs-string">'.back'</span>, <span class="hljs-symbol">:default</span> =&gt; <span class="hljs-string">'Back'</span>), <span class="hljs-symbol">:back</span> %&gt;</code></pre>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-15. レイアウトの編集</div>
+<div class="l-content--detail p-lesson">
+レイアウトを編集しましょう。
+<pre><code class="hljs">app/views/layouts/application.html.erb</code></pre>
+の内容を下記のように修正してください。
+app/views/layouts/application.html.erb
+<pre><code class="ruby hljs">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+ &lt;head&gt;
+ &lt;title&gt;BookShelf&lt;<span class="hljs-regexp">/title&gt;
+ &lt;%= csrf_meta_tags %&gt;
+ &lt;%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload' %&gt;
+ &lt;%= javascript_include_tag 'application', 'data-turbolinks-track': 'reload' %&gt;
+ &lt;/head</span>&gt;
+ &lt;body&gt;
+ &lt;nav <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">navbar</span> <span class="hljs-title">navbar</span>-<span class="hljs-title">inverse</span> <span class="hljs-title">navbar</span>-<span class="hljs-title">static</span>-<span class="hljs-title">top</span>"&gt;</span>
+ &lt;div <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">container</span>-<span class="hljs-title">fluid</span>"&gt;</span>
+ &lt;div <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">navbar</span>-<span class="hljs-title">header</span>"&gt;</span>
+ &lt;% <span class="hljs-keyword">if</span> user_signed_in? %&gt;
+ &lt;button type=<span class="hljs-string">"button"</span> <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">navbar</span>-<span class="hljs-title">toggle</span> <span class="hljs-title">collapsed</span>" <span class="hljs-title">data</span>-<span class="hljs-title">toggle</span>="<span class="hljs-title">collapse</span>" <span class="hljs-title">data</span>-<span class="hljs-title">target</span>="<span class="hljs-comment">#navbar-collapse"&gt;</span></span>
+ &lt;span <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">icon</span>-<span class="hljs-title">bar</span>"&gt;&lt;/<span class="hljs-title">span</span>&gt;</span>
+ &lt;span <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">icon</span>-<span class="hljs-title">bar</span>"&gt;&lt;/<span class="hljs-title">span</span>&gt;</span>
+ &lt;span <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">icon</span>-<span class="hljs-title">bar</span>"&gt;&lt;/<span class="hljs-title">span</span>&gt;</span>
+ &lt;<span class="hljs-regexp">/button&gt;
+ &lt;% end %&gt;
+ &lt;a class="navbar-brand" href="/</span><span class="hljs-string">"&gt;BookShelf&lt;/a&gt;
+ &lt;/div&gt;
+ &lt;% if user_signed_in? %&gt;
+ &lt;div class="</span>collapse navbar-collapse<span class="hljs-string">" id="</span>navbar-collapse<span class="hljs-string">"&gt;
+ &lt;ul class="</span>nav navbar-nav<span class="hljs-string">"&gt;
+ &lt;li&gt;&lt;%= link_to '本棚', '/' %&gt;&lt;/a&gt;&lt;/li&gt;
+ &lt;li&gt;&lt;%= link_to 'レビュー', '/' %&gt;&lt;/li&gt;
+ &lt;/ul&gt;
+ &lt;ul class="</span>nav navbar-nav navbar-right<span class="hljs-string">"&gt;
+ &lt;li class="</span>dropdown<span class="hljs-string">"&gt;
+ &lt;a href="</span><span class="hljs-comment">#" class="dropdown-toggle" data-toggle="dropdown" role="button"&gt;アカウント &lt;span class="caret"&gt;&lt;/span&gt;&lt;/a&gt;</span>
+ &lt;ul <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">dropdown</span>-<span class="hljs-title">menu</span>"&gt;</span>
+ &lt;li&gt;&lt;%= link_to <span class="hljs-string">'設定'</span>, edit_user_registration_path %&gt;&lt;<span class="hljs-regexp">/li&gt;
+ &lt;li role="separator" class="divider"&gt;&lt;/li</span>&gt;
+ &lt;li&gt;&lt;%= link_to <span class="hljs-string">'ログアウト'</span>, destroy_user_session_path, <span class="hljs-symbol">method:</span> <span class="hljs-symbol">:delete</span> %&gt;&lt;<span class="hljs-regexp">/li&gt;
+ &lt;/ul</span>&gt;
+ &lt;<span class="hljs-regexp">/li&gt;
+ &lt;/ul</span>&gt;
+ &lt;<span class="hljs-regexp">/div&gt;
+ &lt;% end %&gt;
+ &lt;/div</span>&gt;
+ &lt;<span class="hljs-regexp">/nav&gt;
+ &lt;div class="container"&gt;
+ &lt;% if notice.present? %&gt;
+ &lt;div class="alert alert-dismissable alert-success"&gt;
+ &lt;button type="button" class="close" data-dismiss="alert"&gt;&amp;times;&lt;/button</span>&gt;
+ &lt;p&gt;&lt;%= notice %&gt;&lt;<span class="hljs-regexp">/p&gt;
+ &lt;/div</span>&gt;
+ &lt;% <span class="hljs-keyword">end</span> %&gt;
+ &lt;% <span class="hljs-keyword">if</span> alert.present? %&gt;
+ &lt;div <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">alert</span> <span class="hljs-title">alert</span>-<span class="hljs-title">dismissable</span> <span class="hljs-title">alert</span>-<span class="hljs-title">danger</span>"&gt;</span>
+ &lt;button type=<span class="hljs-string">"button"</span> <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">close</span>" <span class="hljs-title">data</span>-<span class="hljs-title">dismiss</span>="<span class="hljs-title">alert</span>"&gt;&amp;<span class="hljs-title">times</span>;</span>&lt;<span class="hljs-regexp">/button&gt;
+ &lt;p&gt;&lt;%= alert %&gt;&lt;/p</span>&gt;
+ &lt;<span class="hljs-regexp">/div&gt;
+ &lt;% end %&gt;
+ &lt;%= yield %&gt;
+ &lt;/div</span>&gt;
+ &lt;<span class="hljs-regexp">/body&gt;
+&lt;/html</span>&gt;</code></pre>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-16. 書籍登録ページの作成</div>
+<div class="l-content--detail p-lesson">
+いよいよ書籍登録ページを作成していきます。
+<pre><code class="hljs">rails g scaffold</code></pre>
+コマンドでBook関連のファイルを作成しましょう。
+ターミナルで下記のコマンドを実行してください。
+<pre><code class="ruby hljs">$ rails g scaffold Book <span class="hljs-symbol">title:</span>string <span class="hljs-symbol">author:</span>string</code></pre>
+Bookモデルの内容を
+<pre><code class="hljs css"><span class="hljs-selector-tag">rails</span> <span class="hljs-selector-tag">db</span><span class="hljs-selector-pseudo">:migrate</span></code></pre>
+コマンドでデータベースに反映します。
+ターミナルで下記のコマンドを実行してください。
+<pre><code class="ruby hljs">$ rails <span class="hljs-symbol">db:</span>migrate
+</code></pre>
+以下、実行例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/rails-db-migrate-books.png" alt="rails-db-migrate-books" width="583" height="117" />書籍関連ページをトップ画面に設定ます。
+confing/routes.rbファイルに
+<pre><code class="hljs java">root <span class="hljs-string">'books#index'</span></code></pre>
+の記述を追記してください。
+config/routes.rb
+<pre><code class="ruby hljs">Rails.application.routes.draw <span class="hljs-keyword">do</span>
+ root <span class="hljs-string">'books#index'</span>
+ resources <span class="hljs-symbol">:books</span>
+ devise_for <span class="hljs-symbol">:users</span>
+<span class="hljs-keyword">end</span></code></pre>
+これで、書籍画面が表示されるようになりました。Railsサーバーを起動して表示を確認しましょう。
+<pre><code class="ruby hljs">$ rails s -p $PORT -b $IP</code></pre>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-17. SimpleFormの導入</div>
+<div class="l-content--detail p-lesson">
+SimpleFormを導入し、書籍の登録フォームを作成します。
+<pre><code class="hljs">Gemfile</code></pre>
+に下記のように
+<pre><code class="hljs java">gem <span class="hljs-string">'simple_form'</span></code></pre>
+を追記しましょう。
+Gemfile
+<pre><code class="ruby hljs">source <span class="hljs-string">'https://rubygems.org'</span>
+gem <span class="hljs-string">'simple_form'</span>
+gem <span class="hljs-string">'bootstrap-sass'</span>, <span class="hljs-string">'~&gt; 3.3.6'</span>
+gem <span class="hljs-string">'devise'</span>
+gem <span class="hljs-string">'devise-bootstrap-views'</span>
+gem <span class="hljs-string">'devise-i18n'</span>
+gem <span class="hljs-string">'devise-i18n-views'</span>
+<span class="hljs-comment"># Bundle edge Rails instead: gem 'rails', github: 'rails/rails'</span>
+gem <span class="hljs-string">'rails'</span>, <span class="hljs-string">'~&gt; 5.0.0'</span>, <span class="hljs-string">'&gt;= 5.0.0.1'</span>
+<span class="hljs-comment"># Use sqlite3 as the database for Active Record</span>
+gem <span class="hljs-string">'sqlite3'</span>
+<span class="hljs-comment"># Use Puma as the app server</span>
+gem <span class="hljs-string">'puma'</span>, <span class="hljs-string">'~&gt; 3.0'</span>
+&lt;strong&gt;<span class="hljs-comment">#以下、省略&lt;/strong&gt;</span>
+</code></pre>
+追記後、
+<pre><code class="hljs sql">bundle <span class="hljs-keyword">install</span></code></pre>
+コマンドで
+<pre><code class="hljs">Gemfile</code></pre>
+に追記したgemをインストールします。 ターミナルで下記のコマンドを実行してください。
+<pre><code class="ruby hljs">$ bundle install</code></pre>
+SimpleFormを生成します。
+ターミナルで下記のコマンドを実行してください。
+<pre><code class="ruby hljs">$ rails g <span class="hljs-symbol">simple_form:</span>install --bootstrap</code></pre>
+以下、実行例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/rails-g-simple_form-install-1024x308.png" alt="rails-g-simple_form-install" width="840" height="253" /></div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-18. SimpleFormを使った画面の修正</div>
+<div class="l-content--detail p-lesson">
+SimpleFormについて：RailsにはFormヘルパーというビューにformタグやinputタグなどを書き出すためのメソッドが用意されています。SimpleFormはそのヘルパーを拡張し、より使いやすくするためのgemです。
+<blockquote>参考URL:
+<a href="https://github.com/plataformatec/simple_form" target="_blank" rel="noopener noreferrer">https://github.com/plataformatec/simple_form</a></blockquote>
+インストールしたSimpleFormを使って書籍画面を修正していきます。
+<pre><code class="hljs">app/views/books/_form.html.erb</code></pre>
+ファイルを下記のように修正しましょう。
+app/views/books/_form.html.erb
+<pre><code class="ruby hljs">&lt;%= simple_form_for(book) <span class="hljs-keyword">do</span> <span class="hljs-params">|f|</span> %&gt;
+  &lt;%= f.input <span class="hljs-symbol">:title</span> %&gt;
+  &lt;%= f.input <span class="hljs-symbol">:author</span> %&gt;
+  &lt;div <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">actions</span>"&gt;</span>
+    &lt;%= f.button <span class="hljs-symbol">:submit</span>, <span class="hljs-symbol">:class</span> =&gt; <span class="hljs-string">'btn-primary'</span> %&gt;
+  &lt;<span class="hljs-regexp">/div&gt;
+&lt;% end %&gt;</span></code></pre>
+次に書籍一覧画面を修正していきます。
+<pre><code class="hljs">app/views/books/index.html.erb</code></pre>
+ファイルを下記のように修正しましょう。
+app/views/books/index.html.erb
+<pre><code class="ruby hljs">&lt;h1&gt;Books&lt;<span class="hljs-regexp">/h1&gt;
+&lt;table class="table table-striped"&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Title&lt;/th</span>&gt;
+      &lt;th&gt;Author&lt;<span class="hljs-regexp">/th&gt;
+      &lt;th&gt;&amp;nbsp;&lt;/th</span>&gt;
+    &lt;<span class="hljs-regexp">/tr&gt;
+  &lt;/thead</span>&gt;
+  &lt;tbody&gt;
+    &lt;% @books.each <span class="hljs-keyword">do</span> <span class="hljs-params">|book|</span> %&gt;
+      &lt;tr&gt;
+        &lt;td&gt;&lt;%= book.title %&gt;&lt;<span class="hljs-regexp">/td&gt;
+        &lt;td&gt;&lt;%= book.author %&gt;&lt;/td</span>&gt;
+        &lt;td <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">text</span>-<span class="hljs-title">right</span>"&gt;</span>
+          &lt;%= link_to <span class="hljs-string">'Edit'</span>, edit_book_path(book), <span class="hljs-symbol">:class</span> =&gt; <span class="hljs-string">'btn btn-link btn-xs'</span> %&gt;
+          &lt;%= link_to <span class="hljs-string">'Delete'</span>, book_path(book), <span class="hljs-symbol">:class</span> =&gt; <span class="hljs-string">'btn btn-xs btn-danger'</span>,
+                          <span class="hljs-symbol">:method</span> =&gt; <span class="hljs-symbol">:delete</span>, <span class="hljs-symbol">:data</span> =&gt; { <span class="hljs-symbol">:confirm</span> =&gt; <span class="hljs-string">'Are you sure?'</span> } %&gt;
+        &lt;<span class="hljs-regexp">/td&gt;
+      &lt;/tr</span>&gt;
+    &lt;% <span class="hljs-keyword">end</span> %&gt;
+  &lt;<span class="hljs-regexp">/tbody&gt;
+&lt;/table</span>&gt;
+&lt;%= link_to <span class="hljs-string">'New Book'</span>, new_book_path, <span class="hljs-symbol">:class</span> =&gt; <span class="hljs-string">'btn btn-primary'</span> %&gt;</code></pre>
+Railsサーバーを起動して表示を確認しましょう。
+<pre><code class="hljs ruby">$ rails s -p $PORT -b $IP</code></pre>
+New BookボタンでNew Bookページを表示すると以下のようになります。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/New-Book-page-1024x375.png" alt="new-book-page" width="840" height="308" />Book情報登録後は、以下のようなメッセージ画面が表示されます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/Created-book-page-1024x259.png" alt="created-book-page" width="840" height="212" /></div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-19. バリデーションとエラー表示</div>
+<div class="l-content--detail p-lesson">
+Bookモデルにバリデーションを設定します。
+<pre><code class="hljs">app/models/book.rb</code></pre>
+ファイルを下記のように修正します。
+app/models/book.rb
+<pre><code class="ruby hljs"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Book</span> &lt; ApplicationRecord</span>
+  validates <span class="hljs-symbol">:title</span>, <span class="hljs-symbol">presence:</span> <span class="hljs-literal">true</span>, <span class="hljs-symbol">length:</span> { <span class="hljs-symbol">maximum:</span> <span class="hljs-number">255</span> }
+  validates <span class="hljs-symbol">:author</span>, <span class="hljs-symbol">length:</span> { <span class="hljs-symbol">maximum:</span> <span class="hljs-number">255</span> }
+<span class="hljs-keyword">end</span></code></pre>
+エラーメッセージ用のlocaleを設定します。
+<pre><code class="hljs">config/locale/ja.yml</code></pre>
+ファイルを下記のように修正します。（ja.ymlファイルが存在しない場合は、ja.ymlファイルを新しく作成し、下記のように入力して下さい。）
+config/locale/ja.yml
+<pre><code class="ruby hljs"><span class="hljs-symbol">ja:</span>
+  <span class="hljs-symbol">activerecord:</span>
+    <span class="hljs-symbol">attributes:</span>
+      <span class="hljs-symbol">book:</span>
+        <span class="hljs-symbol">title:</span> <span class="hljs-string">"タイトル"</span>
+        <span class="hljs-symbol">author:</span> <span class="hljs-string">"著者"</span>
+    <span class="hljs-symbol">errors:</span>
+      <span class="hljs-symbol">models:</span>
+        <span class="hljs-symbol">book:</span>
+          <span class="hljs-symbol">attributes:</span>
+            <span class="hljs-symbol">title:</span>
+              <span class="hljs-symbol">blank:</span> <span class="hljs-string">"タイトルは必ず入力してください"</span>
+              <span class="hljs-symbol">too_long:</span> <span class="hljs-string">"タイトルが長すぎます"</span>
+            <span class="hljs-symbol">author:</span>
+              <span class="hljs-symbol">too_long:</span> <span class="hljs-string">"著者の文字数が大きすぎます"</span></code></pre>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-20. シードを作成</div>
+<div class="l-content--detail p-lesson">
+書籍の情報を
+<pre><code class="hljs">db/seeds/books.yml</code></pre>
+ファイルとして作成します。ファイルは以下のリンクからダウンロードし、
+<blockquote><a href="https://s3-ap-northeast-1.amazonaws.com/graspy-production/lessonMaterials/download/books.yml">こちらクリックしダウンロード</a></blockquote>
+dbフォルダ配下にseedsフォルダを作成し、 books.ymlをseedsフォルダの下に配置してください。
+books.yml
+db/seeds/books.yml
+<pre><code class="ruby hljs"><span class="hljs-symbol">books:</span>
+  -
+    <span class="hljs-symbol">title:</span> <span class="hljs-string">"達人プログラマー―システム開発の職人から名匠への道"</span>
+    <span class="hljs-symbol">author:</span> <span class="hljs-string">"アンドリュー ハント, デビッド トーマス"</span></code></pre>
+※ ダウンロードしたファイルにはおよそ100冊の書籍情報が事前に記述されています。
+以下、books.ymlの配置例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/books.yml_-1024x638.png" alt="books-yml" width="840" height="523" />次にこの書籍情報ファイルを読み込み、データベースに登録するために登録処理ファイルを作成します。db/seeds/books.seeds.rbファイルを新規作成し、下記のように記述してください。
+db/seeds/books.seeds.rb
+<pre><code class="ruby hljs">file = Psych.load_file(<span class="hljs-string">"db/seeds/books.yml"</span>)
+file[<span class="hljs-string">"books"</span>].each <span class="hljs-keyword">do</span> <span class="hljs-params">|params|</span>
+  Book.find_or_create_by(params)
+<span class="hljs-keyword">end</span></code></pre>
+次にdb/seeds.rbファイルを下記のように修正します。
+db/seeds.rb
+<pre><code class="ruby hljs">Dir[File.join(Rails.root, <span class="hljs-string">'db'</span>, <span class="hljs-string">'seeds'</span>, <span class="hljs-string">'*.seeds.rb'</span>)].sort.each { <span class="hljs-params">|seed|</span> load seed }</code></pre>
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/seeds.rb_.png" alt="seeds-rb" width="849" height="513" />
+<pre><code class="hljs css"><span class="hljs-selector-tag">rails</span> <span class="hljs-selector-tag">db</span><span class="hljs-selector-pseudo">:seed</span></code></pre>
+コマンドでシードファイルを実行し、書籍情報をデータベースに登録します。
+ターミナルで下記のコマンドを実行してください。
+<pre><code class="ruby hljs">$ rails <span class="hljs-symbol">db:</span>seed</code></pre>
+Railsサーバーを起動して表示を確認しましょう。
+<pre><code class="ruby hljs">$ rails s -p $PORT -b $IP</code></pre>
+以下のようにデータが表示されていればOKです。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/Books%E3%83%86%E3%82%99%E3%83%BC%E3%82%BF%E6%8A%95%E5%85%A5%E5%BE%8C-1024x520.png" alt="books%e3%83%86%e3%82%99%e3%83%bc%e3%82%bf%e6%8a%95%e5%85%a5%e5%be%8c" width="840" height="427" /></div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-21. 【課題１】Kaminariを使ってページネーションを実装しよう。</div>
+<div class="l-content--detail p-lesson">
+Kaminariについて：KaminariとはRailsでページネーションを簡単に実装するためのGemです。ページネーションとはレコードの数が多い時に一定数ごとにページを切り分け、ページ数や「前へ」「次へ」などのUIを提供する機能のことを言います。
+【条件】
+<ol>
+ 	<li>Kaminariを使ってページネーションを実装すること。</li>
+ 	<li>ページネーションのデザインはBootstrapを用いたものにすること。</li>
+</ol>
+<blockquote>ヒント：Kaminariの利用方法はgithubページに書かれています。
+<a href="https://github.com/amatsuda/kaminari" target="_blank" rel="noopener noreferrer">https://github.com/amatsuda/kaminari</a></blockquote>
+以下のようにページネーションが表示されていればOKです。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/pagination-1024x507.png" alt="pagination" width="840" height="416" /></div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-22. Reviewの作成</div>
+<div class="l-content--detail p-lesson">
+Reveiw機能を追加していきます。
+<pre><code class="hljs">rails g scaffold</code></pre>
+コマンドでRevie関連のファイルを作成します。
+ターミナルで下記のコマンドを実行してください。
+<pre><code class="ruby hljs">$ rails g scaffold Review <span class="hljs-symbol">user:</span>references <span class="hljs-symbol">book:</span>references <span class="hljs-symbol">description:</span>text</code></pre>
+以下、実行例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/rails-g-scafold-review.png" alt="rails-g-scafold-review" width="914" height="582" />作成された
+<pre><code class="hljs">db/migrate/20xxXXXXXXXXXX_create_reviews.rb</code></pre>
+ファイルを下記のように修正しましょう。
+db/migrate/20xxXXXXXXXXXX_create_reviews.rb
+<pre><code class="ruby hljs"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">CreateReviews</span> &lt; ActiveRecord::Migration[5.0]</span>
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">change</span></span>
+    create_table <span class="hljs-symbol">:reviews</span> <span class="hljs-keyword">do</span> <span class="hljs-params">|t|</span>
+      t.references <span class="hljs-symbol">:user</span>, <span class="hljs-symbol">foreign_key:</span> <span class="hljs-literal">true</span>, <span class="hljs-symbol">index:</span> <span class="hljs-literal">true</span>, <span class="hljs-symbol">null:</span> <span class="hljs-literal">false</span>
+      t.references <span class="hljs-symbol">:book</span>, <span class="hljs-symbol">foreign_key:</span> <span class="hljs-literal">true</span>, <span class="hljs-symbol">index:</span> <span class="hljs-literal">true</span>, <span class="hljs-symbol">null:</span> <span class="hljs-literal">false</span>
+      t.text <span class="hljs-symbol">:description</span>
+      t.timestamps
+    <span class="hljs-keyword">end</span>
+  <span class="hljs-keyword">end</span>
+<span class="hljs-keyword">end</span></code></pre>
+Reviewモデルの内容を
+<pre><code class="hljs css"><span class="hljs-selector-tag">rails</span> <span class="hljs-selector-tag">db</span><span class="hljs-selector-pseudo">:migrate</span></code></pre>
+コマンドでデータベースに反映します。 ターミナルで下記のコマンドを実行してください。
+<pre><code class="ruby hljs">$ rails <span class="hljs-symbol">db:</span>migrate
+</code></pre>
+以下、実行例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/rails-db-migrate-review.png" alt="rails-db-migrate-review" width="593" height="116" /></div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-23. ルーティングの修正</div>
+<div class="l-content--detail p-lesson">
+<pre><code class="hljs">config/routes.rb</code></pre>
+ファイルを下記のように修正しましょう。
+config/routes.rb
+<pre><code class="ruby hljs">Rails.application.routes.draw <span class="hljs-keyword">do</span>
+  resources <span class="hljs-symbol">:reviews</span>, <span class="hljs-symbol">only:</span> [<span class="hljs-symbol">:index</span>, <span class="hljs-symbol">:destroy</span>]
+  root <span class="hljs-string">'books#index'</span>
+  resources <span class="hljs-symbol">:books</span> <span class="hljs-keyword">do</span>
+    resources <span class="hljs-symbol">:reviews</span>, <span class="hljs-symbol">except:</span> [<span class="hljs-symbol">:index</span>, <span class="hljs-symbol">:destroy</span>]
+  <span class="hljs-keyword">end</span>
+  devise_for <span class="hljs-symbol">:users</span>
+<span class="hljs-keyword">end</span></code></pre>
+メニューにレビュー画面へのリンクを追加するために
+<pre><code class="hljs">app/views/layouts/application.html.erb</code></pre>
+ファイルに
+<pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">%=</span> <span class="hljs-attr">link_to</span> 'レビュー', <span class="hljs-attr">reviews_path</span> %&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span></code></pre>
+のように修正します。
+app/views/layouts/application.html.erb
+<pre><code class="ruby hljs">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+ &lt;head&gt;
+ &lt;title&gt;BookShelf&lt;<span class="hljs-regexp">/title&gt;
+ &lt;%= csrf_meta_tags %&gt;
+ &lt;%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload' %&gt;
+ &lt;%= javascript_include_tag 'application', 'data-turbolinks-track': 'reload' %&gt;
+ &lt;/head</span>&gt;
+ &lt;body&gt;
+ &lt;nav <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">navbar</span> <span class="hljs-title">navbar</span>-<span class="hljs-title">inverse</span> <span class="hljs-title">navbar</span>-<span class="hljs-title">static</span>-<span class="hljs-title">top</span>"&gt;</span>
+ &lt;div <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">container</span>-<span class="hljs-title">fluid</span>"&gt;</span>
+ &lt;div <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">navbar</span>-<span class="hljs-title">header</span>"&gt;</span>
+ &lt;% <span class="hljs-keyword">if</span> user_signed_in? %&gt;
+ &lt;button type=<span class="hljs-string">"button"</span> <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">navbar</span>-<span class="hljs-title">toggle</span> <span class="hljs-title">collapsed</span>" <span class="hljs-title">data</span>-<span class="hljs-title">toggle</span>="<span class="hljs-title">collapse</span>" <span class="hljs-title">data</span>-<span class="hljs-title">target</span>="<span class="hljs-comment">#navbar-collapse"&gt;</span></span>
+ &lt;span <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">icon</span>-<span class="hljs-title">bar</span>"&gt;&lt;/<span class="hljs-title">span</span>&gt;</span>
+ &lt;span <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">icon</span>-<span class="hljs-title">bar</span>"&gt;&lt;/<span class="hljs-title">span</span>&gt;</span>
+ &lt;span <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">icon</span>-<span class="hljs-title">bar</span>"&gt;&lt;/<span class="hljs-title">span</span>&gt;</span>
+ &lt;<span class="hljs-regexp">/button&gt;
+ &lt;% end %&gt;
+ &lt;a class="navbar-brand" href="/</span><span class="hljs-string">"&gt;BookShelf&lt;/a&gt;
+ &lt;/div&gt;
+ &lt;% if user_signed_in? %&gt;
+ &lt;div class="</span>collapse navbar-collapse<span class="hljs-string">" id="</span>navbar-collapse<span class="hljs-string">"&gt;
+ &lt;ul class="</span>nav navbar-nav<span class="hljs-string">"&gt;
+ &lt;li&gt;&lt;%= link_to '本棚', '/' %&gt;&lt;/a&gt;&lt;/li&gt;
+ &lt;li&gt;&lt;%= link_to 'レビュー', reviews_path %&gt;&lt;/li&gt;
+ &lt;/ul&gt;
+ &lt;ul class="</span>nav navbar-nav navbar-right<span class="hljs-string">"&gt;
+ &lt;li class="</span>dropdown<span class="hljs-string">"&gt;
+ &lt;a href="</span><span class="hljs-comment">#" class="dropdown-toggle" data-toggle="dropdown" role="button"&gt;アカウント &lt;span class="caret"&gt;&lt;/span&gt;&lt;/a&gt;</span>
+ &lt;ul <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">dropdown</span>-<span class="hljs-title">menu</span>"&gt;</span>
+ &lt;li&gt;&lt;%= link_to <span class="hljs-string">'設定'</span>, edit_user_registration_path %&gt;&lt;<span class="hljs-regexp">/li&gt;
+ &lt;li role="separator" class="divider"&gt;&lt;/li</span>&gt;
+ &lt;li&gt;&lt;%= link_to <span class="hljs-string">'ログアウト'</span>, destroy_user_session_path, <span class="hljs-symbol">method:</span> <span class="hljs-symbol">:delete</span> %&gt;&lt;<span class="hljs-regexp">/li&gt;
+ &lt;/ul</span>&gt;
+ &lt;<span class="hljs-regexp">/li&gt;
+ &lt;/ul</span>&gt;
+ &lt;<span class="hljs-regexp">/div&gt;
+ &lt;% end %&gt;
+ &lt;/div</span>&gt;
+ &lt;<span class="hljs-regexp">/nav&gt;
+ &lt;div class="container"&gt;
+ &lt;% if notice.present? %&gt;
+ &lt;div class="alert alert-dismissable alert-success"&gt;
+ &lt;button type="button" class="close" data-dismiss="alert"&gt;&amp;times;&lt;/button</span>&gt;
+ &lt;p&gt;&lt;%= notice %&gt;&lt;<span class="hljs-regexp">/p&gt;
+ &lt;/div</span>&gt;
+ &lt;% <span class="hljs-keyword">end</span> %&gt;
+ &lt;% <span class="hljs-keyword">if</span> alert.present? %&gt;
+ &lt;div <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">alert</span> <span class="hljs-title">alert</span>-<span class="hljs-title">dismissable</span> <span class="hljs-title">alert</span>-<span class="hljs-title">danger</span>"&gt;</span>
+ &lt;button type=<span class="hljs-string">"button"</span> <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">close</span>" <span class="hljs-title">data</span>-<span class="hljs-title">dismiss</span>="<span class="hljs-title">alert</span>"&gt;&amp;<span class="hljs-title">times</span>;</span>&lt;<span class="hljs-regexp">/button&gt;
+ &lt;p&gt;&lt;%= alert %&gt;&lt;/p</span>&gt;
+ &lt;<span class="hljs-regexp">/div&gt;
+ &lt;% end %&gt;
+ &lt;%= yield %&gt;
+ &lt;/div</span>&gt;
+ &lt;<span class="hljs-regexp">/body&gt;
+&lt;/html</span>&gt;</code></pre>
+次に、書籍一覧から新規レビュー画面へのリンクを設定します。
+<pre><code class="hljs">app/views/books/index.html.erb</code></pre>
+ファイルでBookの編集リンクの上に新規Reviewへのリンクを追加します。
+app/views/books/index.html.erb
+<pre><code class="ruby hljs">&lt;h1&gt;Books&lt;<span class="hljs-regexp">/h1&gt;
+&lt;table class="table table-striped"&gt;
+ &lt;thead&gt;
+ &lt;tr&gt;
+ &lt;th&gt;Title&lt;/th</span>&gt;
+ &lt;th&gt;Author&lt;<span class="hljs-regexp">/th&gt;
+ &lt;th&gt;&amp;nbsp;&lt;/th</span>&gt;
+ &lt;<span class="hljs-regexp">/tr&gt;
+ &lt;/thead</span>&gt;
+ &lt;tbody&gt;
+ &lt;% @books.each <span class="hljs-keyword">do</span> <span class="hljs-params">|book|</span> %&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;%= book.title %&gt;&lt;<span class="hljs-regexp">/td&gt;
+ &lt;td&gt;&lt;%= book.author %&gt;&lt;/td</span>&gt;
+ &lt;td <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">text</span>-<span class="hljs-title">right</span>"&gt;</span>
+ &lt;%= link_to <span class="hljs-string">'Review'</span>, new_book_review_path(book), <span class="hljs-symbol">:class</span> =&gt; <span class="hljs-string">'btn btn-link btn-xs'</span> %&gt;
+ &lt;%= link_to <span class="hljs-string">'Edit'</span>, edit_book_path(book), <span class="hljs-symbol">:class</span> =&gt; <span class="hljs-string">'btn btn-link btn-xs'</span> %&gt;
+ &lt;%= link_to <span class="hljs-string">'Delete'</span>, book_path(book), <span class="hljs-symbol">:class</span> =&gt; <span class="hljs-string">'btn btn-xs btn-danger'</span>,
+ <span class="hljs-symbol">:method</span> =&gt; <span class="hljs-symbol">:delete</span>, <span class="hljs-symbol">:data</span> =&gt; { <span class="hljs-symbol">:confirm</span> =&gt; <span class="hljs-string">'Are you sure?'</span> } %&gt;
+ &lt;<span class="hljs-regexp">/td&gt;
+ &lt;/tr</span>&gt;
+ &lt;% <span class="hljs-keyword">end</span> %&gt;
+ &lt;<span class="hljs-regexp">/tbody&gt;
+&lt;/table</span>&gt;
+&lt;%= paginate @books %&gt;
+&lt;%= link_to <span class="hljs-string">'New Book'</span>, new_book_path, <span class="hljs-symbol">:class</span> =&gt; <span class="hljs-string">'btn btn-primary'</span> %&gt;</code></pre>
+Railsサーバーを起動して表示を確認しましょう。
+<pre><code class="ruby hljs">$ rails s -p $PORT -b $IP</code></pre>
+以下のようにReviewリンクが表示されればOKです。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/books-index-with-review-link-1024x526.png" alt="books-index-with-review-link" width="840" height="431" />Reviewリンクをクリックすると以下の画面が表示されます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/new-review-1024x410.png" alt="new-review" width="840" height="336" /></div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-24. ReviewControllerの編集</div>
+<div class="l-content--detail p-lesson">
+ReviewControllerを編集します。
+<pre><code class="hljs">app/controllers/reviews_controller.rb</code></pre>
+ファイルにbefore_actionを追加します。before_actionで実行するset_bookメソッドはprivateの下に記述します。ストロングパラメーターの設定を変更するためにreview_paramsメソッドも修正します。
+また、ルーティングを変更したので、create, updateメソッド内にある成功時のredirect_toの第一引数を以下のように変更します。
+<pre><code class="ruby hljs">format.html { redirect_to [@book, @review], <span class="hljs-symbol">notice:</span> <span class="hljs-string">'Review was successfully created.'</span> }</code></pre>
+<pre><code class="ruby hljs">format.html { redirect_to [@book, @review], <span class="hljs-symbol">notice:</span> <span class="hljs-string">'Review was successfully updated.'</span> }</code></pre>
+app/controllers/reviews_controller.rb
+<pre><code class="ruby hljs">
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ReviewsController</span> &lt; ApplicationController</span>
+before_action <span class="hljs-symbol">:set_review</span>, <span class="hljs-symbol">only:</span> [<span class="hljs-symbol">:show</span>, <span class="hljs-symbol">:edit</span>, <span class="hljs-symbol">:update</span>, <span class="hljs-symbol">:destroy</span>]
+before_action <span class="hljs-symbol">:set_book</span>, <span class="hljs-symbol">only:</span> [<span class="hljs-symbol">:show</span>, <span class="hljs-symbol">:new</span>, <span class="hljs-symbol">:create</span>, <span class="hljs-symbol">:edit</span>, <span class="hljs-symbol">:update</span>]
+ <span class="hljs-comment"># GET /reviews</span>
+ <span class="hljs-comment"># GET /reviews.json</span>
+ <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">index</span></span>
+ @reviews = Review.page params[<span class="hljs-symbol">:page</span>]
+ <span class="hljs-keyword">end</span>
+ <span class="hljs-comment"># GET /reviews/1</span>
+ <span class="hljs-comment"># GET /reviews/1.json</span>
+ <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">show</span></span>
+ <span class="hljs-keyword">end</span>
+ <span class="hljs-comment"># GET /reviews/new</span>
+ <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">new</span></span>
+  @review = Review.new
+ <span class="hljs-keyword">end</span>
+ <span class="hljs-comment"># GET /reviews/1/edit</span>
+ <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">edit</span></span>
+ <span class="hljs-keyword">end</span>
+ <span class="hljs-comment"># POST /reviews</span>
+ <span class="hljs-comment"># POST /reviews.json</span>
+ <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">create</span></span>
+   @review = Review.new(review_params)
+   respond_to <span class="hljs-keyword">do</span> <span class="hljs-params">|format|</span>
+   <span class="hljs-keyword">if</span> @review.save
+    format.html { redirect_to [@book, @review], <span class="hljs-symbol">notice:</span> <span class="hljs-string">'Review was successfully created.'</span> }
+    format.json { render <span class="hljs-symbol">:show</span>, <span class="hljs-symbol">status:</span> <span class="hljs-symbol">:created</span>, <span class="hljs-symbol">location:</span> @review }
+  <span class="hljs-keyword">else</span>
+    format.html { render <span class="hljs-symbol">:new</span> }
+ format.json { render <span class="hljs-symbol">json:</span> @review.errors, <span class="hljs-symbol">status:</span> <span class="hljs-symbol">:unprocessable_entity</span> }
+ <span class="hljs-keyword">end</span>
+ <span class="hljs-keyword">end</span>
+ <span class="hljs-keyword">end</span>
+ <span class="hljs-comment"># PATCH/PUT /reviews/1</span>
+ <span class="hljs-comment"># PATCH/PUT /reviews/1.json</span>
+ <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">update</span></span>
+ respond_to <span class="hljs-keyword">do</span> <span class="hljs-params">|format|</span>
+ <span class="hljs-keyword">if</span> @review.update(review_params)
+ format.html { redirect_to [@book, @review], <span class="hljs-symbol">notice:</span> <span class="hljs-string">'Review was successfully updated.'</span> }
+ format.json { render <span class="hljs-symbol">:show</span>, <span class="hljs-symbol">status:</span> <span class="hljs-symbol">:ok</span>, <span class="hljs-symbol">location:</span> @review }
+ <span class="hljs-keyword">else</span>
+ format.html { render <span class="hljs-symbol">:edit</span> }
+ format.json { render <span class="hljs-symbol">json:</span> @review.errors, <span class="hljs-symbol">status:</span> <span class="hljs-symbol">:unprocessable_entity</span> }
+ <span class="hljs-keyword">end</span>
+ <span class="hljs-keyword">end</span>
+ <span class="hljs-keyword">end</span>
+ <span class="hljs-comment"># DELETE /reviews/1</span>
+ <span class="hljs-comment"># DELETE /reviews/1.json</span>
+ <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">destroy</span></span>
+ @review.destroy
+ respond_to <span class="hljs-keyword">do</span> <span class="hljs-params">|format|</span>
+ format.html { redirect_to reviews_url, <span class="hljs-symbol">notice:</span> <span class="hljs-string">'Review was successfully destroyed.'</span> }
+ format.json { head <span class="hljs-symbol">:no_content</span> }
+ <span class="hljs-keyword">end</span>
+ <span class="hljs-keyword">end</span>
+ private
+ <span class="hljs-comment"># Use callbacks to share common setup or constraints between actions.</span>
+ <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">set_review</span></span>
+ @review = Review.find(params[<span class="hljs-symbol">:id</span>])
+ <span class="hljs-keyword">end</span>
+ <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">set_book</span></span>
+ @book = Book.find(params[<span class="hljs-symbol">:book_id</span>])
+ <span class="hljs-keyword">end</span>
+ <span class="hljs-comment"># Never trust parameters from the scary internet, only allow the white list through.</span>
+ <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">review_params</span></span>
+ permitted_review_params = params.<span class="hljs-keyword">require</span>(<span class="hljs-symbol">:review</span>).permit(<span class="hljs-symbol">:description</span>)
+ permitted_review_params[<span class="hljs-symbol">:user</span>] = current_user
+ permitted_review_params[<span class="hljs-symbol">:book</span>] = @book
+ permitted_review_params
+ <span class="hljs-keyword">end</span>
+<span class="hljs-keyword">end</span></code></pre>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-25. Review画面の編集</div>
+<div class="l-content--detail p-lesson">
+Review画面を編集します。
+<pre><code class="hljs">app/views/reviews/_form.html.erb</code></pre>
+ファイルを下記のように編集してください。
+app/views/reviews/_form.html.erb
+<pre><code class="ruby hljs">&lt;h2&gt;&lt;%= <span class="hljs-string">"<span class="hljs-subst">#{@book.title}</span>についてのレビュー"</span> %&gt;&lt;<span class="hljs-regexp">/h2&gt;
+&lt;%= simple_form_for([@book, @review]) do |f| %&gt;
+  &lt;%= f.input :description %&gt;
+  &lt;div class="form-actions"&gt;
+    &lt;%= f.button :submit, :class =&gt; 'btn-primary' %&gt;
+  &lt;/div</span>&gt;
+&lt;% <span class="hljs-keyword">end</span> %&gt;
+</code></pre>
+Review一覧画面の
+<pre><code class="hljs">app/views/reviews/index.html.erb</code></pre>
+ファイルを下記のように編集してください。
+app/views/reviews/index.html.erb
+<pre><code class="ruby hljs">&lt;h1&gt;Reviews&lt;<span class="hljs-regexp">/h1&gt;
+&lt;table class="table table-striped"&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;User&lt;/th</span>&gt;
+      &lt;th&gt;Book&lt;<span class="hljs-regexp">/th&gt;
+      &lt;th&gt;Description&lt;/th</span>&gt;
+      &lt;th &gt;&lt;<span class="hljs-regexp">/th&gt;
+    &lt;/tr</span>&gt;
+  &lt;<span class="hljs-regexp">/thead&gt;
+  &lt;tbody&gt;
+    &lt;% @reviews.each do |review| %&gt;
+      &lt;tr&gt;
+        &lt;td&gt;&lt;%= review.user.id %&gt;&lt;/td</span>&gt;
+        &lt;td&gt;&lt;%= review.book.title %&gt;&lt;<span class="hljs-regexp">/td&gt;
+        &lt;td&gt;
+          &lt;%= review.description.truncate(30) %&gt;
+          &lt;% if review.description.length &gt; 30 %&gt;
+            &lt;%= link_to '続きを読む', book_review_path(review.book, review), :class =&gt; 'btn btn-link' %&gt;
+          &lt;% end %&gt;
+        &lt;/td</span>&gt;
+        &lt;td <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">text</span>-<span class="hljs-title">right</span>"&gt;</span>
+          &lt;%= link_to <span class="hljs-string">'Edit'</span>, edit_book_review_path(review.book, review), <span class="hljs-symbol">:class</span> =&gt; <span class="hljs-string">'btn btn-default btn-xs'</span> %&gt;
+          &lt;%= link_to <span class="hljs-string">'Destroy'</span>, review_path(review), <span class="hljs-symbol">:class</span> =&gt; <span class="hljs-string">'btn btn-xs btn-danger'</span>,
+                      <span class="hljs-symbol">:method</span> =&gt; <span class="hljs-symbol">:delete</span>, <span class="hljs-symbol">:data</span> =&gt; <span class="hljs-string">'Are you sure?'</span> %&gt;
+        &lt;<span class="hljs-regexp">/td&gt;
+      &lt;/tr</span>&gt;
+    &lt;% <span class="hljs-keyword">end</span> %&gt;
+  &lt;<span class="hljs-regexp">/tbody&gt;
+&lt;/table</span>&gt;
+&lt;%= paginate @reviews %&gt;
+</code></pre>
+Review画面の
+<pre><code class="hljs">app/views/reviews/show.html.erb</code></pre>
+ファイルを下記のように編集しましょう。
+app/views/reviews/show.html.erbを編集
+<pre><code class="ruby hljs">&lt;h2&gt;&lt;%= @review.book.title %&gt;&lt;<span class="hljs-regexp">/h2&gt;
+&lt;p&gt;&lt;%= @review.user.name %&gt;: &lt;/p</span>&gt;
+&lt;blockquote&gt;&lt;%= @review.description %&gt;&lt;<span class="hljs-regexp">/blockquote&gt;
+&lt;%= link_to 'Edit', edit_book_review_path(@review.book, @review) %&gt; |
+&lt;%= link_to 'Back', reviews_path %&gt;
+</span></code></pre>
+Review編集画面の
+<pre><code class="hljs">app/views/reviews/edit.html.erb</code></pre>
+ファイルを下記のように編集しましょう。
+app/views/reviews/edit.html.erbを編集
+<pre><code class="ruby hljs">&lt;h1&gt;Editing Review&lt;<span class="hljs-regexp">/h1&gt;
+&lt;%= render 'form', review: @review %&gt;
+&lt;%= link_to 'Show', book_review_path(@review.book, @review) %&gt; |
+&lt;%= link_to 'Back', reviews_path %&gt;</span></code></pre>
+Railsサーバーを起動して表示を確認しましょう。
+<pre><code class="ruby hljs">$ rails s -p $PORT -b $IP</code></pre>
+以下の本棚ページから「達人プログラマー―システム開発の職人から名匠への道」のReviewリンクをクリックして以下の画面が表示されればOKです。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/Review-new-page-1024x368.png" alt="review-new-page" width="840" height="302" />Descriptionにレビュー内容を入力してCreate reviewボタンをクリックすると以下のメッセージ画面が表示されます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/Review-create-page-1024x302.png" alt="review-create-page" width="840" height="248" />ここでbackリンク、またはメニューからレビューをクリックすると以下のレビュー一覧画面が表示されます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/Review-index-page-1024x234.png" alt="review-index-page" width="840" height="192" />レビュー一覧画面のEditボタンをクリックするとレビュー編集画面が表示されます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/Review-edit-page-1024x381.png" alt="review-edit-page" width="840" height="313" /></div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-26. Categoryの作成</div>
+<div class="l-content--detail p-lesson">
+Reveiw機能を追加していきます。
+<pre><code class="hljs">rails g model</code></pre>
+コマンドでCategoryモデルを作成します。さらに、
+<pre><code class="hljs">rails g migration</code></pre>
+コマンドでBookモデルとCategoryモデルのアソシエーションを作成します。
+ターミナルで下記のコマンドを実行してください。
+<pre><code class="ruby hljs">$ rails g model Category <span class="hljs-symbol">name:</span>string
+$ rails g migration CreateBooksCategories <span class="hljs-symbol">category:</span>references <span class="hljs-symbol">book:</span>references</code></pre>
+作成された
+<pre><code class="hljs">db/migrate/20xxXXXXXXXXXX_create_books_categories.rb</code></pre>
+ファイルを下記のように修正しましょう。
+db/migrate/20xxXXXXXXXXXX_create_books_categories.rb
+<pre><code class="ruby hljs"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">CreateBooksCategories</span> &lt; ActiveRecord::Migration</span>
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">change</span></span>
+    create_table <span class="hljs-symbol">:books_categories</span>, <span class="hljs-symbol">id:</span> <span class="hljs-literal">false</span> <span class="hljs-keyword">do</span> <span class="hljs-params">|t|</span>
+      t.references <span class="hljs-symbol">:category</span>, <span class="hljs-symbol">foreign_key:</span> <span class="hljs-literal">true</span>, <span class="hljs-symbol">index:</span> <span class="hljs-literal">true</span>, <span class="hljs-symbol">null:</span> <span class="hljs-literal">false</span>
+      t.references <span class="hljs-symbol">:book</span>, <span class="hljs-symbol">foreign_key:</span> <span class="hljs-literal">true</span>, <span class="hljs-symbol">index:</span> <span class="hljs-literal">true</span>, <span class="hljs-symbol">null:</span> <span class="hljs-literal">false</span>
+    <span class="hljs-keyword">end</span>
+  <span class="hljs-keyword">end</span>
+<span class="hljs-keyword">end</span></code></pre>
+<pre><code class="hljs css"><span class="hljs-selector-tag">rails</span> <span class="hljs-selector-tag">db</span><span class="hljs-selector-pseudo">:migrate</span></code></pre>
+コマンドでデータベースに反映します。
+ターミナルで下記のコマンドを実行してください。
+<pre><code class="ruby hljs">$ rails <span class="hljs-symbol">db:</span>migrate
+</code></pre>
+以下、実行例です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/rake-db-migrate-category.png" alt="rake-db-migrate-category" width="582" height="192" /></div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-27. アソシエーションの設定</div>
+<div class="l-content--detail p-lesson">
+CategoryモデルとBookモデルのアソシエーションを設定するために
+<pre><code class="hljs">app/models/category.erb</code></pre>
+ファイルを下記のように編集しましょう。
+app/models/category.rb
+<pre><code class="ruby hljs"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Category</span> &lt; ApplicationRecord</span>
+  has_and_belongs_to_many <span class="hljs-symbol">:books</span>
+<span class="hljs-keyword">end</span></code></pre>
+<pre><code class="hljs">app/models/book.erb</code></pre>
+ファイルも同様に下記のように編集しましょう。
+app/models/book.rb
+<pre><code class="ruby hljs"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Book</span> &lt; ApplicationRecord</span>
+  validates <span class="hljs-symbol">:title</span>, <span class="hljs-symbol">presence:</span> <span class="hljs-literal">true</span>, <span class="hljs-symbol">length:</span> { <span class="hljs-symbol">maximum:</span> <span class="hljs-number">255</span> }
+  validates <span class="hljs-symbol">:author</span>, <span class="hljs-symbol">length:</span> { <span class="hljs-symbol">maximum:</span> <span class="hljs-number">255</span> }
+  has_and_belongs_to_many <span class="hljs-symbol">:categories</span>
+<span class="hljs-keyword">end</span></code></pre>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-28. Category用シードを作成</div>
+<div class="l-content--detail p-lesson">
+カテゴリーの情報を
+<pre><code class="hljs">db/seeds/categories.yml</code></pre>
+ファイルとして作成します。ファイルは以下のリンクからダウンロードし、
+<blockquote><a href="https://s3-ap-northeast-1.amazonaws.com/graspy-production/lessonMaterials/download/categories.yml">こちらクリックしダウンロード</a></blockquote>
+<pre><code class="hljs">db/seeds/</code></pre>
+フォルダの下に配置してください。
+categories.yml
+db/seeds/categories.yml
+<pre><code class="ruby hljs"><span class="hljs-symbol">categories:</span>
+  - <span class="hljs-symbol">name:</span> <span class="hljs-string">"文学・評論"</span>
+...</code></pre>
+※ ダウンロードしたファイルにはおよそ30カテゴリーが事前に記述されています。
+次にこのカテゴリ情報ファイルを読み込み、データベースに登録するために登録処理ファイルを作成します。
+db/seeds/categories.seeds.rbファイルを新規作成し、下記のように記述してください。
+db/seeds/categories.seeds.rb
+<pre><code class="ruby hljs">file = Psych.load_file(<span class="hljs-string">"db/seeds/categories.yml"</span>)
+file[<span class="hljs-string">"categories"</span>].each <span class="hljs-keyword">do</span> <span class="hljs-params">|params|</span>
+  Category.find_or_create_by(params)
+<span class="hljs-keyword">end</span></code></pre>
+次にdb/seeds.rbファイルを下記の
+<pre><code class="hljs css"><span class="hljs-selector-tag">rails</span> <span class="hljs-selector-tag">db</span><span class="hljs-selector-pseudo">:seed</span></code></pre>
+コマンドでシードファイルを実行し、カテゴリー情報をデータベースに登録します。
+ターミナルで下記のコマンドを実行してください。
+<pre><code class="ruby hljs">$ rails <span class="hljs-symbol">db:</span>seed</code></pre>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-29. 書籍フォームの修正</div>
+<div class="l-content--detail p-lesson">
+書籍フォームでカテゴリーを選択できるようにするために
+<pre><code class="hljs">app/views/books/_form.html.erb</code></pre>
+ファイルを下記のように編集しましょう。
+app/views/books/_form.html.erb
+<pre><code class="ruby hljs">&lt;%= simple_form_for(book) <span class="hljs-keyword">do</span> <span class="hljs-params">|f|</span> %&gt;
+  &lt;%= f.input <span class="hljs-symbol">:title</span> %&gt;
+  &lt;%= f.input <span class="hljs-symbol">:author</span> %&gt;
+  &lt;%= f.association <span class="hljs-symbol">:categories</span>, <span class="hljs-symbol">as:</span> <span class="hljs-symbol">:select</span>, <span class="hljs-symbol">multiple:</span> <span class="hljs-literal">true</span> %&gt;
+  &lt;div <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">actions</span>"&gt;</span>
+    &lt;%= f.button <span class="hljs-symbol">:submit</span>, <span class="hljs-symbol">:class</span> =&gt; <span class="hljs-string">'btn-primary'</span> %&gt;
+  &lt;<span class="hljs-regexp">/div&gt;
+&lt;% end %&gt;</span></code></pre>
+選択したカテゴリーを登録するためにBooksControllerのストロングパラメーターにcategory_idsを追加します。に
+<pre><code class="hljs">app/controllers/books_controller.rb</code></pre>
+ファイルのbook_paramsメソッドを下記のように修正しましょう。
+app/controllers/books_controller.rb
+<pre><code class="ruby hljs">...
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">book_params</span></span>
+  params.<span class="hljs-keyword">require</span>(<span class="hljs-symbol">:book</span>).permit(<span class="hljs-symbol">:title</span>, <span class="hljs-symbol">:author</span>, <span class="hljs-symbol">category_ids:</span> [])
+<span class="hljs-keyword">end</span>
+...</code></pre>
+Railsサーバーを起動して表示を確認しましょう。
+<pre><code class="ruby hljs">$ rails s -p $PORT -b $IP</code></pre>
+本棚ページでNew Bookボタンをクリックします。New BookページでCategoriesの内容が以下のように表示されていればOKです。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/new-book-page-with-category-300x124.png" alt="new-book-page-with-category" width="300" height="124" /></div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-30. マイ本棚</div>
+<div class="l-content--detail p-lesson">
+自分がレビューした本のみを一覧表示するマイ本棚を作成します。
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-31. ルーティングの修正</div>
+<div class="l-content--detail p-lesson">
+<pre><code class="hljs">config/routes.rb</code></pre>
+ファイルに新しいルーティング情報
+<pre><code class="hljs java">get <span class="hljs-string">'my_books'</span>, to: <span class="hljs-string">'books#my_books'</span></code></pre>
+を下記のように追加しましょう。
+config/routes.rb
+<pre><code class="ruby hljs">Rails.application.routes.draw <span class="hljs-keyword">do</span>
+ resources <span class="hljs-symbol">:reviews</span>, <span class="hljs-symbol">only:</span> [<span class="hljs-symbol">:index</span>, <span class="hljs-symbol">:destroy</span>]
+ root <span class="hljs-string">'books#index'</span>
+ resources <span class="hljs-symbol">:books</span> <span class="hljs-keyword">do</span>
+ resources <span class="hljs-symbol">:reviews</span>, <span class="hljs-symbol">except:</span> [<span class="hljs-symbol">:index</span>, <span class="hljs-symbol">:destroy</span>]
+ <span class="hljs-keyword">end</span>
+ devise_for <span class="hljs-symbol">:users</span>
+ get <span class="hljs-string">'my_books'</span>, <span class="hljs-symbol">to:</span> <span class="hljs-string">'books#my_books'</span>
+<span class="hljs-keyword">end</span></code></pre>
+UserモデルにBookモデルとのアソシエーションを設定します。
+app/models/user.rb
+<pre><code class="ruby hljs"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">User</span> &lt; ApplicationRecord</span>
+  devise <span class="hljs-symbol">:database_authenticatable</span>, <span class="hljs-symbol">:registerable</span>,
+         <span class="hljs-symbol">:recoverable</span>, <span class="hljs-symbol">:rememberable</span>, <span class="hljs-symbol">:trackable</span>, <span class="hljs-symbol">:validatable</span>
+  has_many <span class="hljs-symbol">:reviews</span>
+  has_many <span class="hljs-symbol">:books</span>, <span class="hljs-symbol">through:</span> <span class="hljs-symbol">:reviews</span>
+<span class="hljs-keyword">end</span></code></pre>
+BooksControllerのprivateの上にmy_booksアクションを追加し、マイ本棚画面のパラメーターを設定します。
+app/controllers/books_controller.rb
+<pre><code class="ruby hljs">...
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">my_books</span></span>
+  @books = current_user.books.page params[<span class="hljs-symbol">:page</span>]
+<span class="hljs-keyword">end</span>
+private
+...</code></pre>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-32. マイ本棚画面の作成</div>
+<div class="l-content--detail p-lesson">
+<pre><code class="hljs">app/views/books/my_books.html.erb</code></pre>
+ファイルを新規作成し、下記のように記述します。
+app/views/books/my_books.html.erb
+<pre><code class="ruby hljs">&lt;h1&gt;My Books&lt;<span class="hljs-regexp">/h1&gt;
+&lt;%= render 'table', books: @books %&gt;
+&lt;%= paginate @books %&gt;</span></code></pre>
+以下、参考にしてみてください。<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/my_books.html.erb_.png" alt="my_books-html-erb" width="672" height="529" />
+<pre><code class="hljs">app/views/books/_books.html.erb</code></pre>
+ファイルを新規作成し、index.html.erbのtableタグを切り出します。@tableはtableに修正します。
+app/views/books/_books.html.erb
+<pre><code class="ruby hljs">&lt;table <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">table</span> <span class="hljs-title">table</span>-<span class="hljs-title">striped</span>"&gt;</span>
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Title&lt;<span class="hljs-regexp">/th&gt;
+      &lt;th&gt;Author&lt;/th</span>&gt;
+      &lt;th&gt;&amp;nbsp;&lt;<span class="hljs-regexp">/th&gt;
+    &lt;/tr</span>&gt;
+  &lt;<span class="hljs-regexp">/thead&gt;
+  &lt;tbody&gt;
+    &lt;% books.each do |book| %&gt;
+      &lt;tr&gt;
+        &lt;td&gt;&lt;%= book.title %&gt;&lt;/td</span>&gt;
+        &lt;td&gt;&lt;%= book.author %&gt;&lt;<span class="hljs-regexp">/td&gt;
+        &lt;td class="text-right"&gt;
+          &lt;%= link_to 'Review', new_book_review_path(book), :class =&gt; 'btn btn-link btn-xs' %&gt;
+          &lt;%= link_to 'Edit', edit_book_path(book), :class =&gt; 'btn btn-link btn-xs' %&gt;
+          &lt;%= link_to 'Delete', book_path(book), :class =&gt; 'btn btn-xs btn-danger',
+                      :method =&gt; :delete, :data =&gt; { :confirm =&gt; 'Are you sure?' } %&gt;
+        &lt;/td</span>&gt;
+      &lt;<span class="hljs-regexp">/tr&gt;
+    &lt;% end %&gt;
+  &lt;/tbody</span>&gt;
+&lt;<span class="hljs-regexp">/table&gt;</span></code></pre>
+そして、
+<pre><code class="hljs">app/views/books/my_books.html.erb</code></pre>
+ファイルを下記のように修正します。
+<pre><code class="ruby hljs">&lt;h1&gt;Books&lt;<span class="hljs-regexp">/h1&gt;
+&lt;%= render 'table', books: @books %&gt;
+&lt;%= paginate @books %&gt;
+&lt;%= link_to 'New Book', new_book_path, :class =&gt; 'btn btn-primary' %&gt;</span></code></pre>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-33. リンクの設定</div>
+<div class="l-content--detail p-lesson">
+<pre><code class="hljs">app/views/layouts/application.html.erb</code></pre>
+ファイルにマイ本棚ページへのリンク
+<pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">%=</span> <span class="hljs-attr">link_to</span> 'マイ本棚', <span class="hljs-attr">my_books_path</span> %&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span></code></pre>
+を下記のように追記します。
+app/views/layouts/application.html.erb
+<pre><code class="ruby hljs">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+ &lt;head&gt;
+ &lt;title&gt;BookShelf&lt;<span class="hljs-regexp">/title&gt;
+ &lt;%= csrf_meta_tags %&gt;
+ &lt;%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload' %&gt;
+ &lt;%= javascript_include_tag 'application', 'data-turbolinks-track': 'reload' %&gt;
+ &lt;/head</span>&gt;
+ &lt;body&gt;
+ &lt;nav <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">navbar</span> <span class="hljs-title">navbar</span>-<span class="hljs-title">inverse</span> <span class="hljs-title">navbar</span>-<span class="hljs-title">static</span>-<span class="hljs-title">top</span>"&gt;</span>
+ &lt;div <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">container</span>-<span class="hljs-title">fluid</span>"&gt;</span>
+ &lt;div <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">navbar</span>-<span class="hljs-title">header</span>"&gt;</span>
+ &lt;% <span class="hljs-keyword">if</span> user_signed_in? %&gt;
+ &lt;button type=<span class="hljs-string">"button"</span> <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">navbar</span>-<span class="hljs-title">toggle</span> <span class="hljs-title">collapsed</span>" <span class="hljs-title">data</span>-<span class="hljs-title">toggle</span>="<span class="hljs-title">collapse</span>" <span class="hljs-title">data</span>-<span class="hljs-title">target</span>="<span class="hljs-comment">#navbar-collapse"&gt;</span></span>
+ &lt;span <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">icon</span>-<span class="hljs-title">bar</span>"&gt;&lt;/<span class="hljs-title">span</span>&gt;</span>
+ &lt;span <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">icon</span>-<span class="hljs-title">bar</span>"&gt;&lt;/<span class="hljs-title">span</span>&gt;</span>
+ &lt;span <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">icon</span>-<span class="hljs-title">bar</span>"&gt;&lt;/<span class="hljs-title">span</span>&gt;</span>
+ &lt;<span class="hljs-regexp">/button&gt;
+ &lt;% end %&gt;
+ &lt;a class="navbar-brand" href="/</span><span class="hljs-string">"&gt;BookShelf&lt;/a&gt;
+ &lt;/div&gt;
+ &lt;% if user_signed_in? %&gt;
+ &lt;div class="</span>collapse navbar-collapse<span class="hljs-string">" id="</span>navbar-collapse<span class="hljs-string">"&gt;
+ &lt;ul class="</span>nav navbar-nav<span class="hljs-string">"&gt;
+ &lt;li&gt;&lt;%= link_to '本棚', '/' %&gt;&lt;/a&gt;&lt;/li&gt;
+ &lt;li&gt;&lt;%= link_to 'マイ本棚', my_books_path %&gt;&lt;/li&gt;
+ &lt;li&gt;&lt;%= link_to 'レビュー', reviews_path %&gt;&lt;/li&gt;
+ &lt;/ul&gt;
+ &lt;ul class="</span>nav navbar-nav navbar-right<span class="hljs-string">"&gt;
+ &lt;li class="</span>dropdown<span class="hljs-string">"&gt;
+ &lt;a href="</span><span class="hljs-comment">#" class="dropdown-toggle" data-toggle="dropdown" role="button"&gt;アカウント &lt;span class="caret"&gt;&lt;/span&gt;&lt;/a&gt;</span>
+ &lt;ul <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">dropdown</span>-<span class="hljs-title">menu</span>"&gt;</span>
+ &lt;li&gt;&lt;%= link_to <span class="hljs-string">'設定'</span>, edit_user_registration_path %&gt;&lt;<span class="hljs-regexp">/li&gt;
+ &lt;li role="separator" class="divider"&gt;&lt;/li</span>&gt;
+ &lt;li&gt;&lt;%= link_to <span class="hljs-string">'ログアウト'</span>, destroy_user_session_path, <span class="hljs-symbol">method:</span> <span class="hljs-symbol">:delete</span> %&gt;&lt;<span class="hljs-regexp">/li&gt;
+ &lt;/ul</span>&gt;
+ &lt;<span class="hljs-regexp">/li&gt;
+ &lt;/ul</span>&gt;
+ &lt;<span class="hljs-regexp">/div&gt;
+ &lt;% end %&gt;
+ &lt;/div</span>&gt;
+ &lt;<span class="hljs-regexp">/nav&gt;
+ &lt;div class="container"&gt;
+ &lt;% if notice.present? %&gt;
+ &lt;div class="alert alert-dismissable alert-success"&gt;
+ &lt;button type="button" class="close" data-dismiss="alert"&gt;&amp;times;&lt;/button</span>&gt;
+ &lt;p&gt;&lt;%= notice %&gt;&lt;<span class="hljs-regexp">/p&gt;
+ &lt;/div</span>&gt;
+ &lt;% <span class="hljs-keyword">end</span> %&gt;
+ &lt;% <span class="hljs-keyword">if</span> alert.present? %&gt;
+ &lt;div <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">alert</span> <span class="hljs-title">alert</span>-<span class="hljs-title">dismissable</span> <span class="hljs-title">alert</span>-<span class="hljs-title">danger</span>"&gt;</span>
+ &lt;button type=<span class="hljs-string">"button"</span> <span class="hljs-class"><span class="hljs-keyword">class</span>="<span class="hljs-title">close</span>" <span class="hljs-title">data</span>-<span class="hljs-title">dismiss</span>="<span class="hljs-title">alert</span>"&gt;&amp;<span class="hljs-title">times</span>;</span>&lt;<span class="hljs-regexp">/button&gt;
+ &lt;p&gt;&lt;%= alert %&gt;&lt;/p</span>&gt;
+ &lt;<span class="hljs-regexp">/div&gt;
+ &lt;% end %&gt;
+ &lt;%= yield %&gt;
+ &lt;/div</span>&gt;
+ &lt;<span class="hljs-regexp">/body&gt;
+&lt;/html</span>&gt;</code></pre>
+Railsサーバーを起動して表示を確認しましょう。
+<pre><code class="ruby hljs">$ rails s -p $PORT -b $IP</code></pre>
+メニューにマイ本棚が追加され、マイ本棚ページに以下のように自分がレビューした本が表示されていれば成功です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/my-book-page-1024x248.png" alt="my-book-page" width="840" height="203" /></div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-34. 検索機能</div>
+<div class="l-content--detail p-lesson">
+本の検索が行えるように機能を追加します。
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-35. 検索するためのUIの追加</div>
+<div class="l-content--detail p-lesson">
+ビューにキーワードを入力し、送信するUI（ユーザーインターフェイス）を追加します。
+views/books/index.html.erb
+<pre><code class="ruby hljs">&lt;h1&gt;Books&lt;<span class="hljs-regexp">/h1&gt;
+&lt;form action="&lt;%= books_path %&gt;" method="get" class="form-inline"&gt;
+  &lt;input class="form-control" type="text" name="s_title" value="&lt;%= request[:s_title] %&gt;"&gt;
+  &lt;button class="btn btn-default" type="submit"&gt;検索&lt;/button</span>&gt;
+&lt;<span class="hljs-regexp">/form&gt;
+&lt;%= render 'table', books: @books %&gt;
+&lt;%= paginate @books %&gt;
+&lt;%= link_to 'New Book', new_book_path, :class =&gt; 'btn btn-primary' %&gt;</span></code></pre>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-36. 検索機能専用のモジュールを作成する</div>
+<div class="l-content--detail p-lesson">
+models/concerns/search_book.rbを作成し、下記のように編集しましょう。
+<pre><code class="ruby hljs">
+<span class="hljs-class"><span class="hljs-keyword">module</span> <span class="hljs-title">SearchBook</span></span>
+  extend ActiveSupport::Concern
+  included <span class="hljs-keyword">do</span>
+    scope <span class="hljs-symbol">:search_title</span>, lambda { <span class="hljs-params">|keyword|</span>
+      table = Book.arel_table
+      condition = table[<span class="hljs-symbol">:title</span>].matches(<span class="hljs-string">"%<span class="hljs-subst">#{keyword}</span>%"</span>)
+      where(condition)
+    }
+    scope <span class="hljs-symbol">:search_category</span>, lambda { <span class="hljs-params">|category_id|</span>
+      table = Category.arel_table
+      condition = table[<span class="hljs-symbol">:id</span>].eq(category_id)
+      where(condition)
+    }
+    scope <span class="hljs-symbol">:search</span>, lambda { <span class="hljs-params">|s|</span>
+      r = <span class="hljs-keyword">self</span>
+      r = r.search_title(s[<span class="hljs-symbol">:s_title</span>]) <span class="hljs-keyword">if</span> s[<span class="hljs-symbol">:s_title</span>].present?
+      r = r.joins(<span class="hljs-symbol">:categories</span>).search_category(s[<span class="hljs-symbol">:s_category</span>]) <span class="hljs-keyword">if</span> s[<span class="hljs-symbol">:s_category</span>].present?
+      <span class="hljs-keyword">return</span> r <span class="hljs-keyword">if</span> r != <span class="hljs-keyword">self</span>
+      where({})
+    }
+  <span class="hljs-keyword">end</span>
+<span class="hljs-keyword">end</span>
+</code></pre>
+モジュールとActiveSupport::Concernについて：
+モデルに機能を追加していくとモデルが肥大化してわかりづらくなります。そこで一部の機能を切り分けるためにモジュールを作成し、それをモデル側でincludeすることによって、コードに簡潔さを保つことができます。Railsのモデルの一部をモジュールに切り分ける場合、ActiveRecordの機能を使って拡張する必要がありますが、その機能をモジュール側でも使いやすくするために用意されているのがActiveSupport::Concernです。
+included do ~ endの内部ではモデルの中に書くのと同じように記述することができます。
+<blockquote>参考URL:
+<a href="http://api.rubyonrails.org/classes/ActiveSupport/Concern.html" target="_blank" rel="noopener noreferrer">http://api.rubyonrails.org/classes/ActiveSupport/Concern.html</a></blockquote>
+scopeについて：
+ここでいうscopeとはモデルのメソッドを指します。主にモデルがデータベースにアクセスするときの条件を追加するために、モデルにクラスメソッドを動的に追加するために使われます。scopeを理解するにはメソッドチェーンをまず理解しなければなりません。よく使うwhereメソッドもメソッドチェーンが可能です。例えば where(name: 'john').where(email: 'example@examle.com') のようにwhereの結果に対し、さらにwhereを呼ぶことが可能です。つまり条件をscopeでまとめておいて、必要な時に必要な条件を複数繋げることができます。
+<blockquote>参考URL:
+<a href="http://railsguides.jp/active_record_querying.html#%E3%82%B9%E3%82%B3%E3%83%BC%E3%83%97" target="_blank" rel="noopener noreferrer">http://railsguides.jp/active_record_querying.html#%E3%82%B9%E3%82%B3%E3%83%BC%E3%83%97</a></blockquote>
+arel_tableについて：
+モデルがデータベースにアクセスする際に、内部的にはArel（アレル）というライブラリを使っています。モデルの機能として公開されているメソッドの他に、内部で使用されているArelを直接利用することによって、コードをより簡潔に利用することができる場合があります。ArelはRails5.0ではプライベートライブラリですので直接使わない方が良いという意見もありますが、特に禁止されている訳ではありません。また5.xではパブリックライブラリになることが予定されています。モデルにはarel_tableというメソッドが用意されており、呼び出すことでArelを直接使うことができます。
+<blockquote>参考URL:
+<a href="http://www.rubydoc.info/github/rails/arel" target="_blank" rel="noopener noreferrer">http://www.rubydoc.info/github/rails/arel</a></blockquote>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-37. モデルにモジュールをincludeする</div>
+<div class="l-content--detail p-lesson">
+models/book.rbにモジュールをincludeする記述を追加しましょう。
+<pre><code class="ruby hljs"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Book</span> &lt; ApplicationRecord</span>
+  <span class="hljs-keyword">include</span> SearchBook
+  validates <span class="hljs-symbol">:title</span>, <span class="hljs-symbol">presence:</span> <span class="hljs-literal">true</span>, <span class="hljs-symbol">length:</span> { <span class="hljs-symbol">maximum:</span> <span class="hljs-number">255</span> }
+  validates <span class="hljs-symbol">:author</span>, <span class="hljs-symbol">length:</span> { <span class="hljs-symbol">maximum:</span> <span class="hljs-number">255</span> }
+  has_and_belongs_to_many <span class="hljs-symbol">:categories</span>
+<span class="hljs-keyword">end</span>
+</code></pre>
+ここまでできたらきちんと機能するかどうかターミナルでコンソールを起動し、動作確認をしましょう。
+<pre><code class="ruby hljs">rails c
+<span class="hljs-meta">irb(main):001:0&gt;</span> Book.search(<span class="hljs-symbol">s_title:</span> <span class="hljs-string">'Rails'</span>)
+Book Load (<span class="hljs-number">0</span>.<span class="hljs-number">4</span>ms)  SELECT <span class="hljs-string">"books"</span>.* FROM <span class="hljs-string">"books"</span> WHERE (<span class="hljs-string">"books"</span>.<span class="hljs-string">"title"</span> LIKE <span class="hljs-string">'%Rails%'</span>)
+=&gt; #&lt;ActiveRecord::Relation [#&lt;Book id: 87, title: "RailsによるアジャイルWebアプリケーション開発 第4版", author: "Sam Ruby, Dave Thomas, David Heinemeier Hansson", created_at: "2016-10-21 01:09:30", updated_at: "2016-10-21 01:09:30"&gt;]&gt;</code></pre>
+このように検索結果が表示されれば成功です。なんらかのエラーが起きた時はコードを編集してください。新しいコードをコンソールに反映させるにはreload!コマンドを実行してコードを読み直す必要があります。
+<pre><code class="ruby hljs"><span class="hljs-meta">irb(main):001:0&gt;</span> reload!
+Reloading...
+=&gt; true
+<span class="hljs-meta">irb(main):002:0&gt;</span>
+</code></pre>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-38. コントローラーを編集して、ビューとモデルを結びつける</div>
+<div class="l-content--detail p-lesson">
+controllers/books_controller.rbのindexアクションを編集しましょう。
+※課題１で実装した内容によって、コードが一部違う可能性があります。
+<pre><code class="ruby hljs">  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">index</span></span>
+    @books = Book.page params[<span class="hljs-symbol">:page</span>]
+    @books = @books.search(<span class="hljs-symbol">s_title:</span> params[<span class="hljs-symbol">:s_title</span>], <span class="hljs-symbol">s_category:</span> params[<span class="hljs-symbol">:s_category</span>]) <span class="hljs-keyword">if</span> params[<span class="hljs-symbol">:s_title</span>].present? <span class="hljs-params">||</span> params[<span class="hljs-symbol">:s_category</span>].present?
+  <span class="hljs-keyword">end</span></code></pre>
+ブラウザでbooks/にアクセスし、検索機能が動作するのを確認しましょう。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2016/11/rails-3.37-1024x518.png" alt="rails-3-37" width="840" height="425" /></div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>4-39. 【最終課題】検索機能を拡張しよう！</div>
+<div class="l-content--detail p-lesson">
+条件１：キーワードの他にカテゴリでも検索できるように追加すること。
+条件２：scopeを追加して実装すること。
+ヒント１：カテゴリを選択できるようにするselectタグはselect_tagとoptions_for_selectメソッドを使うと簡単です。
+ヒント２：BookモデルにとってCategoryモデルは、booksテーブルがbooks_categoriesテーブルを通してcategoriesテーブルと結びついている関係にあります。そのため検索にはjoinsメソッドを使います。
+</div>
+</div>

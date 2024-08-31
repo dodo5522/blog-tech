@@ -13,9 +13,9 @@ const Nav: React.FC = (): ReactElement => (
     <nav className='gap-3 sm:gap-5 md:gap-10 lg:gap-10 xl:gap-10 2xl:gap-10 inline-flex justify-center sm:justify-center md:justify-right mt-5 sm:mt-5 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0  items-start text-white text-left font-medium'>
       <Link href='/' className='m-0 text-xs sm:text-lg md:text-lg lg:text-lg xl:text-lg 2xl:text-lg'>Home</Link>
       <Link href='/category/programming' className='m-0 text-xs sm:text-lg md:text-lg lg:text-lg xl:text-lg 2xl:text-lg'>Programming</Link>
-      <Link href='/category/photography' className='m-0 text-xs sm:text-lg md:text-lg lg:text-lg xl:text-lg 2xl:text-lg'>Photography</Link>
-      <Link href='/category/electronics' className='m-0 text-xs sm:text-lg md:text-lg lg:text-lg xl:text-lg 2xl:text-lg'>Electronics</Link>
-      <Link href='/category/diy' className='m-0 text-xs sm:text-lg md:text-lg lg:text-lg xl:text-lg 2xl:text-lg'>DIY</Link>
+      <Link href='/category/hobby' className='m-0 text-xs sm:text-lg md:text-lg lg:text-lg xl:text-lg 2xl:text-lg'>Hobby</Link>
+      <Link href='/category/gadget' className='m-0 text-xs sm:text-lg md:text-lg lg:text-lg xl:text-lg 2xl:text-lg'>Gadget</Link>
+      <Link href='/category/work' className='m-0 text-xs sm:text-lg md:text-lg lg:text-lg xl:text-lg 2xl:text-lg'>Work</Link>
       <Link href='/category/life' className='m-0 text-xs sm:text-lg md:text-lg lg:text-lg xl:text-lg 2xl:text-lg'>Life</Link>
       <Link href='/page/about' className='m-0 text-xs sm:text-lg md:text-lg lg:text-lg xl:text-lg 2xl:text-lg'>About</Link>
     </nav>

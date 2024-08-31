@@ -1,0 +1,732 @@
+---
+title: "2. 自然言語に関する機械学習"
+description: "2. 自然言語に関する機械学習2-1. Watson Natural Language Classifier（自然言語分類）2-1-1. Watson Natu..."
+tags:
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2019-02-24T23:59:05.000Z
+author: takashi
+---
+
+
+<h1 class="c-title--primary">2. 自然言語に関する機械学習</h1>
+<div class="l-content--detail p-lesson"></div>
+<div class="l-content--detail p-lesson">
+<div>2-1. Watson Natural Language Classifier（自然言語分類）</div>
+<div class="l-content--detail p-lesson"></div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-1-1. Watson Natural Language Classifier (NLC)</div>
+<div class="l-content--detail p-lesson">
+機械学習を使って分類（Classification）を行う対象として、その代表格は画像でしょう。例えば犬が写っている画像に犬というラベルを付ける、猫が写っている画像に猫というラベルを付けるといったものです。WatsonではVisual Recognitionというサービスを使うと、デフォルトのモデルや独自の訓練データを用いたカスタムモデルを使って画像の分類を行うことができます。
+画像と並んで分類の対象とされるデータとして、自然言語を挙げることもできます。例えば「こんにちは」という文章に挨拶というラベルを付けたくなるかもしれませんし、「インターネットに接続できません」というエラーメッセージを接続エラーに分類して、適したマニュアルを表示したり、担当部署を呼び出すこともあるでしょう。
+Engineer編の第2章は自然言語に関する機械学習を学びます。その最初に、WatsonのNatural Language Classifier（NLC）というサービスを用いた独自の自然言語分類モデルの作成を行い、自然言語を分類するとはどのようなものか、体感することにしましょう。
+<h4>IBM Cloudアカウントのアップグレード</h4>
+これまでIBM Cloudのライトアカウントを使って演習を進めてきましたが、NLCはライトアカウントに対応していません。そのため、IBM Cloudのアカウントにクレジットカード番号などを登録し、PAYG（従量課金）アカウントにアップグレードする必要があります。但し、アップグレードしてもライトアカウントの場合と同様に各サービスのライトプランを無料で使用することができます。NLCはライトプランてしては提供されていませんが、別に8個までの分類器を無料で作成し、1ヶ月に1,000回までの分類を無料で行える無料枠が存在していますので、その範囲では課金はかかりません。
+PAYGアカウントにアップグレードするには、IBM Cloudのダッシュボードから「アカウントのアップグレード」ボタンをクリックします。あとは、画面の指示に従い、クレジットカード番号などを登録してください。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/ibm_cloud_account_upgrade.png" alt="" width="2232" />
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-1-2. APIを使って独自の自然言語分類モデルを作る</div>
+<div class="l-content--detail p-lesson">
+NLCでは画像認識のVisual Recognitionと同様にWebブラウザ上の操作で独自のモデルを作成することができます。但し、デフォルトのモデルは提供されていないので、必ず独自のモデルを作成する必要がある点は、Visual Recognitionと異なるところです。
+ここでは、Webブラウザ上の操作ではなく、Python用のWatson SDKを使用することにしましょう。Pythonの実行環境としては、第1章と同様にNotebookを使用することにします。
+<h4>NLCのインスタンス作成</h4>
+IBM Cloudのカタログを開き、NLC（Natural Language Classifier）のインスタンスを作成します。さきほど、IBM Cloudのアカウントをアップグレードしたので、デフォルトでNLCのサービスが見えるようになっているはずです。また、似た名前のサービスにNLU（Natural Language Understanding）があるので、間違わないようにしてください。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/nlc_01.png" alt="" width="2496" />
+NLCのインスタンスを作成したら、サービス資格情報を確認しておきます。サービス資格情報は、NLCのインスタンス作成直後に表示される画面から（または、IBM CloudのダッシュボードからNLCのインスタンス画面を開き）、資格情報の「表示」をクリックすると表示されるusernameとpasswordの値です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/nlc_02.png" alt="" width="2058" />
+<h4>訓練データの作成</h4>
+NLCでモデルを作成する際に使用する訓練データを作成します。NLCの訓練データは、下図のようなCSV形式のファイルです。1行が1つのデータで、サンプル文とラベルの2項目で構成します。1つのラベルあたり最低10個のサンプル文を作成する必要があるので、2つのラベルのどちらかに分類するモデルを作成する場合は、20行のデータがあるCSVファイルになります。
+例えば、下記のようなデータでCSVファイルを作成します。ファイルはUTF-8形式で保存します。ファイル名は、trainingdata.csvのようにします。全角文字を使わないようにしましょう。
+<pre>和食のお店,restaurant
+美味しいお店,restaurant
+洋食のレストラン,restaurant
+おなかがすいた,restaurant
+ディナーを楽しみたい,restaurant
+何か食べたい,restaurant
+夜景を楽しみながら食事したい,restaurant
+ビールが飲みたい,restaurant
+日本酒が飲みたい,restaurant
+ワインが飲みたい,restaurant
+のんびりしたい,park
+自然のあるところに行きたい,park
+芝生に寝転がりたい,park
+噴水を見たい,park
+犬と散歩したい,park
+のんびり歩きたい,park
+公園に行きたい,park
+動物を見に行きたい,park
+お花見をしたい,park
+緑のある風景,park</pre>
+<h4>訓練データをWatson Studioにアップロード</h4>
+NLCのモデル作成API（create_classifier）は、訓練データをファイルとしてアップロードする必要があるので、最初にWatson Studioのストレージ（COS：Cloud Object Storage）に、さきほど作成したtrainingdata.csvをアップロードします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/nlc_03.png" alt="" width="746" />
+Watson Studioで新しいNotebookを作成し、画面右上のDataアイコンをクリックすると、ファイルのアップロード画面が表示されます。
+ローカルPC上のNotebookを使用している場合は、CSVファイルをそのまま使用することができるため、Pandasに関する操作は不要です。下記のオリエンテーションを参考にしてください。
+<ul>
+ 	<li><a href="https://graspy.jp/lesson/5/chapter/30#sub_310" target="_blank" rel="noopener noreferrer">0-3-5. ローカルPC上のNotebookでファイルを使用する</a></li>
+</ul>
+Watson StudioではアップロードしたCSVファイルはPandasのDataFrameとして、Notebook上で使用することができます。先ほどアップロードしたtrainingdata.csvのInsert to codeメニューからInsert pandas DataDrameをクリックすると、Pandasのコードが自動的に挿入されます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/Watson_NLC_20180713_-_IBM_Watson.png" alt="" width="1250" />
+少し面倒ですが、NLCはCSVファイルそのものをアップロードしなければならないので、DataFrameからCSVファイルを、Notebookの実行環境上に作成します。
+<pre><code class="python hljs">
+  df_data_1.to_csv(<span class="hljs-string">'training_data.csv'</span>, header=<span class="hljs-keyword">False</span>, index=<span class="hljs-keyword">False</span>)
+  !ls -la
+</code></pre>
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/Watson_NLC_20180713_-_IBM_Watson-1.png" alt="" width="584" />
+<h4>NLCで独自モデルを作成</h4>
+ここまで準備して、ようやくNLCのモデル作成APIを呼び出します。
+最初にWatson SDKのNatualLanguageClassiferV1オブジェクトを作成します。usernameとpasswordは、NLCのサービス資格情報を指定します。
+<pre><code class="python hljs">
+  <span class="hljs-keyword">import</span> json
+  <span class="hljs-keyword">from</span> watson_developer_cloud <span class="hljs-keyword">import</span> NaturalLanguageClassifierV1
+  nlc = NaturalLanguageClassifierV1(username=＜サービス資格情報のusername＞, password=＜サービス資格情報のpassword＞)
+  <span class="hljs-keyword">with</span> open(<span class="hljs-string">'training_data.csv'</span>, <span class="hljs-string">'rb'</span>) <span class="hljs-keyword">as</span> training_data:
+      metadata = json.dumps({<span class="hljs-string">'name'</span>: <span class="hljs-string">'First Classifier'</span>, <span class="hljs-string">'language'</span>: <span class="hljs-string">'ja'</span>})
+      classifier = nlc.create_classifier(metadata=metadata, training_data=training_data)
+      classifier_id = classifier[<span class="hljs-string">'classifier_id'</span>]
+      print(classifier_id)
+</code></pre>
+create_classifier()の引数は、metadataとtraining_dataの2つです。metadataでは、モデルの名前（例：First Classifier）と訓練データの言語（日本語はja）を指定したJSONデータをセットします。training_dataはさきほどWatson Studioの実行環境上に作成した作成したCSVファイルのファイルポインタを指定します。
+モデル作成APIが正常に呼び出されると、モデルのID（classifier_id）などが戻り値となります。このclassifier_idの値を用いて、モデルの学習状況の確認や、実際の分類などを行います。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/Watson_NLC_20180713_-_IBM_Watson-2.png" alt="" width="944" />
+get_classifier()でモデルの学習状況などを取得できます。学習中はstatusの値はTrainingであり、これがAvailableになると学習が正常終了し、モデルが使用可能な状態になったことを示します。
+<pre><code class="python hljs">
+  nlc.get_classifier(classifier_id)
+</code></pre>
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/Watson_NLC_20180713_-_IBM_Watson-3.png" alt="" width="949" />
+＜参考＞
+<ul>
+ 	<li><a href="https://console.bluemix.net/docs/services/natural-language-classifier/" target="_blank" rel="noopener noreferrer">Watson Natural Language Classifier</a></li>
+ 	<li><a href="https://www.ibm.com/watson/developercloud/natural-language-classifier/api/v1/python.html?python" target="_blank" rel="noopener noreferrer">Watson Natural Language Classifier API Reference</a></li>
+</ul>
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-1-3. APIを使って独自の自然言語分類モデルを試す</div>
+<div class="l-content--detail p-lesson">
+さきほど作成したNLCのモデルを使って、自然言語の分類を試してみましょう。
+モデルの作成時と同様にWatson SDKのNaturalLanguageClassifierV1オブジェクトを作成します。usernameとpasswordは、モデルの作成時に指定したものと同じNLCサービス資格情報を使用します。
+<h4>1つの文章を分類する</h4>
+1つの文章を分類する場合は、classify()を使用します。
+<pre><code class="python hljs">
+  result = nlc.classify(classifier_id, <span class="hljs-string">'ランチにオススメのお店'</span>)
+  print(json.dumps(result, indent=<span class="hljs-number">2</span>, ensure_ascii=<span class="hljs-keyword">False</span>))
+</code></pre>
+このような結果が出力されます。結果はJSONデータであり、top_classの値が分類結果のラベルです。また、classesには他のラベルも含めた分類結果の詳細がセットされています。confidenceの値はそのラベルとして分類することの確信度を0〜1の値で示しており、その値が最も高くなったラベルがtop_classにセットされています。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/nlc_06.png" alt="" width="1610" />NLCを実プロジェクトなどで使用する際は、top_classを参照するだけでなく、confidenceの値も確認して、確信度が一定の値より高い場合だけ後続の処理で使用するといった制御を行うことが一般的です。NLCではWatsonがあまり確信を持てない状態でも何らかの分類を行います。その場合、確信度の値が低くなるので、Watsonが確信を持って分類できていないのなら、その結果は当てにならないだろうといった見方をする必要があります。
+<h4>複数の文章をまとめて分類する</h4>
+NLCでは、1つの文章を分類するだけでなく、classify_collection()を用いて複数の文章をまとめて分類することもできます。
+引数としてセットする複数の文章（collection）は、{'text': '分類したい文章'}という形のディクショナリ値のリストです。
+<pre><code class="python hljs">
+  collection = [
+  {<span class="hljs-string">'text'</span>: <span class="hljs-string">'写真撮影のスポットを教えて'</span>},
+  {<span class="hljs-string">'text'</span>: <span class="hljs-string">'お腹が空いた'</span>}
+  ]
+  result = nlc.classify_collection(classifier_id, collection)
+  print(json.dumps(result, indent=<span class="hljs-number">2</span>, ensure_ascii=<span class="hljs-keyword">False</span>))
+</code></pre>
+分類の結果はcollectionリストに、1つの文章を分類した場合と同様の値がセットされています。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/nlc_07.png" alt="" width="1272" />＜参考＞
+<ul>
+ 	<li><a href="https://console.bluemix.net/docs/services/natural-language-classifier/" target="_blank" rel="noopener noreferrer">Watson Natural Language Classifier</a></li>
+ 	<li><a href="https://www.ibm.com/watson/developercloud/natural-language-classifier/api/v1/python.html?python" target="_blank" rel="noopener noreferrer">Watson Natural Language Classifier API Reference</a></li>
+</ul>
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-2. Azure Machine Learningを活用した自然言語の分類</div>
+<div class="l-content--detail p-lesson"></div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-2-1. Azure MLで自然言語処理</div>
+<div class="l-content--detail p-lesson">
+前節ではWatsonのNLCを使って自然言語の分類を行いました。WatsonのようなコグニティブAPIのサービスを使うと、簡単に自然言語を分類することができますが、それがどのような技術で実現したのかは分かりません。本節では、Azure Machine Learning（ML）を使用して、機械学習によっていかに自然言語の分類が行われるのかを見ていくことにしましょう。
+Azure MLを使い始める方法は、下記のオリエンテーションを参考にしてください。
+<ul>
+ 	<li><a href="https://graspy.jp/lesson/5/chapter/30#sub_315" target="_blank" rel="noopener noreferrer">0-5-1. Azure Machine Learningを使う</a></li>
+</ul>
+<h4>自然言語の分類モデルを作る</h4>
+Azure MLで新しいExperimentを作成し、Saved Datasets＞Samples＞Wikipedia SP 500 Datasetsを画面中央のキャンバスにドラッグアンドドロップしてください。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/azureml_nlc_01.png" alt="" width="1092" />
+これは米国の代表的な株価指数であるS&amp;P 500で採用されている企業のWikipediaページから企業の説明をしている文章を抽出したものです。
+Visualizeメニューでデータの内容を表示してみると、Title（企業名）、Category（業種）、Text（説明）の3項目で構成されたデータセットであることが分かります。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/azureml_nlc_02.png" alt="" width="1383" />
+ここでは、このデータセットを用いて、説明文から業種を予測する分類モデルを作成します。
+まず、下図のようなフローを作成します。使用する学習アルゴリズムは、Machine Learning＞Initialize Model＞ClassificationにあるMulticlass Neural Networkにしました。このモデルで予測したいのはFinance（金融）やInformation Technology（情報技術）、Energy（エネルギー）といった業種を示すカテゴリーデータのため、Classificationに分類されるアルゴリズムを使用する必要があります。また、カテゴリーは3つ以上のためMulticlassに対応したものにしています。
+あとは、Machine Learning＞EvaluateにあるCross Validate Modelです。今回使用するデータは466件と少ないため、データをすべて用いて学習や検証が行える交差検証（Cross Validate）を行った方が良いでしょう。最後に、Machine Learning＞EvaluateにあるEvaluate Modelを追加します。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/Experiments_-_Microsoft_Azure_Machine_Learning_Studio-1.png" alt="" width="645" />
+Cross Validate Modelには「！」マークが表示されています。これは、ここで作成するモデルの目的変数が指定されていないからです。キャンバス上のCross Validate Modelをクリックすると画面右に表示されるPropertiesから、Label ColumnのLaunch column selectorボタンをクリックして、Category（業種）をSELECTED COLUMNとして選択します。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/azureml_nlc_14.png" alt="" width="1205" />
+ここまで作成した後で、画面下にあるRUNをクリックすると、機械学習が始まり、評価も行われます。
+実行が終わった後、Evaluate Modelの下のコネクタをクリックして、Visualizeで結果を見てみます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/Experiments_-_Microsoft_Azure_Machine_Learning_Studio-2.png" alt="" width="339" />
+これは、作成されたモデルの精度指標で、全体的な精度（Overall Accuracy）は0.13と低い数字です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/Experiments_-_Microsoft_Azure_Machine_Learning_Studio-3.png" alt="" width="679" />
+その下には、予測結果（Predicted Class）と答え（Acutual Class）のマトリクスが表示されています。Financials（金融）とConsumer Discretionary（一般消費財・サービス）のいずれかにしか分類されていないようです。これでは精度が低いのはやむを得ません。どうして、このようなことが起こったのでしょうか。それは、説明変数として用いた値（Text）が自然言語で、それをそのまま機械学習に用いたためです。
+本節では、自然言語を機械学習で用いるための方法を説明しつつ、このフローを改善していきます。
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-2-2. 自然言語を数値で表現する</div>
+<div class="l-content--detail p-lesson">
+前章でも見たように、機械学習で用いる説明変数は数値である必要があります。例えば、alfa-romeoやaudiといったカテゴリーデータはOne-Hot表現で数値化しました。
+<blockquote>nasdaq 100 component s p 500 component foundation founder location city apple campus 1 infinite loop street infinite loop cupertino california cupertino california location country united states u s locations 406 retail stores may 2013 area served worldwide key people ref tim cook ceo steve jobs fou...</blockquote>
+これは、この節で使用しているWikipedia SP 500 Datasetsのうち、Appleの説明（Text）です。このような文章を機械学習で用いるために数値化するには、どうすれば良いのでしょうか。
+<h4>Feature Hashing</h4>
+Azure MLでは、文章を数値化する方法としてFeature Hashing（特徴ハッシュ）や、Extract N-gram Features from Text（テキストからのN-gram特徴の抽出）といった方法が準備されています。ここでは、マイクロソフトリサーチが開発したVowpal Wabbitライブラリが活用されたFeature Hashingを用いることにします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/azureml_nlc_15.png" alt="" width="630" />
+前項で作成したフローを上図のように変更します。Feature Hashingは、Text Analyticsの配下にあります。また、Feature HashingのPropertiesのうち、Target column(s)は、下図のようにColumn SelectorでTextだけを選択するようにします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/azureml_nlc_16.png" alt="" width="1047" />
+ここまで進めた後で、画面下部のRUNをクリックして実行します。
+実行が終わったら、Feature Hashingの下にあるコネクタからVisualizeを開きます。下図のように列が3列から1027列に一気に増えます。増えた1024列分は、Text_Hashing_Feature_1やText_Hashing_Feature_2といった名前の列で、その値として24や10のような数値がセットされています。ここで増えた列の値が、Textの文章を数値で表現したデータなのです。（ただし、Azure MLのVisualizeでは100列分のデータしか表示しないため、Text_Hashing_Feature_97までしか見ることはできません。）
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/azureml_nlc_16-1.png" alt="" width="1112" />
+Feature HashingのPropertiesをもう一度見てみましょう。先ほど変更したTarget column(s)以外にも、2つのプロパティがあります。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/azureml_nlc_17.png" alt="" width="245" />
+まず、N-gramsは文章を分割する単位です。例えば、This is a penという文章があった場合、N-gramsの値が2ではThis is、is a、a penのように前後の2つの単語で文章を区切って分割します。1では単語ごと、3ではThis is a、is a penのように区切るわけです。この方法をN-gram法といいます。特に2つの単語で区切った場合はバイグラム、1つではユニグラム、3つではトリグラムといいます。
+Feature Hashingでは、まずN-gram法で文章を分割します。次に分割した文章がどの程度の頻度で全体の文章内に出現するかを数えていきます。例えばThis isというバイグラムは多くの文章に登場するかもしれません。一方で特殊な固有名詞のようなものは、全体の文章の中で1回しか登場しないかもしれません。そうして全体の文章の中で、それぞれの文章の特徴を数値として表現していきます。
+N-gram法で文章を分割した後、分割した単位（例えば、This is、is a）でハッシュ化を行います。Hash bitsizeプロパティは、ハッシュ化を行う際のビットサイズを指定します。全体の文章が少ない場合はHash bitsizeは小さな値ですみますが、全体の文章が大きい場合はHash bitsizeが小さいとハッシュの衝突が起きるため、Hash bitsizeを大きくした方が特徴をよく現せるということになります。その分、処理にかかる時間が長くなります。
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-2-3. 自然言語処理を行う場合の前処理</div>
+<div class="l-content--detail p-lesson">
+前節ではFeature Hashingについて説明しましたが、疑問を感じた方もいるかもしれません。それは、isやaという単語はほとんどの文章に登場するので、特徴を示してるとはいえないのではないかということです。これは正しい疑問で、機械学習で自然言語を用いる場合は、いきなりFeature Hasingなどを行うのではなく、前処理を行います。
+Azure MLでは、Text Analyticsの配下にPreprocess Textが準備されています。先ほどのisやaといった一般的な単語（ストップワードといいます）のほか、数字や特殊文字、重複している文字などの除去も合わせて行ってくれるので、それをフローに組み込みます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/azureml_nlc_18.png" alt="" width="587" />
+Preprocess Textの対象（Text column to clean）は、初期状態ではすべての文字列項目となっていますが、ここではTextだけで良いので、Column Selectorでそのように編集します。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/azureml_nlc_19.png" alt="" width="1028" />
+この状態で、Shiftキーを押下しながら、Wikipedia SP 500 DatasetsとPreprocess Textの2つを選択し、画面下部のRUN＞Run selectedをクリックして、選択したノードだけを実行します。
+実行したPreprocess Textの下のコネクタからVisualizeを行うと、Preprocessed Textという列が追加されていることが分かるでしょう。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/azureml_nlc_20.png" alt="" width="856" />
+次に、Feature HashingのTarget column(s)をTextからPreprocessed Textに変更します。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/azureml_nlc_21.png" alt="" width="1046" />
+ここまでの操作で前処理は終わりました。次項では、いよいよ再度の機械学習を行い、精度の比較をしてみることにしましょう。
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-2-4. 自然言語の分類モデルの完成</div>
+<div class="l-content--detail p-lesson">
+ここまで前処理や特徴ハッシュを進めてきたので、いよいよ機械学習と評価に進みたいところですが、もう1つやっておきたいことがあります。それは、説明変数を絞り込むことです。Text列は前処理によってPreprocessed Text列ができましたから説明変数からは外したいところですし、そのPreprocessed Text列も特徴ハッシュで一気に増えた数値項目の列になっていますから、不要です。
+そこで、フローにData Transformation＞Manipulation＞Select Columns in Datasetを追加します。また、できあがったモデルの評価結果を表示するため、Machine Learning＞Evaluate＞Evaluate Modelも追加しておきます。Cross Validate Modelの入出力およびEvaluate Modelの入力のコネクタは2つずつあり、左右で意味が異なりますので、接続先に注意してください。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/azureml_nlc_22.png" alt="" width="683" />
+Select Columns in DatasetのColumn Selectorを開き、WITH RULESで条件指定で列を選択するモードにして、Begin WithをALL COLUMNS（デフォルトは全列が選択されている状態）から、column nameを指定してExclude（除外）するようにして、除外する列としてTitle、Text、Preprocessed Textの3つを指定します。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/azureml_nlc_23.png" alt="" width="1043" />
+後は、全体をRUNして、機械学習と評価を行います。
+Evaluated Modelの下のコネクタからVisualizeを開くと、まず精度指標が表示されます。全体的な精度（Overall Accuracy）は0.60と出ており、決して高くはありませんが、この節の最初の結果と比べると圧倒的に精度が向上していることが分かります。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/azureml_nlc_24.png" alt="" width="352" />
+また、画面下部には目的変数であるCategory（Actual Class）と予測結果であるScored Label（Predicted Class）の表が表示されます。縦横の同じ値の交点が正しく予測された値ですが、Utilities（公益事業・85.7％）やEnergy（エネルギー・79.5％）など高い精度がでている業種もあるようです。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/azureml_nlc_25.png" alt="" width="732" />
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-3. Pythonを使ったデータスクレイピング</div>
+<div class="l-content--detail p-lesson"></div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-3-1. Pythonを使ったデータスクレイピング</div>
+<div class="l-content--detail p-lesson">
+自然言語を用いるような実務では、あらかじめ蓄積されたデータを用いたり、提供されたデータセットを用いるというだけではなく、WebサイトやSNSからデータを収集して、それを用いることもあります。このような方法をデータスクレイピングといいます。
+本節では、Pythonを用いてデータスクレイピングする方法を説明します。また、次節では収集したデータを用いて、Pythonで自然言語処理を行うことにします。
+データスクレイピングする方法は、大きく分けて2つあります。1つは公開されているAPIを用いてデータを取得する方法です。APIによる方法はTwitterやInstagramなどのSNSでは一般的で、APIを公開している企業の規約に基づいてデータを使用します。
+もう1つの方法は、公開されているWebサイトからデータを収集する方法です。これを特にWebスクレイピングといいます。APIを公開していないサービスやWebサイトでもデータを収集することができるため有用です。
+しかし、Webサイトの使用規約でWebスクレイピングを禁止していることがありますし、そうでなくてもWebスクレイピングの際に短時間に大量のアクセスを行うとWebサイトの動作を不安定にしたり、クラッキング行為と認識されてしまう危険性があります。そのため、Webサイトの使用規約を確認したり、Webサイトへのアクセスに一定のウェイト時間を設けてWebサーバへに負荷をかけ過ぎないようにするといった配慮が必要です。
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-3-2. APIを活用したJSONデータの取得</div>
+<div class="l-content--detail p-lesson">
+APIを活用したデータスクレイピングの代表例として、Twitter APIを用いたツイートデータの収集を行います。
+<h4>Twitterアプリケーションの作成</h4>
+Twitter APIを使用するためには、あらかじめTwitterのアカウントを作成し、Twitterアプリケーションの作成を行う必要があります。
+まず、Twitterにログインした状態で下記のURLにアクセスします。
+<a href="https://apps.twitter.com/app/new">https://apps.twitter.com/app/new</a>
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/twitter_api_01.png" alt="" width="2228" />
+それぞれ、下記のような値を入力します。
+<ul>
+ 	<li>Name：Twitterアプリケーションの名前（他で使用されているNameは使用できません）</li>
+ 	<li>Description：Twitterアプリケーションの説明</li>
+ 	<li>Website：Twitterアプリケーションを動作させるWebサイト（適当なURLで構いませんが、自分でWebサイトを持っている場合はそのURLが良いでしょう。）</li>
+ 	<li>Callback URLs：空欄で構いません</li>
+ 	<li>Developer Agreement：規約に同意します（チェックを入れる）</li>
+</ul>
+最後に、Create your Twitter Applicationボタンをクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/twitter_api_02.png" alt="" width="2004" />
+Twitterアプリケーションの作成が完了すると、このような画面が表示されます。
+Twitter APIを使用するためには、以下の4つの値が必要です。
+<ul>
+ 	<li>Consumer Key</li>
+ 	<li>Consumer Secret</li>
+ 	<li>Access Token</li>
+ 	<li>Access Token Secret</li>
+</ul>
+Keys and Access Tokensタブを開くと、Consumer KeyとConsumer Secretが表示されます。Access TokenとAccess Token Secretは、このタブ内で下記の操作が必要です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/twitter_api_03.png" alt="" width="2000" />
+画面下部のToken Actionsから、Create my access tokenボタンをクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/twitter_api_04.png" alt="" width="2072" />
+このように、Access TokenとAccess Token Secretが発行されます。
+<h4>twitterモジュールのインストール</h4>
+Pythonでは<a href="https://github.com/sixohsix/twitter">twitterモジュール</a>をインストールすることで、簡単にTwitter APIの呼び出しを行うことができます。まずは、新規のNotebookを開き、twitterモジュールのインストールしましょう。
+<pre><code class="python hljs">
+  !pip install twitter
+</code></pre>
+<figure><img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/Twitter_Scraping.png" alt="" width="2006" /></figure>
+<h4>twitterモジュールを使ってツイートを検索</h4>
+Twitterモジュールでツイートを検索してみましょう。先ほど取得したConsumer Key、Consumer Secret、Access Token、Access Token Secretを使用して認証を行い、Twitterに接続します。
+<pre><code class="python hljs">
+  <span class="hljs-keyword">import</span> twitter
+  <span class="hljs-keyword">import</span> json
+  CONSUMER_KEY = <span class="hljs-string">"＜Consumer Key＞"</span>
+  CONSUMER_SECRET = <span class="hljs-string">"＜Consumer Secret＞"</span>
+  ACCESS_TOKEN = <span class="hljs-string">"＜Access Token＞"</span>
+  ACCESS_TOKEN_SECRET = <span class="hljs-string">"＜Access Token Secret＞"</span>
+  auth = twitter.OAuth(consumer_key=CONSUMER_KEY, consumer_secret=CONSUMER_SECRET, token=ACCESS_TOKEN, token_secret=ACCESS_TOKEN_SECRET)
+  t = twitter.Twitter(auth=auth)
+</code></pre>
+さらに、search.tweets()を使用し、キーワードでツイートを検索して取得します。ここでは、直近（result_type="recent"）の100件（count=100）を取得しました。
+取得結果はPythonのディクショナリとしてアクセスできるので、取得結果を表示してみましょう。
+<pre><code class="python hljs">
+  tweets = t.search.tweets(q=<span class="hljs-string">"＜ツイートを検索するキーワード＞"</span>, lang=<span class="hljs-string">"ja"</span>, result_type=<span class="hljs-string">"recent"</span>, count=<span class="hljs-number">100</span>)
+  print(json.dumps(tweets, indent=<span class="hljs-number">2</span>, ensure_ascii=<span class="hljs-keyword">False</span>))
+</code></pre>
+<figure><img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/Twitter_Scraping-1.png" alt="" width="2058" /></figure>
+<h4>ツイートをPandasで処理する</h4>
+取得したツイートをPandasで処理できるようにしてみます。取得結果は階層構造になっているので、そのままではPandasで扱うことはできません。そこで、text（ツイート内容）と、screen_name（ツイートしたユーザー）の2項目だけを取得してみましょう。
+<pre><code class="python hljs">
+  <span class="hljs-keyword">import</span> pandas <span class="hljs-keyword">as</span> pd
+  status_list = []
+  <span class="hljs-keyword">for</span> status <span class="hljs-keyword">in</span> tweets[<span class="hljs-string">"statuses"</span>]:
+      status_list.append({
+          <span class="hljs-string">"text"</span>: status[<span class="hljs-string">"text"</span>],
+          <span class="hljs-string">"screen_name"</span>: status[<span class="hljs-string">"user"</span>][<span class="hljs-string">"screen_name"</span>]
+      })
+  df = pd.DataFrame.from_dict(status_list)
+  df.head()
+</code></pre>
+このようなPandasのDataFrameを作ることができました。ここまで取得できれば、あとは公開されているデータセットと同様に、scikit-learnやTensorFlowといった機械学習のライブラリで使用することができるでしょう。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/Twitter_Scraping-2.png" alt="" width="1142" />
+＜参考＞
+<ul>
+ 	<li><a href="https://developer.twitter.com/en/docs" target="_blank" rel="noopener noreferrer">Twitter API Reference</a></li>
+ 	<li><a href="https://pypi.org/project/twitter/" target="_blank" rel="noopener noreferrer">Python Twitter Tools</a></li>
+ 	<li><a href="https://pandas.pydata.org/" target="_blank" rel="noopener noreferrer">Pandas</a></li>
+</ul>
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-3-3. HTMLデータの取得</div>
+<div class="l-content--detail p-lesson">
+Webサイトにある情報をスクレイピングするためには、以下のステップで進めます。
+<ol>
+ 	<li>必要な情報のあるWebページを特定する</li>
+ 	<li>WebページのHTMLの構造を調べる</li>
+ 	<li>Pythonのurllibなどを使ってWebページのHTMLデータを取得する</li>
+ 	<li>BeautifulSoupなどを使ってHTMLデータを解析し、必要な情報を取得する</li>
+</ol>
+それでは順を追って説明することにしましょう。
+<h4>必要な情報のあるWebページを特定する</h4>
+Webスクレイピングのプログラミングを行う前に、下記の情報を整理する必要があります。
+<ul>
+ 	<li>Webスクレイピングの対象となるWebサイト</li>
+ 	<li>必要な情報があるWebページ</li>
+ 	<li>対象となるWebサイトの利用規約</li>
+</ul>
+まず、Webスクレイピングの対象となるWebサイトを特定します。例えば、株価や為替の情報が必要ならYahoo!ファイナンスや、日本経済新聞のWebサイトなどを使うことが考えられます。特定のジャンルのニュース（例えばiPhoneに関するニュース）が必要なら、そのジャンルに特化したニュースサイト（iPhone情報に特化したブログなど）や、全般的なジャンルを扱うニュースサイトの中から情報を絞り込む（ITmediaやASCIIなどのITニュースサイトでiPhoneのニュースを検索する）必要があるでしょう。
+次に、必要な情報がWebサイトの中のどこにあるかを特定します。多くのWebサイトはインデックスページと詳細ページで構成されていますから、まずインデックスページを取得して、そこで詳細ページのURLを特定し、さらに詳細ページを取得することになります。さらに、インデックスページは最新の10〜20件程度の詳細ページへのリンクしかないことが多く、それより古い詳細ページへのリンクは、ページネーション（1ページ目、2ページ目･･･など）を辿っていく必要もあるでしょう。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/scraping_01.png" alt="" width="490" />
+また、Webスクレイピングの対象となるWebサイトに利用規約が存在する場合は、その確認は欠かせません。Webスクレイピングによる情報の使用が禁止されていたり、自動での高頻度のWebページのリクエストが禁止されている場合があるためです。
+<h4>WebページのHTMLの構造を調べる</h4>
+必要な情報のあるWebページが特定できたら、次はそのWebページのHTMLデータを取得し、必要な情報がHTMLデータのどこにあるかを特定します。その際、h1やh2といった見出しタグ、divなどの要素をグループ化するタグや、要素のclassやidがどのように使われているかを確認します。Chromeでは「検証」を使うと良いでしょう。
+例えば、WordPressで構築されたあるブログの場合、インデックスページはこのような構成でした。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/scraping_02.png" alt="" width="927" />
+h1タグのclassがentry-titleになっているものが記事（詳細）ページのタイトルのようです。h1タグの中にはaタグがあり、そこに記事ページのURLが存在します。つまり、最初にこのインデックスページを取得し、h1タグの中にあるaタグを参照すれば、記事ページの取得ができるようです。
+このようにして、どのような順序でページを取得し、HTMLデータのどの部分を参照すれば良いかを設計していくわけです。
+ところで、Webサイト内のWebページの遷移や、WebページのHTMLの構造は、Webサイトのリニューアルなどによって変化します。そのため、一度調査してWebスクレイピングのプログラミングを行い、データが取得できるようになっても、Webサイトがリニューアルするとデータが取得できなくなることがあります。その際は、リニューアルによってどのような変化があったかを調査し、Webスクレイピングのプログラムを書き直す必要があります。
+次項では、こうした調査をもとに、WebページのHTMLデータを取得し、BeautifulSoupで必要な情報を取得していきます。
+<h4>＜次項に進む前に＞</h4>
+<ul>
+ 	<li>あなた自身が取得したい情報を決め、本項の手順で調査を行ってください。（次項の説明の都合上、ブログやニュースサイトなど、インデックスページと詳細ページが存在するサイトが良いでしょう。）</li>
+</ul>
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-3-4. PythonでWebスクレイピングのプログラムを開発する</div>
+<div class="l-content--detail p-lesson">
+PythonでWebスクレイピングを行う際は、urllibモジュールを使ってHTMLデータを取得し、BeautifulSoupモジュールでHTMLデータを解析するのが一般的です。
+BeautifulSoup（bs4）はWatson Studioの環境では標準でインストールされています。（urllibはPython3の標準モジュールです。）
+Notebookで下記のコードを実行して、エラーが出ないか確認しておきましょう。
+<pre><code class="python hljs">
+  <span class="hljs-keyword">from</span> urllib <span class="hljs-keyword">import</span> request
+  <span class="hljs-keyword">import</span> bs4
+</code></pre>
+urllibを使って、まずインデックスページのHTMLデータを取得します。ここでは、スクレイピング用のデモサイトを公開している<a href="http://toscrape.com/" target="_blank" rel="noopener noreferrer">toscrape.com</a>の書籍のオンラインショップを模したサイトを使用します。
+<pre><code class="python hljs">
+  url = <span class="hljs-string">'http://books.toscrape.com'</span>
+  html = request.urlopen(url).read()
+  print(html)
+</code></pre>
+例えば、下図のように取得できます。（bytes型で取得されます。）
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/scraping_-_IBM_Watson.png" alt="" width="1168" />
+<h4>BeautifulSoupでインデックスページを解析</h4>
+取得したHTMLデータはインデックスページなので、そこから詳細ページのURLを取得する必要があります。HTMLデータの解析にはBeautifulSoupを使用します。ここでは、詳細ページのURLとタイトル（aタグの内容）を取得し、表示してみましょう。解析する際にはパーサーを指定する必要があります（ここではlxmlを使用しています）が、その詳細は<a href="https://www.crummy.com/software/BeautifulSoup/bs4/doc/#installing-a-parser" target="_blank" rel="noopener noreferrer">BeautifulSoup公式サイトの比較表</a>を参考にしてください。
+<pre><code class="python hljs">
+  soup = bs4.BeautifulSoup(html, <span class="hljs-string">'lxml'</span>)
+  products = soup.find_all(<span class="hljs-string">'h3'</span>)
+  <span class="hljs-keyword">for</span> product <span class="hljs-keyword">in</span> products:
+      a = product.find(<span class="hljs-string">'a'</span>)
+      print(a.attrs[<span class="hljs-string">'href'</span>], a.text)
+</code></pre>
+ここでのコードはWebスクレイピングの対象とするWebサイトによって異なります。本項で対象としているサイトでは、インデックスページのh3タグの要素が詳細ページへのリンクになっていました。そのため、<a href="https://www.crummy.com/software/BeautifulSoup/bs4/doc/#find-all" target="_blank" rel="noopener noreferrer">soup.find_all()</a>の引数として、それを指定しています。
+取得したh3タグのリストをfor文で繰り返し処理し、h3タグ内にあるaタグを<a href="https://www.crummy.com/software/BeautifulSoup/bs4/doc/#find" target="_blank" rel="noopener noreferrer">find()</a>で取得して、そのhref属性の値（a.attrs['href']）と、aタグで囲まれたテキスト（a.text）を取得し、表示させています。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/books_2.png" alt="" width="783" />
+<h4>詳細ページの取得</h4>
+次に、詳細ページを取得します。まず、全体のコードを示します。
+<pre><code class="python hljs">
+  <span class="hljs-keyword">from</span> time <span class="hljs-keyword">import</span> sleep
+  <span class="hljs-keyword">for</span> product <span class="hljs-keyword">in</span> products:
+      a = product.find(<span class="hljs-string">'a'</span>)
+      print(a.attrs[<span class="hljs-string">'href'</span>], a.text)
+      detail_page = request.urlopen(<span class="hljs-string">'http://books.toscrape.com/'</span> + a.attrs[<span class="hljs-string">'href'</span>]).read()
+      detail = bs4.BeautifulSoup(detail_page, <span class="hljs-string">'lxml'</span>)
+      description = detail.find(id=<span class="hljs-string">'product_description'</span>).next_sibling.next_sibling
+      text = <span class="hljs-string">""</span>
+      <span class="hljs-keyword">for</span> script <span class="hljs-keyword">in</span> description.find_all(<span class="hljs-string">'script'</span>, src=<span class="hljs-keyword">False</span>):
+          script.decompose()
+      <span class="hljs-keyword">for</span> string <span class="hljs-keyword">in</span> description.find_all(text=<span class="hljs-keyword">True</span>):
+          <span class="hljs-keyword">if</span> string.strip():
+              text += string
+      print(text)
+      sleep(<span class="hljs-number">1</span>)
+</code></pre>
+1行目のimport文は、詳細ページを順次取得する間にスリープを挟んで、Webサーバに過負荷をかけないために入れています。スリープの指定は最後の行で行っており、1ページを取得する毎に1秒のスリープを指定しています。
+詳細ページの取得は、7行目（空行含む）から始めています。まず、インデックスページで取得したURL（a.attrs['href']）のHTMLデータを取得し、BeautifulSoupでの解析を始めます。
+今回の対象サイトでは、本の紹介文はidがproduct_descriptionの次にあるpタグです。BeautifulSoupでは兄弟要素をnext_siblingで取得できます。改行（?n）も次の要素に含まれるため、next_siblingを2つ重ねています。また、本文の中にはHTMLタグやJavaScriptコードが含まれているため、それを除外するようにしています。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/books_3.png" alt="" width="1010" />
+このように取得することができました。ここでは取得結果をprintしているだけですが、機械学習のデータセットとして活用するためには、CSVデータなどとしてファイルに保存する必要があります。
+＜参考＞
+<ul>
+ 	<li><a href="https://www.crummy.com/software/BeautifulSoup/bs4/doc/" target="_blank" rel="noopener noreferrer">Beautiful Soup Documentation</a></li>
+ 	<li><a href="https://docs.python.org/3/library/urllib.html" target="_blank" rel="noopener noreferrer">urllib（Python3）</a></li>
+</ul>
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-4. 自然言語処理</div>
+<div class="l-content--detail p-lesson"></div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-4-1. 形態素解析と分かち書き</div>
+<div class="l-content--detail p-lesson">
+本章の第2節でAzure MLによる自然言語処理を行った際、N-gramという方法を用いました。N-gramとは下記のようなものでした。
+<blockquote>N-gramは文章を分割する単位です。例えば、This is a penという文章があった場合、N-gramの値が2ではThis is、is a、a penのように前後の2つの単語で文章を区切って分割します。1では単語ごと、3ではThis is a、is a penのように区切るわけです。この方法をN-gram法といいます。特に2つの単語で区切った場合はバイグラム、1つではユニグラム、3つではトリグラムといいます。</blockquote>
+この方法は、英語のように単語と単語の間がスペースで分かち書きされている場合に適用できます。しかし、日本語はそのような言語ではありません。分かち書きされることはなく、単語と単語が連続しています。そのため、日本語はそのままではN-gramを行うことができません。後で説明するように、自然言語処理の方法はN-gramだけではありませんが、何を使うにしても分かち書きされて、単語と単語の区切りが明確になっていることが必要です。
+<h4>Janomeモジュールを使う</h4>
+日本語の文章を分かち書きに変換するために、MeCabというモジュールが使用されることが一般的です。MeCabはオープンソースの形態素解析（文章を単語に区切り、それぞれの単語の品詞などを明確にする。自然言語を処理する上での必須技術）エンジンで、LinuxやMac、Windowsなど様々な環境で動作させることができますし、C言語をはじめとして様々なプログラミング言語から呼び出すこともできます。もちろん、Pythonから呼び出すことも可能です。
+しかし、MeCabはPythonから呼び出すためのモジュールをインストールする他に、MeCab本体のインストールも必要であり、Watson StudioのNotebookで使用することは簡単ではありません。そこで、Pythonモジュールのインストールだけで使用できる形態素解析エンジンであるJanomeを使うことにします。
+Janomeのインストールは他のPythonモジュールのインストールと同様に、pipコマンドで行います。
+<pre><code class="python hljs">
+  !pip install janome
+</code></pre>
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/janome.png" alt="" width="1066" />
+Janomeが正常にインストールできたか確認するために「すもももももももものうち」という文章を形態素解析してみましょう。
+<pre><code class="python hljs">
+  <span class="hljs-keyword">from</span> janome.tokenizer <span class="hljs-keyword">import</span> Tokenizer
+  tokenizer = Tokenizer()
+  tokens = tokenizer.tokenize(<span class="hljs-string">'すもももももももものうち'</span>)
+  <span class="hljs-keyword">for</span> token <span class="hljs-keyword">in</span> tokens:
+    print(token)
+</code></pre>
+実行結果はこのようなものになりました。「すもも」という名詞、次の「も」は助詞、その次の「もも」は名詞というように、単語を区切ることができ、さらに名詞や助詞といった品詞の情報も解析できています。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/janome-1.png" alt="" width="507" />
+また、分かち書きは下記のように行うことができます。
+<pre><code class="python hljs">
+  tokenizer = Tokenizer()
+  tokens = tokenizer.tokenize(<span class="hljs-string">'すもももももももものうち'</span>, wakati=<span class="hljs-keyword">True</span>)
+  print(tokens)
+  wakati = <span class="hljs-string">" "</span>.join(tokens)
+  print(wakati)
+</code></pre>
+tokenize()の引数としてwakati=Trueを指定すれば、単語のリストを得ることができます。あとは、リストのjoin()を使ってリストの要素を半角スペースでつなぎ、分かち書きの文字列ができあがります。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/janome-2.png" alt="" width="515" />
+＜参考＞
+<ul>
+ 	<li><a href="http://mocobeta.github.io/janome/" target="_blank" rel="noopener noreferrer">Janome</a></li>
+</ul>
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-4-2. TF-IDFとBag of Words（BoW）</div>
+<div class="l-content--detail p-lesson">
+Azure MLでの自然言語の演習では、Feature Hashingによって文章の特徴量を抽出したことを覚えているでしょうか。機械学習はデータを数値として扱うことで分類や回帰のモデルを作ることができます。Feature Hashingは、文章の特徴を数値化することで、文章を分類モデルを作成するための訓練データに変換します。
+ここでは、自然言語から特徴量を抽出する方法として、基本的な考え方を説明しておくことにしましょう。
+<h5>TF-IDF</h5>
+TF-IDFのTFはTerm Frequencyの略で、ある単語が文章内でどの程度出現するかの頻度を示します。文章の中である単語の出現頻度が高いなら、その単語は文章の中で重要だろうとみなすことができます。
+IDFは、ある単語が出てくる文章頻度の逆数です。多くの文章で出現するような単語は特徴量として使うにはそぐわないことを示します。数多くある文章の中で、ある文章にだけ頻出する単語があるならば、その単語こそ、文章の特徴を示すに相応しいというわけです。
+<h5>Bag of Words（BoW）</h5>
+一般に、文章中に出現する単語は、その前後の単語との関係を持っています。N-gramでは単語の前後のつながりに注目して、単語を2つずつ（バイグラム）、3つずつ（トリグラム）のように区切っていきます。しかし、BoWでは単語の出現順序を無視して、文章に単語が含まれているか否かや、単語の出現頻度だけを注目します。
+例えば「すもももももももものうち」という文章には、先ほどJanomeで解析したように「すもも（名詞）」、「もも（名詞）」、「も（助詞）」、「の（助詞）」、「うち（名詞）」という5個の単語が出現しています。出現頻度で見れば下記のようになります。
+<ul>
+ 	<li>すもも：1回</li>
+ 	<li>もも：2回</li>
+ 	<li>も：2回</li>
+ 	<li>の：1回</li>
+ 	<li>うち：1回</li>
+</ul>
+BoWでは、単語が登場するか否かをOne-Hot表現にしたり、出現頻度をベクトル化するといった方法で、自然言語を機械学習で扱えるようにするという考え方です。
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-4-3. Word2VecとDoc2Vec</div>
+<div class="l-content--detail p-lesson">
+自然言語を数値化して処理する方法として、最近よく用いられているのはWord2VecやDoc2Vecです。Word2Vecはグーグルの研究者であるトマス・ミコロフ氏が提案した文書に含まれる単語を数値化（ベクトル化）する手法です。Doc2VecはWord2Vecを発展させて、文書そのものを数値化（ベクトル化）できるという違いがあります。
+Word2VecやDoc2Vecは、GensimというPythonモジュールで簡単に使うことができます。ここでは、先ほど演習したJanomeでの形態素解析を組み合わせ、Word2Vecで類似単語の探索を行います。
+Gensimモジュールは下記のコードでインストールします。
+<pre><code class="python hljs">
+  !pip install gensim
+</code></pre>
+<figure><img src="https://writing.itprocollege.com/wp-content/uploads/2018/05/gensim.png" alt="" width="821" /></figure>
+<h4>青空文庫で夏目漱石の小説データを取得する</h4>
+まず、青空文庫のサイトで公開されている夏目漱石の小説データを取得します。ここでは「吾輩は猫である」（<a href="https://www.aozora.gr.jp/cards/000148/card789.html">https://www.aozora.gr.jp/cards/000148/card789.html</a>）を使うことにしましょう。
+<pre><code class="python hljs">
+  <span class="hljs-keyword">import</span> zipfile
+  <span class="hljs-keyword">import</span> requests
+  r = requests.get(<span class="hljs-string">'https://www.aozora.gr.jp/cards/000148/files/789_ruby_5639.zip'</span>)
+  <span class="hljs-keyword">with</span> open(<span class="hljs-string">'wagahai.zip'</span>, <span class="hljs-string">'wb'</span>) <span class="hljs-keyword">as</span> f:
+      f.write(r.content)
+  myzip = zipfile.ZipFile(<span class="hljs-string">'wagahai.zip'</span>)
+  myzip.extractall()
+  !ls wagahai*
+</code></pre>
+このコードで、青空文庫からテキストファイル形式の小説データをZIPファイルとして圧縮したものを取得し、展開しました。wagahaiwa_nekodearu.txtが小説データの本体です。（ローカルPCでも、<a href="https://www.aozora.gr.jp/cards/000148/card789.html" target="_blank" rel="noopener noreferrer">こちらのサイト</a>からダウンロードして小説データの本体を確認してみてください。）
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/08/wagahai.png" alt="" width="721" />
+<h4>小説データを名詞だけの分かち書きに変換する</h4>
+次にJanomeを使って分かち書きに変換します。今回は名詞だけに絞り込みを行った上で、ストップワードを除外しています。ストップワードとは、非常に多くの行に登場する名詞のことで、除外しなければモデルの精度を悪化させてしまいます。例えば「吾輩は猫である」において「（猫の）吾輩」は主人公で、非常に多く登場しますので、ストップワードとした方が良いわけです。ここでは、50行以上に登場する名詞はストップワードとしました。
+また、青空文庫のデータにはルビや入力者注があるため、正規表現を用いて除外します。
+最後に、訓練データはテキストファイルにする必要があるため、data.txtというファイルに保存します。
+<pre><code class="python hljs">
+<span class="hljs-keyword">from</span> janome.tokenizer <span class="hljs-keyword">import</span> Tokenizer
+<span class="hljs-keyword">from</span> janome.tokenizer <span class="hljs-keyword">import</span> Tokenizer
+<span class="hljs-keyword">import</span> codecs
+<span class="hljs-keyword">import</span> re
+tokenizer = Tokenizer()
+norm_dict = {}
+lines = []
+data = <span class="hljs-string">""</span>
+<span class="hljs-keyword">with</span> codecs.open(<span class="hljs-string">'wagahaiwa_nekodearu.txt'</span>, <span class="hljs-string">'r'</span>, encoding=<span class="hljs-string">'shift-jis'</span>, errors=<span class="hljs-string">'ignore'</span>) <span class="hljs-keyword">as</span> f:
+    i = <span class="hljs-number">0</span>
+    <span class="hljs-keyword">for</span> line <span class="hljs-keyword">in</span> f.readlines():
+        <span class="hljs-comment"># 25行目から1000行目まで読む（24行目まではタイトルやテキスト中に現れる記号の説明のため省略）</span>
+        i += <span class="hljs-number">1</span>
+        <span class="hljs-keyword">if</span> i &lt;  <span class="hljs-number">25</span>:
+            <span class="hljs-keyword">continue</span>
+        <span class="hljs-keyword">elif</span> i &gt; <span class="hljs-number">1000</span>:
+            <span class="hljs-keyword">break</span>
+        <span class="hljs-comment"># ルビを取り除く</span>
+        line = re.sub(<span class="hljs-string">r'《.*》'</span>, <span class="hljs-string">''</span>, line)
+        <span class="hljs-comment"># 入力者注を取り除く</span>
+        line = re.sub(<span class="hljs-string">r'［＃.*］'</span>, <span class="hljs-string">''</span>, line)
+        <span class="hljs-keyword">if</span> line == <span class="hljs-string">''</span>:
+            <span class="hljs-keyword">continue</span>
+        <span class="hljs-comment"># janomeで名詞を取得</span>
+        line_norms = []
+        tokens = tokenizer.tokenize(line)
+        <span class="hljs-keyword">for</span> token <span class="hljs-keyword">in</span> tokens:
+            <span class="hljs-keyword">if</span> <span class="hljs-string">'名詞'</span> <span class="hljs-keyword">in</span> token.part_of_speech:
+                norm = token.base_form
+                line_norms.append(norm)
+                <span class="hljs-keyword">if</span> norm <span class="hljs-keyword">in</span> norm_dict:
+                    norm_dict[norm] += <span class="hljs-number">1</span>
+                <span class="hljs-keyword">else</span>:
+                    norm_dict[norm] = <span class="hljs-number">1</span>
+        <span class="hljs-keyword">if</span> len(line_norms) &amp;lt; <span class="hljs-number">1</span>:
+            <span class="hljs-keyword">continue</span>
+        print(line_norms)
+        lines.append(line_norms)
+print(norm_dict)
+</code></pre>
+このように、各行の名詞が抜き取られる様子が表示されます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/08/word2vec_-_IBM_Watson.png" alt="" width="700" />
+続いて、ストップワードの処理を行います。
+<pre><code class="python hljs">
+  <span class="hljs-comment"># 50行以上に登場する名詞はストップワードにする</span>
+  stopwords = []
+  <span class="hljs-keyword">for</span> norm, count <span class="hljs-keyword">in</span> norm_dict.items():
+      <span class="hljs-keyword">if</span> count &gt;= <span class="hljs-number">50</span>:
+          stopwords.append(norm)
+  print(stopwords)
+  <span class="hljs-keyword">for</span> line <span class="hljs-keyword">in</span> lines:
+      <span class="hljs-comment"># line_normsからストップワードを除外する</span>
+      line_norms = []
+      <span class="hljs-keyword">for</span> norm <span class="hljs-keyword">in</span> line:
+          <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> norm <span class="hljs-keyword">in</span> stopwords:
+              line_norms.append(norm)
+      data += <span class="hljs-string">' '</span>.join(line_norms) + <span class="hljs-string">'?n'</span>
+  <span class="hljs-keyword">with</span> open(<span class="hljs-string">'data.txt'</span>, <span class="hljs-string">'w'</span>) <span class="hljs-keyword">as</span> f:
+      f.write(data)
+</code></pre>
+出力の最後にはストップワードとなった名詞が表示されます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/08/word2vec_-_IBM_Watson-1.png" alt="" width="906" />
+<h4>Word2Vecでモデルを作成</h4>
+訓練データの準備ができたので、Word2Vecでモデルを作成します。
+<pre><code class="python hljs">
+  <span class="hljs-keyword">from</span> gensim.models <span class="hljs-keyword">import</span> doc2vec
+  data = doc2vec.TaggedLineDocument(<span class="hljs-string">'data.txt'</span>)
+  model = doc2vec.Doc2Vec(data, vector_size=<span class="hljs-number">1000</span>, window=<span class="hljs-number">15</span>, min_count=<span class="hljs-number">5</span>, seed=<span class="hljs-number">0</span>)
+  model.save(<span class="hljs-string">'wagahai.model'</span>)
+  model.save_word2vec_format(<span class="hljs-string">'wagahai.w2vmodel'</span>)
+</code></pre>
+doc2Vec.Doc2Vec()のパラメータのうち、vector_sizeはベクトルの次元数です。次元数を大きくするほど文章の特徴を細かく分けることができますが、大きな値にしすぎると文章の共通点を見出せなくなるので注意が必要です。windowは前後どの程度の単語数を参照して学習するかを示します。min_countは指定した数値以下の回数しか出現しない単語を無視します。seed=0はDoc2Vecの内部で乱数を使用するため、同じ乱数を常に生成させることで同じモデルを作成させるようにしています。
+<h4>「迷亭」に類似した単語を探索する</h4>
+それでは、作成したモデルを使って「迷亭」に類似した単語を探索してみましょう。迷亭とは、猫の吾輩の飼い主である苦沙弥（くしゃみ）先生の友人で、たびたび苦沙弥先生をからかうために吾輩の住む家を訪れています。
+<pre><code class="python hljs">
+  word = <span class="hljs-string">'迷亭'</span>
+  <span class="hljs-keyword">for</span> similarity <span class="hljs-keyword">in</span> model.wv.most_similar(positive=word):
+    print(similarity[<span class="hljs-number">0</span>], similarity[<span class="hljs-number">1</span>])
+</code></pre>
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/08/word2vec_-_IBM_Watson-2.png" alt="" width="520" />
+やはり迷亭に「事件」はつきもののようです。何らかの事件を持ってきては苦沙弥先生をからかっています。また「歴史」や「本」については、苦沙弥先生の門下生である水島寒月なども含めて迷亭はそうした話をしているので、近い関係にある単語といえるでしょう。
+＜参考＞
+<ul>
+ 	<li><a href="http://mocobeta.github.io/janome/" target="_blank" rel="noopener noreferrer">Janome</a></li>
+ 	<li><a href="https://radimrehurek.com/gensim/models/doc2vec.html" target="_blank" rel="noopener noreferrer">Doc2Vec（gensim）</a></li>
+</ul>
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>2-5. 章末テスト</div>
+<div class="l-content--detail p-lesson">
+第4節を参考に、他の文書（例えば青空文庫の他の書籍データ）を使ってDoc2Vecモデルを作成し、下記のことを試してください。
+<ul>
+ 	<li>文書に含まれる単語を1つ選び、その類似単語を探索してください。（model.wv.most_similar()を使用する。）</li>
+</ul>
+</div>
+</div>

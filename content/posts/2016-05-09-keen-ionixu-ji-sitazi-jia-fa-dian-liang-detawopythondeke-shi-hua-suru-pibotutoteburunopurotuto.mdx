@@ -1,0 +1,134 @@
+---
+title: "Keen IOに蓄積した自家発電量データをPythonで可視化する: ピボットテーブルのプロット"
+description: "前回の続き。Keen IOから取得した自家発電量データでピボットテーブルを生成すると、以下のようになりました。In [24]: data_p.head(3)Ou..."
+tags:
+  - "keenio"
+  - "python"
+  - "プログラミング"
+  - "可視化"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-05-09T06:04:32.000Z
+author: takashi
+---
+
+
+<a href="http://blog.rinka-blossom.com/shi-jian-python-detasaiensuudemy-noli-jie-du-woshi-sutameni-zi-jia-fa-dian-detawoshi-tuteshi-jian-sitemiru/">前回</a>の続き。
+Keen IOから取得した自家発電量データでピボットテーブルを生成すると、以下のようになりました。
+<pre><code class="python">In [24]: data_p.head(3)
+Out[24]:
+label                     Amp Hours  Array Current  Array Voltage  ?
+timestamp
+2016-05-06T00:03:06.020Z    23811.1       1.994629      54.019775
+2016-05-06T00:13:06.221Z    23811.8       1.735840      53.349609
+2016-05-06T00:23:06.417Z    23812.6       2.321777      53.986816
+label                     Battery Voltage  Charge Current  ?
+timestamp
+2016-05-06T00:03:06.020Z        24.691772        4.606934
+2016-05-06T00:13:06.221Z        24.697266        4.064941
+2016-05-06T00:23:06.417Z        24.686279        5.280762
+label                     Heat Sink Temperature  Kilowatt Hours  ?
+timestamp
+2016-05-06T00:03:06.020Z                     29             382
+2016-05-06T00:13:06.221Z                     30             382
+2016-05-06T00:23:06.417Z                     30             382
+label                     Target Voltage
+timestamp
+2016-05-06T00:03:06.020Z       28.597412
+2016-05-06T00:13:06.221Z       28.597412
+2016-05-06T00:23:06.417Z       28.597412
+</code></pre>
+これを単純にグラフ化すると、以下のようになります。
+<pre><code class="python">In [36]: data_p.plot()
+In [37]: sns.plt.savefig("data_p_all.png")
+</code></pre>
+<img src="https://farm8.staticflickr.com/7554/26865669886_9e5bd4760e_z_d.jpg" alt="" />
+各データの単位が異なる上、indexにしたtimestampが単純なstringなので、見苦しい…。その上、もしindex間の時間の間隔が一定でない場合にも、時間軸を一定間隔としてプロットしてしまうので、ちょっとよろしくないです。
+ということで、まずはtimestampを何とかします。
+pandasにはDatetimeIndexという、datetimeのサブクラスが用意されています。
+<pre><code class="python">Init signature: pd.DatetimeIndex(self, /, *args, **kwargs)
+Docstring:
+Immutable ndarray of datetime64 data, represented internally as int64, and
+which can be boxed to Timestamp objects that are subclasses of datetime and
+carry metadata such as frequency information.
+</code></pre>
+DataFrameのindexオブジェクトに用意されているto_datetime()メソッドを呼んで、DatetimeIndex型データに変換します。
+<pre><code class="python">In [57]: data_p.index
+Out[57]:
+Index(['2016-05-06T00:03:06.020Z', '2016-05-06T00:13:06.221Z',
+       '2016-05-06T00:23:06.417Z', '2016-05-06T00:33:06.611Z',
+       '2016-05-06T00:43:06.838Z', '2016-05-06T00:53:07.010Z',
+       '2016-05-06T01:03:07.203Z', '2016-05-06T01:13:07.407Z',
+       '2016-05-06T01:23:10.778Z', '2016-05-06T01:33:07.798Z',
+       ...
+       '2016-05-08T19:44:26.963Z', '2016-05-08T19:54:27.169Z',
+       '2016-05-08T20:04:27.361Z', '2016-05-08T20:14:27.547Z',
+       '2016-05-08T20:24:27.748Z', '2016-05-08T20:34:27.958Z',
+       '2016-05-08T20:44:28.142Z', '2016-05-08T20:54:28.567Z',
+       '2016-05-08T21:14:28.744Z', '2016-05-08T21:24:28.943Z'],
+      dtype='object', name='timestamp', length=399)
+In [58]: data_p.index.to_datetime()
+Out[58]:
+DatetimeIndex(['2016-05-06 00:03:06.020000+00:00',
+               '2016-05-06 00:13:06.221000+00:00',
+               '2016-05-06 00:23:06.417000+00:00',
+               '2016-05-06 00:33:06.611000+00:00',
+               '2016-05-06 00:43:06.838000+00:00',
+               '2016-05-06 00:53:07.010000+00:00',
+               '2016-05-06 01:03:07.203000+00:00',
+               '2016-05-06 01:13:07.407000+00:00',
+               '2016-05-06 01:23:10.778000+00:00',
+               '2016-05-06 01:33:07.798000+00:00',
+               ...
+               '2016-05-08 19:44:26.963000+00:00',
+               '2016-05-08 19:54:27.169000+00:00',
+               '2016-05-08 20:04:27.361000+00:00',
+               '2016-05-08 20:14:27.547000+00:00',
+               '2016-05-08 20:24:27.748000+00:00',
+               '2016-05-08 20:34:27.958000+00:00',
+               '2016-05-08 20:44:28.142000+00:00',
+               '2016-05-08 20:54:28.567000+00:00',
+               '2016-05-08 21:14:28.744000+00:00',
+               '2016-05-08 21:24:28.943000+00:00'],
+              dtype='datetime64[ns, UTC]', length=399, freq=None)
+In [59]: data_p.index = data_p.index.to_datetime()
+In [60]: data_p.head(3)
+Out[60]:
+label                             Amp Hours  Array Current  Array Voltage  ?
+2016-05-06 00:03:06.020000+00:00    23811.1       1.994629      54.019775
+2016-05-06 00:13:06.221000+00:00    23811.8       1.735840      53.349609
+2016-05-06 00:23:06.417000+00:00    23812.6       2.321777      53.986816
+label                             Battery Voltage  Charge Current  ?
+2016-05-06 00:03:06.020000+00:00        24.691772        4.606934
+2016-05-06 00:13:06.221000+00:00        24.697266        4.064941
+2016-05-06 00:23:06.417000+00:00        24.686279        5.280762
+label                             Heat Sink Temperature  Kilowatt Hours  ?
+2016-05-06 00:03:06.020000+00:00                     29             382
+2016-05-06 00:13:06.221000+00:00                     30             382
+2016-05-06 00:23:06.417000+00:00                     30             382
+label                             Target Voltage
+2016-05-06 00:03:06.020000+00:00       28.597412
+2016-05-06 00:13:06.221000+00:00       28.597412
+2016-05-06 00:23:06.417000+00:00       28.597412
+</code></pre>
+これをプロットすると…
+<img src="https://farm8.staticflickr.com/7595/26308163564_ac6b8693a0_z_d.jpg" alt="" />
+横軸はいい感じになりましたが、相変わらずデータ毎の単位が違いすぎて、グラフから何も読み取れません。
+単位毎にデータを取り出してプロットします。まずは電圧値。
+<pre><code class="python">In [67]: data_p_v = data_p[[col for col in data_p.columns if "Voltage" in col]]
+In [68]: data_p_v.plot()
+In [69]: sns.plt.savefig("voltages.png")
+</code></pre>
+これをプロットすると…
+<img src="https://farm8.staticflickr.com/7374/26640926670_59868ee144_z_d.jpg" alt="" />
+ようやく見えてきました。Array Voltageは太陽光パネルの電圧、Battery Voltageは蓄電池の電圧、Target Voltageは蓄電池の電圧の目標値です。
+次に電流値。
+<pre><code class="python">In [70]: data_p_a = data_p[[col for col in data_p.columns if "Current" in col]]
+In [71]: data_p_a.plot()
+In [72]: sns.plt.savefig("currents.png")
+</code></pre>
+これをプロットすると…
+<img src="https://farm8.staticflickr.com/7294/26846182301_da694b85e1_z_d.jpg" alt="" />
+Array Currentは太陽光パネルがチャージコントローラに供給する電流量、Charge Currentはチャージコントローラが{Arrary Voltage}-{Battery Voltage}の電圧差分をMPPT方式で変換した分の電流を加算した値です。
+グラフにプロットするだけで<strong>解析</strong>していないので、今度は季節毎や年毎の傾向を見てみたりしたいですね。

@@ -1,0 +1,55 @@
+---
+title: "Zapier/IFTTTをあっさり超えたと噂のintegromatでgitlabとLINEを連携してみたところ、本当に最強だった話"
+description: "会社の内部課題管理にgitlabのチケットシステムを使うことにしたのだけど、関係者は非エンジニア比率が高く、コミュニケーションツールはslackよりLINEやメ..."
+tags:
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2018-05-12T08:52:13.000Z
+author: takashi
+---
+
+
+会社の内部課題管理にgitlabのチケットシステムを使うことにしたのだけど、関係者は非エンジニア比率が高く、コミュニケーションツールはslackよりLINEやメールがメイン。
+機能面でslackには劣るがメールよりはマシということでLINE継続することにして後から気づいたのだけど、LINE notifyは公式にはgitlabとの連携をサポートしていない様子。
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/27198614317/in/album-72157656738282903/" title="line.02"><img src="https://farm1.staticflickr.com/825/27198614317_37ecbbe2fa_z.jpg" width="640" height="393" alt="line.02"></a>
+ならIFTTTみたいな3rd partyサービスで連携しようとちょっとググったら、
+<blockquote class="twitter-tweet" data-lang="ja"><p lang="ja" dir="ltr"><a href="https://twitter.com/hashtag/gitlab?src=hash&amp;ref_src=twsrc%5Etfw">#gitlab</a> と <a href="https://twitter.com/hashtag/LINE?src=hash&amp;ref_src=twsrc%5Etfw">#LINE</a> の連携にIFTTTを使おうと調べてたら気になる記事を発見、試したところ本当に最強だった。<br />最強連携サービス「 <a href="https://twitter.com/hashtag/Integromat?src=hash&amp;ref_src=twsrc%5Etfw">#Integromat</a> 」がZapier/IFTTTをあっさり超えるラスボス感 <a href="https://t.co/kbjwXxYz69">https://t.co/kbjwXxYz69</a></p>&mdash; takashi ando (@takashi7ando) <a href="https://twitter.com/takashi7ando/status/995236968173731840?ref_src=twsrc%5Etfw">2018年5月12日</a></blockquote>
+
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/42068761031/in/album-72157656738282903/" title="line.00"><img src="https://farm1.staticflickr.com/827/42068761031_231d297f1f_z.jpg" width="640" height="403" alt="line.00"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/42068760961/in/album-72157656738282903/" title="line.01"><img src="https://farm1.staticflickr.com/976/42068760961_f191c9b89d_z.jpg" width="640" height="403" alt="line.01"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/41168662845/in/album-72157656738282903/" title="line.03"><img src="https://farm1.staticflickr.com/958/41168662845_db1354fba3_z.jpg" width="640" height="265" alt="line.03"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/41168662825/in/album-72157656738282903/" title="line.04"><img src="https://farm1.staticflickr.com/970/41168662825_1e02cf083c_z.jpg" width="640" height="509" alt="line.04"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/42068760771/in/album-72157656738282903/" title="line.05"><img src="https://farm1.staticflickr.com/979/42068760771_e1752e09e8_z.jpg" width="640" height="440" alt="line.05"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/27198614147/in/album-72157656738282903/" title="line.06"><img src="https://farm1.staticflickr.com/975/27198614147_8bf41cc2c1_z.jpg" width="640" height="440" alt="line.06"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/42024157752/in/album-72157656738282903/" title="gitlab.00"><img src="https://farm1.staticflickr.com/961/42024157752_ea74f7dbd2_z.jpg" width="640" height="273" alt="gitlab.00"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/42024157642/in/album-72157656738282903/" title="gitlab.01"><img src="https://farm1.staticflickr.com/947/42024157642_1bb1091d5b_z.jpg" width="640" height="461" alt="gitlab.01"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/42024157542/in/album-72157656738282903/" title="gitlab.02"><img src="https://farm1.staticflickr.com/946/42024157542_58084276b3_z.jpg" width="640" height="461" alt="gitlab.02"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/42024157442/in/album-72157656738282903/" title="gitlab.03"><img src="https://farm1.staticflickr.com/911/42024157442_a4176ce699_z.jpg" width="640" height="316" alt="gitlab.03"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/42024504102/in/album-72157656738282903/" title="integromat0"><img src="https://farm1.staticflickr.com/967/42024504102_43b2474f98_z.jpg" width="640" height="440" alt="integromat0"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/42024504192/in/album-72157656738282903/" title="integromat1"><img src="https://farm1.staticflickr.com/828/42024504192_0faa982b10_z.jpg" width="640" height="440" alt="integromat1"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/28196534508/in/album-72157656738282903/" title="integromat3"><img src="https://farm1.staticflickr.com/971/28196534508_138bdeaa3d_z.jpg" width="640" height="399" alt="integromat3"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/42024503982/in/album-72157656738282903/" title="integromat4"><img src="https://farm1.staticflickr.com/828/42024503982_fa1a1a239c_z.jpg" width="640" height="399" alt="integromat4"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/42024503852/in/album-72157656738282903/" title="integromat5"><img src="https://farm1.staticflickr.com/975/42024503852_2b2d34ddb7_z.jpg" width="640" height="399" alt="integromat5"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/28196535248/in/album-72157656738282903/" title="integromat6"><img src="https://farm1.staticflickr.com/972/28196535248_47ff8d4596_z.jpg" width="640" height="399" alt="integromat6"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/42024504632/in/album-72157656738282903/" title="integromat7"><img src="https://farm1.staticflickr.com/830/42024504632_b7ecfdbba3_z.jpg" width="640" height="399" alt="integromat7"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/28196535208/in/album-72157656738282903/" title="integromat9"><img src="https://farm1.staticflickr.com/831/28196535208_7f95e49254_z.jpg" width="640" height="399" alt="integromat9"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/42024504372/in/album-72157656738282903/" title="integromat10"><img src="https://farm1.staticflickr.com/949/42024504372_c3ca7c135e_z.jpg" width="640" height="399" alt="integromat10"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/42024504322/in/album-72157656738282903/" title="integromat11"><img src="https://farm1.staticflickr.com/966/42024504322_f0ac9c60ce_z.jpg" width="640" height="399" alt="integromat11"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/28196535648/in/album-72157656738282903/" title="integromat12"><img src="https://farm1.staticflickr.com/832/28196535648_f745ebc55b_z.jpg" width="640" height="399" alt="integromat12"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/42069164541/in/album-72157656738282903/" title="integromat13"><img src="https://farm1.staticflickr.com/973/42069164541_ca6d84e80a_z.jpg" width="640" height="399" alt="integromat13"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/28196535428/in/album-72157656738282903/" title="integromat14"><img src="https://farm1.staticflickr.com/969/28196535428_f57065b09f_z.jpg" width="640" height="399" alt="integromat14"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/28196535408/in/album-72157656738282903/" title="integromat15"><img src="https://farm1.staticflickr.com/959/28196535408_ca845e56d8_z.jpg" width="640" height="399" alt="integromat15"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/42024504502/in/album-72157656738282903/" title="integromat16"><img src="https://farm1.staticflickr.com/952/42024504502_163251dd11_z.jpg" width="640" height="399" alt="integromat16"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/42024504292/in/album-72157656738282903/" title="integromat17"><img src="https://farm1.staticflickr.com/830/42024504292_71e5939960_z.jpg" width="640" height="399" alt="integromat17"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/28196536158/in/album-72157656738282903/" title="integromat18"><img src="https://farm1.staticflickr.com/824/28196536158_46b1fa9a0b_z.jpg" width="640" height="399" alt="integromat18"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/27199034517/in/album-72157656738282903/" title="integromat19"><img src="https://farm1.staticflickr.com/903/27199034517_9fd2107442_z.jpg" width="640" height="399" alt="integromat19"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/42024504942/in/album-72157656738282903/" title="integromat20"><img src="https://farm1.staticflickr.com/823/42024504942_aeeae7615a_z.jpg" width="640" height="399" alt="integromat20"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/28196535768/in/album-72157656738282903/" title="integromat21"><img src="https://farm1.staticflickr.com/950/28196535768_f324a61a84_z.jpg" width="640" height="399" alt="integromat21"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/28196534678/in/album-72157656738282903/" title="integromat22"><img src="https://farm1.staticflickr.com/828/28196534678_281be2b2b7_z.jpg" width="640" height="399" alt="integromat22"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/28196536328/in/album-72157656738282903/" title="integromat23"><img src="https://farm1.staticflickr.com/827/28196536328_0663dd73a2_z.jpg" width="640" height="399" alt="integromat23"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/28196536258/in/album-72157656738282903/" title="integromat24"><img src="https://farm1.staticflickr.com/958/28196536258_1a125b89bd_z.jpg" width="640" height="399" alt="integromat24"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/28196535998/in/album-72157656738282903/" title="integromat25"><img src="https://farm1.staticflickr.com/947/28196535998_e083fd3952_z.jpg" width="640" height="411" alt="integromat25"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/28196535788/in/album-72157656738282903/" title="integromat26"><img src="https://farm1.staticflickr.com/974/28196535788_5e2d145524_z.jpg" width="465" height="504" alt="integromat26"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/28196535028/in/album-72157656738282903/" title="integromat27"><img src="https://farm1.staticflickr.com/973/28196535028_2c523479b6_z.jpg" width="640" height="399" alt="integromat27"></a>
+<a data-flickr-embed="true" href="https://www.flickr.com/photos/29110932@N07/28196534888/in/album-72157656738282903/" title="integromat28"><img src="https://farm1.staticflickr.com/982/28196534888_07fbef41bb_z.jpg" width="640" height="411" alt="integromat28"></a>

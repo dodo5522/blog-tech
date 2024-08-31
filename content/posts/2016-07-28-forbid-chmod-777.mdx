@@ -1,0 +1,43 @@
+---
+title: "chmod 777 禁止！"
+description: "何も考えずにchmod 777 ${some_file}するの、やめて本当にマジで。そのファイルの所有者やグループ設定、何の意味もなくなっちゃうでしょ！ 誰でも..."
+tags:
+  - "linux"
+  - "コマンド"
+  - "ツール"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-07-28T05:23:18.000Z
+author: takashi
+---
+
+
+何も考えずに<code>chmod 777 ${some_file}</code>するの、やめて本当にマジで。
+そのファイルの所有者やグループ設定、何の意味もなくなっちゃうでしょ！ 誰でも読み書き削除できちゃうじゃんか！
+というニュアンスが、拙い英語だとほぼ通じない。特に相手は強者インド人。
+自分：<strong>「この<code>sleep 10</code>は何のためにあるの？」</strong>
+インド人：<strong>「ああ、2秒くらい待てば良い？（言いながら<code>sleep 2</code>にチョチョイと修正）」</strong>
+自分：<strong>「修正する前に質問に答えなさい！」</strong>
+万事がこんな感じ。Don't set three seven! Any process accidentally write or remove the file!なんて言ってみたところでBut that's more convenient.と返されるだけ…。
+本当に必要な権限なんだったら、せめて<code>chmod a=rwx ${file}</code>にして。実行権を追加したいのなら、<code>chmod a+x ${file}</code>して。<code>man chmod</code>すれば詳しい使い方出てくるんだから。
+<pre><code class="bash">NAME
+     chmod -- change file modes or Access Control
+MODES
+     Modes may be absolute or symbolic.
+     For example, the absolute mode that permits read, write and execute by the owner, read and execute by group members,
+     read and execute by others, and no set-uid or set-gid behaviour is 755 (400+200+100+040+010+004+001).
+     The symbolic mode is described by the following grammar:
+           mode         ::= clause [, clause ...]
+           clause       ::= [who ...] [action ...] action
+           action       ::= op [perm ...]
+           who          ::= a | u | g | o
+           op           ::= + | - | =
+           perm         ::= r | s | t | w | x | X | u | g | o
+</code></pre>
+体系的に勉強するならLPICがお勧め。世界的なベンダー資格だから、探せば英語版もあると思います。
+こちらは教科書的な使い方がメイン。
+<div class="booklink-box"><div class="booklink-image"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2F4798141917%2Fref%3Dnosim" target="_blank" rel="noopener"><img src="http://ecx.images-amazon.com/images/I/518t5R3P6mL._SL160_.jpg" style="border: none" /></a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="booklink-info"><div class="booklink-name"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2F4798141917%2Fref%3Dnosim" target="_blank" rel="noopener">Linux教科書 LPICレベル1 Version4.0対応</a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"><div class="booklink-powered-date">posted with <a href="http://yomereba.com" rel="nofollow noopener" target="_blank">ヨメレバ</a></div></div><div class="booklink-detail">中島 能和 翔泳社 2015-06-16    </div><div class="booklink-link2"><div class="shoplinkamazon"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2F4798141917%2Fref%3Dnosim" target="_blank" rel="noopener">Amazon</a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="shoplinkkindle"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB01076Y8CC%2F" target="_blank" rel="noopener">Kindle</a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="shoplinkrakuten"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=56&amp;pc_id=56&amp;pl_id=637&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fbooks.rakuten.co.jp%2Frb%2F13215761%2F" target="_blank" rel="noopener">楽天ブックス</a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=56&amp;pc_id=56&amp;pl_id=637" width="1" height="1" style="border:none"></div>                                        </div></div><div class="booklink-footer"></div></div>
+教科書を読んでコマンドを一通り試したら、下記の練習問題を９割解けるようになるまで繰り返せば、LPIC level1試験は余裕で合格できて、コマンドのオプションにもある程度精通できて楽しいですよー。
+<div class="booklink-box"><div class="booklink-image"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2F4844339648%2Fref%3Dnosim" target="_blank" rel="noopener"><img src="http://ecx.images-amazon.com/images/I/51PSB8j0S2L._SL160_.jpg" style="border: none" /></a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="booklink-info"><div class="booklink-name"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2F4844339648%2Fref%3Dnosim" target="_blank" rel="noopener">(PDF版付)徹底攻略LPIC Level1問題集[Version 4.0]対応</a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"><div class="booklink-powered-date">posted with <a href="http://yomereba.com" rel="nofollow noopener" target="_blank">ヨメレバ</a></div></div><div class="booklink-detail">鳥谷部 昭寛,菖蒲 淳司 インプレス 2015-12-04    </div><div class="booklink-link2"><div class="shoplinkamazon"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2F4844339648%2Fref%3Dnosim" target="_blank" rel="noopener">Amazon</a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="shoplinkkindle"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB018I45YF0%2F" target="_blank" rel="noopener">Kindle</a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="shoplinkrakuten"><a href="http://c.af.moshimo.com/af/c/click?a_id=602830&amp;p_id=56&amp;pc_id=56&amp;pl_id=637&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fbooks.rakuten.co.jp%2Frb%2F13504558%2F" target="_blank" rel="noopener">楽天ブックス</a><img src="http://i.af.moshimo.com/af/i/impression?a_id=602830&amp;p_id=56&amp;pc_id=56&amp;pl_id=637" width="1" height="1" style="border:none"></div>                                     </div></div><div class="booklink-footer"></div></div>
+インド人の方にも勧めておこう…。

@@ -1,0 +1,76 @@
+---
+title: "How to make apache for ARM processor."
+description: "I needed to make apache with some configurations by myself, but I couldn't find ..."
+tags:
+  - "make"
+  - "ツール"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-10-22T17:06:41.000Z
+author: takashi
+---
+
+
+I needed to make apache with some configurations by myself, but I couldn't find how to make it for ARM processor... So I needed to search for the way by myself, and found it. Then I'll share that.
+<h1>How to do that?</h1>
+Very simple. Replace some lines with using <code>qemu-arm-static</code> on makefiles for apr and apache like the following sample.
+If you have a trouble of making apache for ARM, try this approach.
+<h2>makefile sample</h2>
+<pre><code class="makefile">HOST_PREFIX ?= x86_64-linux-gnu
+CROSS_PREFIX ?= arm-linux-gnueabihf
+LD_ROOT_PATH ?= /usr/local/$(CROSS_PREFIX)-4.8/$(CROSS_PREFIX)
+URL_APACHE  ?= http://ftp.kddilabs.jp/infosystems/apache/httpd/httpd-2.4.20.tar.gz
+URL_APR     ?= http://ftp.yz.yamagata-u.ac.jp/pub/network/apache/apr/apr-1.5.2.tar.gz
+URL_APRUTIL ?= http://ftp.yz.yamagata-u.ac.jp/pub/network/apache/apr/apr-util-1.5.4.tar.gz
+DIR_INSTALL ?= /var/tmp/apache
+DIR_APACHE   = $(basename $(basename $(notdir $(URL_APACHE))))
+DIR_APR      = $(DIR_APACHE)/srclib/apr
+DIR_APRUTIL  = $(DIR_APACHE)/srclib/apr-util
+$(DIR_APACHE)/Makefile:$(notdir $(URL_APACHE)) $(TARGET_OPENSSL) $(TARGET_EXPAT) $(TARGET_PCRE) $(TARGET_ZLIB)
+    @+$(MAKE) -s $(TARGET_APR_UTIL) $(TARGET_APR)
+    cd $(DIR_APACHE); ?
+        ./configure ... ?
+            --with-dbm=sdbm --with-berkeley-db=no ?
+            --with-gdbm=no --with-ndbm=no ?
+            --with-suexec-userdir=/usr ?
+            --with-ssl=$(DIR_INSTALL) ?
+            --with-expat=$(DIR_INSTALL) ?
+            --with-pcre=$(DIR_INSTALL) ?
+            --with-z=$(DIR_INSTALL) ?
+            --build=$(HOST_PREFIX) ?
+            --host=$(CROSS_PREFIX) ?
+            --target=$(CROSS_PREFIX)
+ifeq ($(findstring arm,$(CROSS_PREFIX)),arm)
+    cd $(DIR_APR); ?
+        cp -f Makefile Makefile.org; ?
+        sed -e 's;tools/gen_test_char &gt;;qemu-arm-static -L $(LD_ROOT_PATH)/libc tools/gen_test_char &gt;;g' ?
+        Makefile.org &gt; Makefile
+    cd $(DIR_APACHE); ?
+        cp -f server/Makefile server/Makefile.org; ?
+        sed -e 's;?./gen_test_char &gt; ;qemu-arm-static -L $(LD_ROOT_PATH)/libc ./gen_test_char &gt; ;g' server/Makefile.org &gt; server/Makefile; ?
+        cp -f support/Makefile support/Makefile.org; ?
+        sed -e 's;PROGRAM_DEPENDENCIES = ;PROGRAM_DEPENDENCIES = -pthread;g' support/Makefile.org &gt; support/Makefile
+endif
+</code></pre>
+<h2>What's this approach?</h2>
+Apache has some tools which should be run on host machine (x86) if cross-compiling, so the make rule of tools for host machine (x86) needs to be separated from lib/binary for target (ARM).
+On the other hand, my approach is very simple. All of the related files for apache is built for ARM, and some of tools which should be run on x86 are run with qemu.
+So you need to modify just a line on makefile for both apache and apr to use qemu-arm-static.
+<h2>zlib for ARM</h2>
+under writing..
+<h2>expat for ARM</h2>
+under writing..
+<h2>pcre for ARM</h2>
+under writing..
+<h2>SSL library for ARM</h2>
+under writing..
+<h2>fix pthread related errors</h2>
+I encountered some errors related to pthread. These errors didn't raised when making for x86...
+You can fix it by adding <code>-pthread</code> to <code>PROGRAM_DEPENDENCIES</code> on apache makefile like following.
+<pre><code class="makefile">    cd $(DIR_APACHE); ?
+        cp -f server/Makefile server/Makefile.org; ?
+        sed -e 's;?./gen_test_char &gt; ;qemu-arm-static -L $(LD_ROOT_PATH)/libc ./gen_test_char &gt; ;g' server/Makefile.org &gt; server/Makefile; ?
+        cp -f support/Makefile support/Makefile.org; ?
+        sed -e 's;PROGRAM_DEPENDENCIES = ;PROGRAM_DEPENDENCIES = -pthread;g' support/Makefile.org &gt; support/Makefile
+</code></pre>
