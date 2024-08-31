@@ -1,0 +1,135 @@
+---
+title: "Ubuntu server 14.04.5 → 16.04.3 アップグレード失敗で途方に暮れる → ufwのバグ回避対応であっさり解決＼(^o^)／"
+description: "[自作サーバ](http://tech.uribou.tokyo/recommend-diy-server-description/)のUbuntu serve..."
+tags:
+  - "ubuntu"
+  - "サーバ"
+  - "ノウハウ"
+  - "失敗"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2017-08-23T21:56:56.000Z
+author: takashi
+---
+
+
+
+[自作サーバ](http://tech.uribou.tokyo/recommend-diy-server-description/)のUbuntu serverが`14.04.5`と古いので、重い腰を上げてアップグレードすることにしました。
+詳細は省きますが、`apt`を実行しまくった後に、決死の思いで`sudo do-release-upgrade`を実行します。
+## 恐れていたエラー発生
+…すると、なにやらエラーが発生。（実際はもっと大量のエラーを吐いたんですが、最終的に解決に寄与したログのみ以下に示します）
+```
+処理中にエラーが発生しました:
+ hostname
+ udev
+ apache2
+ grub-common
+ grub2-common
+ grub-pc-bin
+ grub-pc
+ plymouth
+ mountall
+ initscripts
+ ifupdown
+ dbus
+ upstart
+ friendly-recovery
+ plymouth-theme-ubuntu-text
+ ufw
+ apport
+ rpcbind
+ nfs-common
+ nfs-kernel-server
+ nginx-common
+ nginx-core
+ nginx
+ openssh-server
+ unattended-upgrades
+ pcscd
+ grub-gfxpayload-lists
+E: Sub-process /usr/bin/dpkg returned an error code (1)
+パッケージをインストールできませんでした。復旧を試みています:
+ufw (0.35-0ubuntu2) を設定しています ...
+mv: '/lib/ufw/user.rules' と '/etc/ufw/user.rules' は同じファイルです
+dpkg: パッケージ ufw の処理中にエラーが発生しました (--configure):
+ サブプロセス インストール済みの post-installation スクリプト はエラー終了ステータス 1 を返しました
+```
+頭から一つ一つ`sudo aptitude install xxx`して解決策を探りました。
+`hostname`でエラーって…それでよく動いていられるな、と思いながら。
+* 参考サイト
+    * [Debian(Ubuntu) apt-get upgrade の「E: 未解決の依存関係です。」ではまったら](https://server-setting.info/debian/apt-get-upgrade-error-loop.html)
+## パッケージインストール処理を止めていた犯人を特定
+犯人は [UFW](https://help.ubuntu.com/community/UFW) でした。
+&gt; UFW - Uncomplicated Firewall
+The default firewall configuration tool for Ubuntu is ufw. Developed to ease iptables firewall configuration, ufw provides a user friendly way to create an IPv4 or IPv6 host-based firewall. By default UFW is disabled.
+地道に`aptitude`で確認作業を続けていると、ufwで「mv: '/lib/ufw/user.rules' と '/etc/ufw/user.rules' は同じファイルです」というログを発見！
+```bash
+[takashi@espresso:~]$ sudo aptitude install -f ufw
+以下の新規パッケージがインストールされます:
+  ufw
+0 個のパッケージを更新、 1 個を新たにインストール、 0 個を削除予定、796 個が更新されていない。
+アーカイブ 149 k バイト中 0  バイトを取得する必要があります。 展開後に 838 k バイトのディスク領域が新たに消費されます。
+Preconfiguring packages ...
+以前に未選択のパッケージ ufw を選択しています。
+(データベースを読み込んでいます ... 現在 199383 個のファイルとディレクトリがインストールされています。)
+.../ufw_0.35-0ubuntu2_all.deb を展開する準備をしています ...
+ufw (0.35-0ubuntu2) を展開しています...
+ureadahead (0.100.0-19) のトリガを処理しています ...
+man-db (2.6.7.1-1ubuntu1) のトリガを処理しています ...
+ufw (0.35-0ubuntu2) を設定しています ...
+mv: '/lib/ufw/user.rules' と '/etc/ufw/user.rules' は同じファイルです
+dpkg: パッケージ ufw の処理中にエラーが発生しました (--configure):
+ サブプロセス インストール済みの post-installation スクリプト はエラー終了ステータス 1 を返しました
+処理中にエラーが発生しました:
+ ufw
+```
+この問題はバグとして報告されてました。
+* [package ufw 0.35-0ubuntu2 failed to install/upgrade: subprocess installed post-installation script returned error exit status 1](https://bugs.launchpad.net/ubuntu/+source/ufw/+bug/1578032)
+&gt; No. *If* the /lib/ufw/user*.rules files are already symlinks to the files in /etc/ufw, then this is how you can resolve this:
+&gt;
+&gt; $ sudo rm -f /lib/ufw/user*.rules # remove the existing symlinks
+&gt; $ sudo mv /etc/ufw/user*.rules /lib/ufw # move your real user files back to /lib/ufw
+&gt; $ sudo apt-get -f install # let ufw perform its upgrade procedure and let apt finish whatever it was doing before
+上記の通りに回避策を実行した後に、`sudo apt-get upgrade`を実行すると…
+```
+（略）
+libgnome2-common (2.32.1-5ubuntu1) を設定しています ...
+libgnomevfs2-common (1:2.24.4-6.1ubuntu1) を設定しています ...
+libgnomevfs2-0:amd64 (1:2.24.4-6.1ubuntu1) を設定しています ...
+libgdk-pixbuf2.0-0:amd64 (2.32.2-1ubuntu1.2) のトリガを処理しています ...
+ureadahead (0.100.0-19) のトリガを処理しています ...
+libc-bin (2.23-0ubuntu9) のトリガを処理しています ...
+resolvconf (1.78ubuntu4) のトリガを処理しています ...
+ca-certificates (20160104ubuntu1) のトリガを処理しています ...
+Updating certificates in /etc/ssl/certs...
+0 added, 0 removed; done.
+Running hooks in /etc/ca-certificates/update.d...
+done.
+```
+<span class="bold-red">doneキター！！！</span>
+仕上げに、中断していた`sudo apt-get upgrade`を実行すると…
+```
+（略）
+Certificate added: OU=GlobalSign ECC Root CA - R4, O=GlobalSign, CN=GlobalSign
+Certificate added: OU=GlobalSign ECC Root CA - R5, O=GlobalSign, CN=GlobalSign
+Certificate added: C=US, O=IdenTrust, CN=IdenTrust Commercial Root CA 1
+Certificate added: C=US, O=IdenTrust, CN=IdenTrust Public Sector Root CA 1
+Certificate added: C=CH, O=WISeKey, OU=OISTE Foundation Endorsed, CN=OISTE WISeKey Global Root GB CA
+Certificate added: C=DE, O=Deutscher Sparkassen Verlag GmbH, OU=S-TRUST Certification Services, CN=S-TRUST Universal Root CA
+Certificate added: C=NL, O=Staat der Nederlanden, CN=Staat der Nederlanden EV Root CA
+Certificate added: C=NL, O=Staat der Nederlanden, CN=Staat der Nederlanden Root CA - G3
+Certificate added: C=TR, L=Ankara, O=TÜRKTRUST Bilgi İletişim ve Bilişim Güvenliği Hizmetleri A.Ş., CN=TÜRKTRUST Elektronik Sertifika Hizmet Sağlayıcısı H5
+Certificate added: C=TR, L=Ankara, O=TÜRKTRUST Bilgi İletişim ve Bilişim Güvenliği Hizmetleri A.Ş., CN=TÜRKTRUST Elektronik Sertifika Hizmet Sağlayıcısı H6
+Certificate added: C=US, S=New Jersey, L=Jersey City, O=The USERTRUST Network, CN=USERTrust ECC Certification Authority
+Certificate added: C=US, S=New Jersey, L=Jersey City, O=The USERTRUST Network, CN=USERTrust RSA Certification Authority
+173 new root certificates were added to your trust store.
+Import process completed.
+Done
+done.
+```
+<span class="bold-red">こちらもdoneキター！！！</span>
+無事、16.04.3 LTSへのアップグレードを果たしたのでした。
+## まとめ
+サーバ管理は地味な作業が多いけど、諦めないことが大事。
+サーバ管理に限った話じゃないか。

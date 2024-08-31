@@ -1,0 +1,73 @@
+---
+title: "GitHubにpush済みのpythonコードをCIしてみる。"
+description: "DIY太陽光発電システムの発電状況をグラフ化してチェックできるようにしていますが、背後では、Pythonというプログラミング言語で記述したソフトウェアが動いてい..."
+tags:
+  - "python"
+  - "プログラミング"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-02-20T06:16:41.000Z
+author: takashi
+---
+
+
+<a href="http://blog.rinka-blossom.com/how_to_make_diy_offgrid/">DIY太陽光発電システム</a>の発電状況をグラフ化してチェックできるようにしていますが、背後では、Pythonというプログラミング言語で記述したソフトウェアが動いています。
+<a href="https://pypi.python.org/pypi/tsmppt60-driver">PyPIに公開している</a>ので、ぜひ使ってやってください。こんな感じ↓で見つかります。
+<pre><code class="bash">$ pip search tsmppt60-driver
+tsmppt60-driver           - Python module to get status of your solar charge controller TS-MPPT-60.
+</code></pre>
+…事前に<a href="http://blog.rinka-blossom.com/tai-yang-guang-fa-dian-sisutemunoyao-tiyazikontororawoxuan-bu/">TS-MPPT-60</a>を入手する必要はありますが…。
+PyPIで公開するに当たって、さすがにテストは真面目に書かないとまずかろうと思い、unittestやdoctest、nose、MiniMockを使ってみました。
+個別の詳細はまた今度に回して、今回はCI（Continuous Integration）、継続的インテグレーションネタです。
+有名なCIツールにJenkinsがありますが、今回作ったtsmppt60-driverはgithubにOSSとしてpushしてあるので、流行りの<a href="https://travis-ci.org">TravisCI</a>を使わせて頂きました。
+TravisCIを使うに当たって、全体の流れは以下のような感じでになります。
+<ol>
+<li>TravisCIアカウント登録（GitHubアカウントとの連携可能）</li>
+<li>TravisCIのWeb設定画面上で、CI対象のGitHubリポジトリを選択</li>
+<li>TravisCIのヘルプに従って設定した.travis.ymlファイルをGitHubリポジトリに追加</li>
+</ol>
+githubアカウントを持っていれば、ブラウザ上で簡単なGUI操作のみで、githubへのpushをhookして自動ビルド＆テストしてくれる上、<a href="https://travis-ci.org/dodo5522/tsmppt60_driver"><img src="https://travis-ci.org/dodo5522/tsmppt60_driver.svg" alt="Build Status" /></a>のようなバッジをREADMEに表示することもできます。
+その設定は、以下のようにとても簡単です。
+まずは<a href="https://travis-ci.org">TravisCI</a>に飛び、Sign In With GitHubでログインします。
+<img src="https://farm2.staticflickr.com/1683/24018710732_dd04f20cd2_z_d.jpg" alt="" />
+すると、すでにGitHubとの連携が完了しているので、CIしたいリポジトリのスイッチをONにします。
+以下の例ではhome-automationリポジトリのCIをONしています。
+<img src="https://farm6.staticflickr.com/5804/23498590394_75ab8d395d_z_d.jpg" alt="" />
+上の画像のギアマークをクリックすると、詳細な設定やビルド履歴を参照することができます。
+多分、デフォルトでpushをトリガーにビルドする設定になっていると思います。
+<img src="https://farm6.staticflickr.com/5634/23759022829_dfae5a669a_z_d.jpg" alt="" />
+あとは<a href="https://docs.travis-ci.com/user/languages/python">TravisCIのヘルプ</a>に従って設定した.travis.ymlファイルをGitHubリポジトリに追加、pushするだけです。
+tsmppt60-driverはpythonパッケージなので、以下のようにpython向けの設定になります。
+<pre><code class="ruby">language: python
+python:
+  - "2.7"
+  - "3.2"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  # does not have headers provided, please ask https://launchpad.net/~pypy/+archive/ppa
+  # maintainers to fix their pypy-dev package.
+  - "pypy"
+# command to install dependencies
+install:
+  - pip install .
+  - pip install -r requirements.txt -r test-requirements.txt
+# command to run tests
+script: nosetests
+</code></pre>
+Pythonの主要バージョン、最新バージョンは一通り押さえておき、ビルド、テスト前に必要なパッケージをpip installするようにしています。
+requirements.txtはtsmppt60-driverが動作するのに必要な依存パッケージが、test-requirements.txtにはテスト実行するのに必要な依存パッケージが記載されています。
+<pre><code class="bash">$ cat requirements.txt
+requests&gt;=2.8.0
+$ cat test-requirements.txt
+MiniMock&gt;=1.2.8
+nose
+coverage
+</code></pre>
+これらの.travis.yml, requirements.txt, test-requirements.txtをtsmppt60-driverリポジトリのルートに置いてgit add/commit/pushすると、以下のように結果が表示されます。
+<img src="https://farm2.staticflickr.com/1678/24127272595_9b76e39601_z_d.jpg" alt="" />
+ビルドやテストに成功し続けている間は何も通知してくれませんが、一旦失敗するとJenkinsのようにFailした旨をメールで通知してくれます。
+GitHubのREADMEにビルドステータスのバッジを表示する方法も<a href="https://docs.travis-ci.com/user/status-images/">TravisCIのヘルプ</a>に載っています。
+privateリポジトリのビルドステータス表示には、バッジへのURLにセキュリティトークンが含まれるので注意、とありますが、今回のリポジトリはpublic扱いなので問題ありません。
+これでテスト環境は整ったので、次は<a href="http://blog.rinka-blossom.com/githubnipushji-minopythonkodowo/">テストコードのカバレッジ計測</a>に続きます。

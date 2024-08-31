@@ -1,0 +1,53 @@
+---
+title: "Udemyデータサイエンス講座のロジスティック回帰テーマは「不倫」。"
+description: "実践 Python データサイエンス、最後の方でscikit-learnを使って機械学習の基礎が学べます。これは面白い。今やっとロジスティック回帰なんですが、こ..."
+tags:
+  - "python"
+  - "udemy"
+  - "プログラミング"
+  - "可視化"
+  - "機械学習"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-06-04T06:41:08.000Z
+author: takashi
+---
+
+
+<a href="https://www.udemy.com/python-jp/learn/v4/overview">実践 Python データサイエンス</a>、最後の方でscikit-learnを使って機械学習の基礎が学べます。これは面白い。
+今やっとロジスティック回帰なんですが、ここに至るまでにこなしたのは株価解析や（これも面白かったけど）、アメリカ大統領選得票数の解析など、ちょっと堅いテーマが多かったのです。
+それがロジスティック回帰にきて、テーマはなんと、「不倫」。
+以下のようなデータセットを使ってLogisticRegressionモデルに食わせるわけですが、要するに以下のパラメータを与えれば、その人が不倫するかしないかの２値で予測結果が返っってくるというわけです。あくまで機械学習の学習用のテーマに過ぎないんですが…。
+<pre><code class="python">print(sm.datasets.fair.NOTE)
+::
+    Number of observations: 6366
+    Number of variables: 9
+    Variable name definitions:
+        rate_marriage   : How rate marriage, 1 = very poor, 2 = poor, 3 = fair,
+                        4 = good, 5 = very good
+        age             : Age
+        yrs_married     : No. years married. Interval approximations. See
+                        original paper for detailed explanation.
+        children        : No. children
+        religious       : How relgious, 1 = not, 2 = mildly, 3 = fairly,
+                        4 = strongly
+        educ            : Level of education, 9 = grade school, 12 = high
+                        school, 14 = some college, 16 = college graduate,
+                        17 = some graduate school, 20 = advanced degree
+        occupation      : 1 = student, 2 = farming, agriculture; semi-skilled,
+                        or unskilled worker; 3 = white-colloar; 4 = teacher
+                        counselor social worker, nurse; artist, writers;
+                        technician, skilled worker, 5 = managerial,
+                        administrative, business, 6 = professional with
+                        advanced degree
+        occupation_husb : Husband's occupation. Same as occupation.
+        affairs         : measure of time spent in extramarital affairs
+    See the original paper for more details.
+</code></pre>
+テスト用データで72%の信頼性ある予測が可能だって。本当かな。
+<pre><code class="python">metrics.accuracy_score(Y_test, pred)
+0.7129396984924623
+</code></pre>
+実際に嫁のデータを与えて試してみよう。
+その結果は次回。

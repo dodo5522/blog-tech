@@ -1,0 +1,58 @@
+---
+title: "Pythonで実行中のコードの情報を取得する方法。例えば関数名とか。"
+description: "テスト実装していて、ふと「今実行中の関数名を取得するにはどうするんだろう？」と思って調べてみると、いつもお世話になっているQiitaに投稿している人がいた。助か..."
+tags:
+  - "python"
+  - "プログラミング"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-07-15T22:17:42.000Z
+author: takashi
+---
+
+
+<br />
+テスト実装していて、ふと「今実行中の関数名を取得するにはどうするんだろう？」と思って調べてみると、いつもお世話になっているQiitaに投稿している人がいた。助かります。 m(._.)m
+<blockquote class="twitter-tweet" data-lang="ja"><p lang="ja" dir="ltr">Pythonネタ。実行中の関数・メソッド名を取得したい on <a href="https://twitter.com/Qiita">@Qiita</a> <a href="https://t.co/CJsM5lp2Uh">https://t.co/CJsM5lp2Uh</a></p>&mdash; takashi ando (@takashi7ando) <a href="https://twitter.com/takashi7ando/status/754127051234304000">2016年7月16日</a></blockquote>
+
+ちなみにPython2でも3でも同じ方法で取得できました。
+<pre><code class="python">&gt;&gt;&gt; def printFuncName():
+...     print sys._getframe().f_code.co_name
+...
+&gt;&gt;&gt; printFuncName()
+printFuncName
+</code></pre>
+ただ、さすがにこのコードは覚えにくいな・・・。sysモジュールのprivateな関数使ってるし・・・。
+ということで「frame」をキーワードに調べてみると、ちゃんと用意されていました。inspectモジュールを使って、もっとスマートに取得できるようです。
+<h1>inspectモジュールでスタック情報を参照する</h1>
+<strong><a href="http://docs.python.jp/2/library/inspect.html#inspect-stack">inspect: インタプリタスタック</a></strong>から引用します。ちなみに、Python3.5はまたちょっと違うようですが、少なくとも関数の名前のインデックスは同じです。
+<blockquote>
+  以下の関数には、戻り値として”フレームレコード”を返す関数があります。 “フレームレコード”は長さ6のタプルで、以下の値を格納しています: フレームオブジェクト、ファイル名、実行中の行番号、関数名、コンテキストのソース行のリスト、ソース行のリストにおける実行中の行のインデックス。
+</blockquote>
+組み込みでよくお目にかかるスタックフレームのPython版ですね。そして以下注釈あり。
+<blockquote>
+  フレームレコードの最初の要素などのフレームオブジェクトへの参照を保存すると、循環参照になってしまう場合があります。循環参照ができると、 Python の循環参照検出機能を有効にしていたとしても関連するオブジェクトが参照しているすべてのオブジェクトが解放されにくくなり、明示的に参照を削除しないとメモリ消費量が増大する恐れがあります。
+</blockquote>
+<h1>スタック情報から関数名を取得するサンプルコード</h1>
+ということで、取得したframeは別の変数に保持したりせず、さっさと必要な情報をもらって何もせず返すようにしましょう。
+<pre><code class="python">def hogeFunction():
+    f = inspect.currentframe()
+    return inspect.getframeinfo(f)[2]
+print(hogeFunction())
+</code></pre>
+上記のコードを実行すると、<code>hogeFunction</code>文字列が出力されます。この関数をそのまま使うと常にhogeFunctionが出力されちゃうので、<code>inspect.getframeinfo(inspect.currentframe())[2]</code>を見たいところに埋め込むのが良いと思います。
+ちなみに、getframeinfo()が返すタプルをそのまま出力すると<code>Traceback(filename='&lt;ipython-input-27-52b24ab92ea5&gt;', lineno=3, function='hogeFunction', code_context=['    return inspect.getframeinfo(f)?n'], index=0)</code>となります。
+<h1>おまけ</h1>
+inspectモジュールにはその他にも色々と便利そうな関数が用意されていますね。inspectが示す通り、テストや不具合解析なんかで便利に使えそうです。
+<pre><code>inspect.ismodule(object)(原文)
+オブジェクトがモジュールの場合真を返します。
+inspect.isclass(object)(原文)
+オブジェクトが組み込みか Python が生成したクラスの場合に真を返します。
+inspect.ismethod(object)(原文)
+オブジェクトがメソッドの場合真を返します。
+inspect.isfunction(object)(原文)
+オブジェクトが Python 関数(lambda 式で生成されたものを含む) の場合に真を返します。
+inspect.isgeneratorfunction(object)(原文)
+object が Python のジェネレータ関数の場合真を返します。
+</code></pre>

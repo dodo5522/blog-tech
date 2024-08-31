@@ -1,0 +1,704 @@
+---
+title: "5. コグニティブAPIを活用したアプリ開発"
+description: "5. コグニティブAPIを活用したアプリ開発5-1. Watson Conversation（チャットボット）5-1-1. Watson Assistant昨今..."
+tags:
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2019-02-24T23:54:45.000Z
+author: takashi
+---
+
+
+<h1 class="c-title--primary">5. コグニティブAPIを活用したアプリ開発</h1>
+<div class="l-content--detail p-lesson"></div>
+<div class="l-content--detail p-lesson">
+<div>5-1. Watson Conversation（チャットボット）</div>
+<div class="l-content--detail p-lesson"></div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>5-1-1. Watson Assistant</div>
+<div class="l-content--detail p-lesson">
+昨今、様々な分野でAIが実用化されていますが、よく聞く分野の一つはチャットボットでしょう。労働者人口の減少が叫ばれている社会情勢や、AIを実際に活用する際に最も取りかかりやすい技術であることなどが、その背景といえます。
+例えば、MicrosoftがLINEなどで提供している女子高生AI「りんな」は、その最たるものでしょう。ただ、りんなは、できるだけ会話を長引かせることを目的としており、その他の多くの企業が提供しているチャットボットとは趣が異なります。IBM Watsonのチャットボット開発用サービスであるWatson Assistantは、日本航空やオートバックスといった企業が採用し、チャットボットを公開しています。こうした一般企業のチャットボットは、ユーザーが何らかの問題を抱えた際に解決する手段として、例えばコールセンターに電話をしたり、サポート窓口にメールをしたりすることの代替として提供されています。つまり、会話を長引かせることよりも、できるだけスピーディーに問題を解決し、会話を終わらせることを目的としているのです。
+本章では、Watson Assistantを用いた、いわゆる問題解決型のチャットボットを開発することにしましょう。
+<h4>Watson Assistantの構造</h4>
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/DraggedImage.png" alt="" width="377" />
+何らかの店舗がチャットボットを提供することを考えてみましょう。ユーザーが「新宿にある店舗の場所を教えて欲しい」という問いかけをした場合、チャットボットはなんと回答すれば良いでしょうか。おそらく「新宿駅の近くで、住所は新宿区新宿･･･」といったものです。ユーザーの問いかけから、「店舗場所の照会」であることと、この店舗がチェーン店などで複数の場所に店舗を持っている場合は「新宿」という地名を読み取ることができれば、回答を準備することができます。
+Watson Assistantでは、「店舗場所の照会」といったユーザーの問いかけから読み取る意図をIntent、「新宿」といった地名のような情報をEntityと呼びます。
+こうしたIntentとEntityに、チャットボットが行うべき回答を組み合わせて、会話の流れをDialogとして作ります。
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>5-1-2. Watson Assistantの使用準備とWorkspaceの作成</div>
+<div class="l-content--detail p-lesson">
+Watson Assistantを使用するためには、IBM CloudのカタログからWatson Assistantをクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/watson_assistant.png" alt="" width="1152" />
+Watson Assistantのインスタンス作成画面が表示されたら「作成」をクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/Watson_Assistant_-_IBM_Cloud.png" alt="" width="1152" />
+Watson Assistantのインスタンス画面が表示されたら「ツールの起動」をクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/watoson_assistant.png" alt="" width="1160" />
+<h4>Workspaceの作成</h4>
+Watson Assistantでは、チャットボットをWorkspaceという単位で作成します。Workspaceタブを開き、Createボタンをクリックして、Workspaceの新規作成を行います。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant.png" alt="" width="1160" />
+ここでは店舗の照会などを行うチャットボットを想定し、ShopSiteBotという名前を付けてWorkspaceを作成します。使用する言語は、自動的にJapaneseが選択されているでしょう。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-1.png" alt="" width="1160" />
+<h4>Dialogの初期作成と会話</h4>
+Workspaceが開いたらDialogタブを開き、画面中央に表示されているCreateボタンをクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-2.png" alt="" width="1160" />
+「ようこそ」と「その他」というノードが追加されたDialogが自動作成されます。ノードはDialogが処理を行う単位です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-3.png" alt="" width="1160" />
+まずは会話を試してみることにしましょう。画面右上のTry itボタンをクリックすると、会話が始まります。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-4-2.png" alt="" width="1160" />
+このように、何を問いかけても「解釈できませんでした」と言われてしまいますが、会話は一応成立しています。ここから、IntentやDialogなどの追加を行い、きちんと会話できるチャットボットを育てていきます。
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>5-1-3. Intentを作る</div>
+<div class="l-content--detail p-lesson">
+Intentは問いかけの意図を認識します。Business編を受講した方はWatson NLC（Natural Language Classifier）の実習を行っていますが、それと似たような機能が組み込まれています。「営業時間を教えてください」、「いつから開いていますか」、「いつまで開いていますか」といった文章を「営業時間」というクラスで分類すれば、問いかけの意図が分かりますが、この「営業時間を教えてください」のような文章を訓練データ、「営業時間」を教師データとして自然言語分類のモデルを作成するのです。
+NLCでいう訓練データに相当する文章をWatson AssistantではUser Example、教師データに相当するクラスをIntentといいます。
+Intentを作成するには、WorkspaceのIntentsタブを開き、最初はAdd intentボタンをクリックします。
+Intent nameとして「営業時間」とクリックし、Create intentボタンをクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-5.png" alt="" width="1160" />
+Intentが作成され、User Exampleの追加が可能になります。「営業時間を教えてください」などの文章を入力し、Add exampleボタンをクリックします。同様に、いくつかのUser Exampleを追加していきましょう。最初は3〜4個程度の文章があれば充分です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-6.png" alt="" width="1160" />
+IntentとUser Exampleを追加した後で、画面右上のTry itをクリックし、会話を試そうとすると、下図のようにWatson is trainingと表示されていることがあります。Watson AssistantではWorkspaceに変更が加えられる度に自動的に学習が始まり、モデルの更新が行われます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-7.png" alt="" width="1154" />
+Watson is trainingの表示が消えた後で「営業時間はいつですか」と聞いてみましょう。チャットボットからの返答は相変わらず「解釈できませんでした」となっていますが、「営業時間はいつですか」という問いかけの下に「#営業時間」と表示されていることに注目してください。
+上手い回答はできませんでしたが、営業時間について問われているという問いかけの意図はきちんと認識できているのです。あとは、そうした問いかけが行われた場合に、どのような回答をすれば良いかを教えれば良いのです。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-8.png" alt="" width="1152" />
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>5-1-4. Dialogを作る：簡単な会話</div>
+<div class="l-content--detail p-lesson">
+私たちのチャットボットはまだ上手く回答できませんが、問いかけの意図は認識できるようになりました。次に、どのように回答すれば良いかを教えていくことにしましょう。
+WorkspaceのDialogタブを開き、既存の「ようこそ」ノードをクリックしてからAdd nodeボタンをクリックします。「ようこそ」ノードの下に新しいノードが追加されます。下図のように、If bot recognizes:に「#営業時間」、Then respond with:に「朝の10時から夜の8時までです」と入力します。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-9.png" alt="" width="1160" />
+Try itボタンをクリックして会話を試してみましょう。きちんと、回答が返ってくることが確認できるでしょう。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-10.png" alt="" width="1160" />
+<h4>ノードの構造</h4>
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/dialog_node.png" alt="" width="952" />
+Dialogのノードの構造について整理しておきます。If bot recognizedは、認識したIntentやEntityを用いて条件判定を行います。既定の条件として、welcomeは会話の最初、anything_elseは、ノードを上から順に判定して、どのノードの条件にも合致しない場合に実行されます。Dialogを初期作成した際に自動的に作成される2つのノードは、この2つです。
+Then respond withは、条件に合致した場合に、チャットボットがどのような回答を行うかを示します。その候補は複数準備することができ、複数の候補を順に使用する（sequential）かランダムに使用する（random）かを指定することができます。
+また、チャットボットが既存のFAQなどのナレッジデータベースをもとに回答する必要がある場合などは、Dialogにすべての回答を追加することは現実的ではありません。そこで、回答そのものは他システムと連携して取得し、Watson Assistantは会話の流れを制御することに専念することがあります。その場合は、Then respond withの中でJSONコードを記述し外部システムを呼び出すことができます。（<a href="https://graspy.jp/lesson/5/chapter/35#sub_384">5-3-2でWatson AssistantとDiscoveryの連携</a>を説明しています。）
+＜演習＞
+<ul>
+ 	<li>このチャットボットが店舗の場所についても回答できるようにしてください。店舗は1つ（チェーン店のように複数店舗は展開していない）として「新宿駅の近くにあります」と回答するようにしてください。</li>
+ 	<li>Intent名は「#店舗照会」にしてください。</li>
+</ul>
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>5-1-5. Entityの作成</div>
+<div class="l-content--detail p-lesson">
+ここまでに作成したチャットボットは一問一答の単純なものでした。では、予約をする場合はどのような会話になるでしょうか？少なくとも、来店日時と予約する人の名前を聞き出す必要があります。そのような会話を行う場合は、どのようなDialogを作成すれば良いのでしょうか。また、来店日時や人の名前はどのように認識して覚えておけば良いのでしょうか。
+まず、日時と人の名前を認識できるようにEntityを作成します。日時はWatson Assistantに組み込みの機能があるので、それを使います。
+WorkspaceのEntitiesタブを開き、さらにSystem Entitiesタブを開きます。
+日付は@sys-date、時刻は@sys-timeという組み込みEntityがあるので、それぞれOnにします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-11.png" alt="" width="1167" />
+次に人の名前を認識します。組み込みEntityは準備されていないのでMy Entitiesタブを開いて、Add entityをクリックし、独自のEntityを作成します。正規表現で下図のように設定します。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-12.png" alt="" width="1167" />
+Entity名として@contact-info、Entity Valueとしてnameを設定し、認識するパターンとして[私|僕|俺]?[の|は]?(名前は)?(.*?)(です|だ)?(よ)?$のようにしました。こうすると、例えば「私の名前は井上です」という文章から「井上」という名前の部分のみを抜き出すことができます。
+Entityは、Entity Valueとして、正規表現を使用するPatternsタイプと、値そのものを指定するSynonimsタイプがあります。Synonimsタイプは類義語を指定することもできます。例えば「ピザの商品名」というSynonimsタイプのEntityを作成した場合、「ジャーマン」というEntity Valueを作成し、その類義語として「ジャガイモのピザ」を追加するといったものです。この場合「ジャーマン」と「ジャガイモのピザ」のどちらでも、チャットボットは「ジャーマン」というEntity Valueを認識します。
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>5-1-6. Dialogを作る：複雑な会話</div>
+<div class="l-content--detail p-lesson">
+Entityの準備が終わったところで、Dialogに予約のノードを追加することにしましょう。
+先に「#予約」のIntentを追加した後で（Intentの追加はこれまでに説明したとおりです）、それに対応するDialogノードを追加していきます。
+これまでに作成した#営業時間または#店舗照会のノードの下に、#予約ノードを追加し、下図のように設定します。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-13.png" alt="" width="1167" />
+予約の際にはまず「いつの予約をお取りしますか？」と日時についての質問を返しました。チャットボットのユーザーはその回答をするはずなので、それを受けるノードは、#予約ノードの子ノードとして設定します。ノードの右にある○が縦に3つ並んでいるボタンでサブメニューを表示して、Add child nodeボタンをクリックすると子ノードを追加できます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-14.png" alt="" width="1167" />
+子ノードの設定を下図のように行います。If bot recognizes:では、@sys-dateと@sys-timeの両方のEntityを認識できた場合としました。@sys-dateを指定した後に「＋」ボタンをクリックすると2つ目の条件を指定することができるようになるので、そこに@sys-timeを指定します。また、この2つの値をAND条件で判定したいので、そのように指定します。
+次に、Then respond with:の右にあるサブメニューを開いて、Open context editorをクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-15.png" alt="" width="1167" />
+Context editorでは、Entityで認識した値などを変数にセットすることができます。ここでは、$date変数に@sys-dateで認識した値、$time変数に@sys-timeで認識した値をセットしました。（変数の追加は、Add variableリンクをクリックします。）
+さらに、And respond with:に「&lt;? $date ?&gt;の&lt;? $time ?&gt;ですね。お名前を教えてください。」とセットしました。このようにすると、$dateと$timeの2つの変数にEntityで認識した値をセットした後に、その値を使った文章を回答にすることができます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-16.png" alt="" width="1167" />
+Dialogの動作は、基本的にはノードの処理が終わった後に1階層目の先頭（welcomeノードの上）に戻ります。しかし、予約については子ノードで処理を継続したいので、そのように設定する必要があります。#予約ノードのサブメニューを表示し、Jump toをクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-17.png" alt="" width="1167" />
+子ノードである@sys-date and @sys-timeで処理させたいので、そのノードをクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-18.png" alt="" width="1167" />
+Wait for user inputを選択します。これは、#予約ノードで「いつの予約をお取りしますか？」のようにユーザーに追加の質問を投げかけているため、ユーザーからの回答を待ってから処理したいためです。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-19.png" alt="" width="1167" />
+ここまで進めたら会話を試してみましょう。日時がきちんと認識されていることが分かると思います。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-20.png" alt="" width="1167" />
+ところで、「いつの予約をお取りしますか？」とユーザーに問いかけたところで、ユーザーがきちんと回答してくれるかは分かりません。つまり、@sys-date and @sys-timeという子ノードの条件を満足しないことがあるということです。それに対応するため、下図のようにノードを追加します。
+If bot recognizes:は、@sys-date and @sys-timeに合致しない場合なのでanything_elseを指定します。また、このノードでの「予約の日時が認識できませんでした。日時を入力してください。」に対する回答を待って、再び@sys-date and @sys-timeの条件に合致するか判定したいので、Jump toをそのように指定します。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-21.png" alt="" width="1167" />
+次に、@sys-date and @sys-timeの子ノードを、下図のように追加します。
+If bot recognizes:は、@contact-infoというEntityのEntity Valueとしてnameが認識できた場合という意味で、@contact-info:nameを指定します。「:」はイコールを意味します。
+先ほどと同様にContext editorを開き、$nameの値として、@contact-info.groupsを指定します。正規表現を使って取得する値はgroupsで取得することができます。
+And respond with:にある&lt;? $name[2] ?&gt;は、Context editorで$nameにセットした@contact-info.groupsの値から「井上」のような名前にマッチする部分を指定しています。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-22.png" alt="" width="1167" />
+先ほどと同様に、@sys-date and @sys-timeノードから、@contact-info:nameノードへのJump toの指定、名前を認識できなかった場合のanything_elseノードとJump toの指定を行います。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-23.png" alt="" width="1167" />
+これで完成です。Try itをクリックして、会話を試してみましょう。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-24.png" alt="" width="1167" />
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>5-2. Watson Discovery（コグニティブ検索）</div>
+<div class="l-content--detail p-lesson"></div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>5-2-1. Discoveryとは何か</div>
+<div class="l-content--detail p-lesson">
+Watson Discoveryは、様々な文書を蓄積して検索するサービスです。全文検索データベースのような印象を受けますが、文書の中から感情やコンセプトといった様々な情報を抽出して検索条件に使ったり、自然言語で検索できるといった特徴があります。Watsonではこうした検索をコグニティブ検索と呼んでいます。
+Discoveryの構造を下図に示します。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/Discovery_structure.png" alt="" width="1362" />
+DiscoveryではJSON、PDF、Word、HTMLの文書を追加することができます。クローラーを使うとファイルサーバの内容などを自動で追加することもできます。PDF、Word、HTMLの文書は最初にJSONデータへの変換（Convert）が行われるので、実際にCollectionに蓄積されるのはJSONデータのみです。
+蓄積の前には、感情やコンセプトといった情報を抽出するエンリッチ（Enrich）と、複数のフォーマットの文書を追加した場合に項目名の統合などを行う正規化（Normalize）が行われます。
+Collectionに蓄積された文書を検索する際は、専用の検索言語であるDiscovery Query Language（DQL）を用いるほか、自然言語での検索を行うことも可能です。自然言語で検索を行う場合は、様々な自然言語での検索に対して、どの文書を返すのが妥当か、訓練データを作成して学習を行うことも可能です。
+また、Discoveryがエンリッチを行う際には、WatsonのNLU（Natural Language Understanding）や、Knowledge Studioといった他のサービスと連携させることもできます。
+<h4>Discoveryの使用準備</h4>
+Discoveryを使用するためには、IBM Cloudのカタログから「ディスカバリー」を選択します。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/catalog_watson.png" alt="" width="1234" />
+作成ボタンをクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/discovery.png" alt="" width="1234" />
+ツールの起動をクリックすると、Discoveryの管理画面が表示されます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/discovery-1.png" alt="" width="1234" />
+Discoveryの管理画面には、初期状態でWatson Discovery Newsが表示されます。Watson Discovery Newsは、主に英語で書かれたニュースが大量に登録されているもので、Discoveryの全ユーザーが使用することができます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/discovery-2.png" alt="" width="1234" />
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>5-2-2. Environmentの確認とCollectionの作成</div>
+<div class="l-content--detail p-lesson">
+Discoveryでは、自分のデータ（文書）はCollectionに蓄積していきます。CollectionはEnvironment上に作成する必要があります。ここでは、新しいNotebookを作成しPython SDKを使って、EnvironmentとCollectionを作成することにしましょう。
+<h4>Environmentの作成</h4>
+Collectionは書き込み可能のEnvironment上に作成します。Discoveryの管理画面で右上の歯車アイコンをクリックしてサブメニューを表示し、Create Environmentボタンをクリックします。（Create Environmentボタンが表示されない場合は、既にEnvironemntが作成されていますので、この操作は不要です。）
+list_environments()でEnvironmentの一覧を取得してみましょう。usernameとpasswordは、IBM Cloud上のDiscoveryの画面で参照できます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/service_credentials.png" alt="" width="2732" />
+<pre><code class="python hljs">
+  <span class="hljs-keyword">import</span> json
+  <span class="hljs-keyword">from</span> watson_developer_cloud <span class="hljs-keyword">import</span> DiscoveryV1
+  discovery = DiscoveryV1(version=<span class="hljs-string">'2018-03-15'</span>, username=<span class="hljs-string">'＜username＞'</span>, password=<span class="hljs-string">'＜password＞'</span>)
+  print(json.dumps(discovery.list_environments(), indent=<span class="hljs-number">2</span>))
+</code></pre>
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/Discovery_20180804_-_IBM_Watson.png" alt="" width="707" />
+Discoveryのインスタンス作成直後は、このようにread_only=trueのsystemという名前のEnvironmentが1つだけ存在しています。これは、Discoveryがデフォルトで提供しているWatson Discovery Newsという様々なニュースが蓄積されたCollectionを格納しているEnvironmentです。このEnvironmentには自分のデータを蓄積するCollectionは作成できません。
+create_environment()を使って、新規のEnvironmentを作成します。
+<pre><code class="python hljs">
+  environment = discovery.create_environment(name=<span class="hljs-string">'My Environment'</span>)
+  print(json.dumps(environment, indent=<span class="hljs-number">2</span>))
+</code></pre>
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/Discovery_20180804_-_IBM_Watson-1.png" alt="" width="610" />
+これでEnvironmentを作成できました。新規発行されたenvironment_idは、これから多用するので、変数にセットしておきましょう。
+<pre><code class="python hljs">
+  environment_id = <span class="hljs-string">'＜使用するenvironmentのenvironment_id＞'</span>
+</code></pre>
+list_collection()の引数にenvironment_idを指定してCollectionの一覧を取得します。
+<pre><code class="python hljs">
+  discovery.list_collections(environment_id)
+</code></pre>
+collectionsが空のリストが返ってきます。まだ、コレクションが作成されていないことが分かります。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/Discovery_-_IBM_Watson-1.png" alt="" width="319" />
+<h4>Collectionの作成</h4>
+create_collection()でCollectionを作成します。languageとしてjaを指定すると日本語のCollectionになります。
+<pre><code class="python hljs">
+  discovery.create_collection(environment_id, name=<span class="hljs-string">'＜コレクション名＞'</span>, language=<span class="hljs-string">'ja'</span>)
+</code></pre>
+<figure><img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/Discovery_-_IBM_Watson-2.png" alt="" width="588" /></figure>
+collection_idもこれから多用するため、変数にセットしておきましょう。
+<pre><code class="python hljs">
+  collection_id = <span class="hljs-string">'＜使用するcollectionのcollection_id＞'</span>
+</code></pre>
+Discoveryの管理画面を再読み込みすると、作成したCollectionが表示されます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Discovery_-_Manage_data.png" alt="" width="1050" />
+</div>
+<div class="c-course-learn c-course-learn--compleated"><a class="c-course-learn__button"><i class="material-icons">check_box</i>習得済み</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>5-2-3. Configurationの設定とDocumentの追加</div>
+<div class="l-content--detail p-lesson">
+Collectionに自分のデータを追加していきます。Discoveryでは、Collectionに蓄積する自分のデータのことをDocumentと呼びます。
+<h4>新宿区文化財オープンデータの準備</h4>
+ここでは、新宿区がオープンデータとして公開している文化財情報（<a href="http://ckan.odp.jig.jp/dataset/jp-tokyo-shinjuku-723-odp/resource/dba16a4d-6a72-4b20-94b6-2fb8fdeb4661" target="_blank" rel="noopener noreferrer">http://ckan.odp.jig.jp/dataset/jp-tokyo-shinjuku-723-odp/resource/dba16a4d-6a72-4b20-94b6-2fb8fdeb4661</a>）をDocumentとして使用することにしましょう。
+下記のコードでオープンデータをダウンロードし、Documentの登録に必要となる1件ごとに1つのJSONファイルを作成します。
+<pre><code class="python hljs">
+  <span class="hljs-keyword">import</span> os
+  <span class="hljs-keyword">import</span> requests
+  <span class="hljs-keyword">import</span> csv
+  <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> os.path.exists(<span class="hljs-string">'places'</span>):
+      os.mkdir(<span class="hljs-string">'places'</span>)
+  r = requests.get(<span class="hljs-string">'http://data.odp.jig.jp/viewcsv/jp/tokyo/shinjuku/723.csv'</span>)
+  <span class="hljs-keyword">with</span> open(<span class="hljs-string">'shinjuku.csv'</span>, <span class="hljs-string">'wb'</span>) <span class="hljs-keyword">as</span> f:
+      f.write(r.content)
+  <span class="hljs-keyword">with</span> open(<span class="hljs-string">'shinjuku.csv'</span>, <span class="hljs-string">'r'</span>) <span class="hljs-keyword">as</span> f:
+      data = csv.reader(f)
+      next(data)
+      i = <span class="hljs-number">1</span>
+      <span class="hljs-keyword">for</span> row <span class="hljs-keyword">in</span> data:
+          <span class="hljs-comment"># 説明文がない場合は対象外</span>
+          <span class="hljs-keyword">if</span> row[<span class="hljs-number">12</span>] == <span class="hljs-string">''</span>:
+              <span class="hljs-keyword">continue</span>
+          data = {
+              <span class="hljs-string">'no'</span>: i,
+              <span class="hljs-string">'name'</span>: row[<span class="hljs-number">0</span>],
+              <span class="hljs-string">'description'</span>: row[<span class="hljs-number">12</span>]
+          }
+          <span class="hljs-keyword">with</span> open(os.path.join(<span class="hljs-string">'places'</span>, <span class="hljs-string">'place-%s.json'</span> % str(i)), <span class="hljs-string">'w'</span>) <span class="hljs-keyword">as</span> f:
+              f.write(json.dumps(data, ensure_ascii=<span class="hljs-keyword">False</span>))
+          i += <span class="hljs-number">1</span>
+</code></pre>
+例えば、このようなJSONファイルになります。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/suehirotei.png" alt="" width="989" />
+<h4>Configurationの追加</h4>
+Collectionに追加するデータは作成できましたが、実際に追加する前に、Configurationを作成します。ConfigurationはCollectionの単位で設定するもので、主に追加されたデータをどのようにエンリッチするか（感情やコンセプトなどを抽出するか否か）を指定します。
+Discoveryの管理画面から、自分のコレクション（下図ではMy Collection）をクリックし、Configurationが表示されている部分にあるswitchをクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Discovery_-_Collection.png" alt="" width="1231" />
+既存のConfigurationを選択することもできますが、ここではCreate a new configurationをクリックして、新規に作成します。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Discovery_-_Collection-1.png" alt="" width="1231" />
+Configurationの名前を付けます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Discovery_-_Collection-2.png" alt="" width="1231" />
+Configurationの設定画面が表示されたら、Enrichタブを開きます。（おそらく、デフォルトでEnrichが開いています。）
+Configurationにはあらかじめtextフィールドの設定がありますが、今回は使用しないため、画面上のtextフィールドの部分にマウスカーソルを動かすと表示されるマイナスボタンをクリックして削除します。
+まず、これから追加されるDocumentのどのフィールドをエンリッチの対象にするかを指定します。今回は、descriptionフィールドが対象になるので、descriptionと入力し、自動で表示されるAdd: descriptionをクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Discovery_-_Configuration_-_Enrich-4.png" alt="" width="1366" />
+追加されたdescriptionフィールドのAdd enrichmentsをクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Discovery_-_Configuration_-_Enrich-7.png" alt="" width="1366" />
+Element Classification以外のエンリッチメントをAddボタンをクリックして追加します。（Element ClassificationはPDFを追加する場合でだけ有効なため、今回はJSONファイルなので外します。）
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Discovery_-_Configuration_-_Enrich-6.png" alt="" width="1366" />
+あとは、Apply &amp; Saveボタンをクリックします。
+<h4>CollectionにDocumentを追加</h4>
+再びNotebookに戻って、CollectionにDocumentを追加します。
+Discoveryでは（ライトプランの場合）同時に20件を超えるDocumentの追加処理を行うことができないので、get_collection()を使って処理中の件数を取得して適宜ウエイトを入れながら処理するようにします。
+<pre><code class="python hljs">
+  <span class="hljs-keyword">import</span> glob
+  <span class="hljs-keyword">from</span> time <span class="hljs-keyword">import</span> sleep
+  <span class="hljs-keyword">from</span> watson_developer_cloud <span class="hljs-keyword">import</span> DiscoveryV1
+  discovery = DiscoveryV1(version=<span class="hljs-string">'2018-03-15'</span>, username=<span class="hljs-string">'＜username＞'</span>, password=<span class="hljs-string">'＜password＞'</span>)
+  <span class="hljs-keyword">for</span> filepath <span class="hljs-keyword">in</span> glob.glob(<span class="hljs-string">'places/*.json'</span>):
+    <span class="hljs-comment"># 処理中が20件を超える場合は5秒待つ</span>
+    <span class="hljs-keyword">while</span> <span class="hljs-keyword">True</span>:
+      collection_status = discovery.get_collection(environment_id, collection_id)
+      <span class="hljs-keyword">if</span> collection_status[<span class="hljs-string">'document_counts'</span>][<span class="hljs-string">'processing'</span>] &gt; <span class="hljs-number">20</span>:
+        print(<span class="hljs-string">'wait...'</span>, collection_status[<span class="hljs-string">'document_counts'</span>][<span class="hljs-string">'processing'</span>])
+        sleep(<span class="hljs-number">5</span>)
+      <span class="hljs-keyword">else</span>:
+        <span class="hljs-keyword">break</span>
+    <span class="hljs-keyword">with</span> open(filepath, <span class="hljs-string">'r'</span>) <span class="hljs-keyword">as</span> f:
+      discovery.add_document(environment_id, collection_id, file=f)
+      print(filepath)
+</code></pre>
+Documentを追加している最中にCollectionの管理画面を表示すると、蓄積済みの文書数や、エンリッチの状況などを見ることができます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Discovery_-_Collection-4.png" alt="" width="1366" />
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>5-2-4. Query Builderでの検索</div>
+<div class="l-content--detail p-lesson">
+Documentの蓄積が終わったところで、Collectionを検索してみましょう。
+Collectionの管理画面からBuild Queriesを開きます。Search for documentsを展開してUse natural languageに自然言語の文章で検索します。例えば「落語の寄席」という文章を使って検索すると「末広亭」のデータが検索されました。たしかに末広亭では、毎日のように落語が演じられています。
+この結果を見ると、末広亭の説明文に含まれる北村銀太郎（末広亭の創業者）が人名（Person）であることや、落語協会（末広亭で落語を演じている団体の1つ）が組織（Organization）であるといったことを読み取っていることが分かります。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Discovery_-_Query_Builder-5.png" alt="" width="1366" />
+次に、Use the Discovery Query Languageを使います。
+FieldとしてDiscoveryがエンリッチした、<code class="hljs css"><span class="hljs-selector-tag">enriched_description</span><span class="hljs-selector-class">.concepts</span><span class="hljs-selector-class">.text</span></code>、Operatorにisを指定して、Valueのプルダウンを開くと、DiscoveryがすべてのDocumentから抽出したコンセプトが選択肢として表示されます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Discovery_-_Query_Builder-6.png" alt="" width="1366" />
+「神楽」、「節分」、「住宅」といったコンセプトが表示されています。この中から「神楽」を選択して検索してみましょう。
+画面右に表示される検索結果でJSONタブを開いてみると、鎧神社や中井御霊神社の文化財情報が表示されました。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Discovery_-_Query_Builder-4.png" alt="" width="1366" />
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>5-2-5. APIを用いた検索</div>
+<div class="l-content--detail p-lesson">
+次に、Notebookに戻ってAPIを使ったDiscoveryの検索を行います。
+まず、自然言語を用いた検索は下記のように行います。
+<pre><code class="python hljs">
+  discovery.query(environment_id, collection_id, natural_language_query=<span class="hljs-string">'＜検索する文章＞'</span>)
+</code></pre>
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/notebook_discovery.png" alt="" width="786" />
+DQLを用いる場合は、下記のとおりです。
+<pre><code class="python hljs">
+  discovery.query(environment_id, collection_id, query=<span class="hljs-string">'＜DQL＞'</span>)
+</code></pre>
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/notebook_discovery-1.png" alt="" width="868" />
+DQLは、Query Builderを使って検索を行うと、ブラウザ上で指定した検索条件がどのようなDQLになるか表示されるので、それを参考にすると良いでしょう。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Discovery_-_Query_Builder-7.png" alt="" width="1366" />
+次節ではWatson AssistantとDiscoveryを組み合わせてチャットボットを作ります。それを見越して、このようなコードを試してみましょう。
+<pre><code class="python hljs">
+  results = discovery.query(environment_id, collection_id, query=<span class="hljs-string">'enriched_description.concepts.text::"神楽"'</span>)
+  <span class="hljs-keyword">if</span> len(results[<span class="hljs-string">'results'</span>]) &gt; <span class="hljs-number">0</span>:
+      <span class="hljs-keyword">for</span> result <span class="hljs-keyword">in</span> results[<span class="hljs-string">'results'</span>]:
+          <span class="hljs-keyword">if</span> len(result[<span class="hljs-string">'enriched_description'</span>][<span class="hljs-string">'keywords'</span>]) &gt; <span class="hljs-number">0</span>:
+              name = result[<span class="hljs-string">'name'</span>]
+              description = result[<span class="hljs-string">'description'</span>]
+              <span class="hljs-keyword">break</span>
+  print(<span class="hljs-string">'%sについての情報があります。「%s」'</span> % (name, description))
+</code></pre>
+ここではConceptとして「神楽」を指定しましたが、これはチャットの内容に応じて変えていく前提です。このような表示が行われました。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/notebook_discovery-2.png" alt="" width="995" />
+新宿区の神楽に関する文化財が紹介されました。このような返答ができるチャットボットなら使い勝手が良さそうです。
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>5-3. LINEチャットボットの開発</div>
+<div class="l-content--detail p-lesson"></div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>5-3-1. LINEチャットボットの開発</div>
+<div class="l-content--detail p-lesson">
+本節では先ほど作成したDiscoveryのCollectionを使ったLINEチャットボットを作成します。Discoveryでは「新宿」というキーワードを含むツイートを収集し、それをCollectionに蓄積していますから、その情報をもとに、新宿に関する質問に回答できるチャットボットにしていきます。
+<h4>Watson Assistantでチャットボットの作成</h4>
+まず、Watson Assistantでチャットボットを作成し、そこにDiscoveryを接続するところから始めます。第1節でWatson Assistantの使用準備と、チャットボットの作り方は説明していますので、それを踏まえて下記のチャットボットを作成してください。
+今回はIntentは不要ですが、Entityを下図のように作成します。
+EntitiesタブのAdd entityボタンをクリックすると、Entityを作成することができます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-4.png" alt="" width="1407" />
+@地域Entityは、新宿、横浜といった地域を示します。今回のチャットボットでは新宿以外の地域を認識した場合は「その他」ノードに遷移させます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-1-1.png" alt="" width="1407" />
+@興味Entityは、チャットボットのユーザーが地域の何について知りたいかを認識します。DiscoveryのQuery Builderでenriched_status.concepts.textの選択肢を参照し、いくつかを追加します。（前節の解説を参考にしてください。）
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-25.png" alt="" width="1366" />
+次にDialogです。「ようこそ」と「その他」のノードは新規のDialogを作成すると自動で追加されますが、「ようこそ」のThen respond with:をチャットボットの内容に合わせて「こんにちは。どの地域情報が知りたいですか？」に変更しました。
+さらに、「@地域:新宿」ノードを作成します。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-3-2.png" alt="" width="1407" />
+「@地域:新宿」ノードの設定は、下図右のとおりです。If bot recognizes:は、@地域エンティティが新宿だった場合という意味で「@地域:新宿」とします。「:」はイコールを意味しています。
+また、「@地域:新宿」ノードの子ノードとして、「@興味」ノードと、「anything_else」ノードを作成します。「@地域:新宿」ノードのAnd finally:として、Jump to「＠興味」ノードをWait for user inputで設定します。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-4-1.png" alt="" width="1407" />
+次に「@興味」ノードの子ノードとして「true」ノードを作成し、Jump toをRespondで設定します。「@興味」ノードのThen respond with:は後で設定しますので、ここでは空白で構いません。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-5-1.png" alt="" width="1404" />
+「true」ノードの設定を示します。「@興味」ノードでDiscoveryに問い合わせを行い、結果は$response.messageにセットされることを前提として、$response.messageをThen respond with:に設定します。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-6-1.png" alt="" width="1404" />
+最後に「@興味」ノードの子ノードとして作成した「anything_else」ノードです。これは、@興味Entityでうまく認識できなかった場合に遷移するので「そのことについては、まだよく知りません。」と回答するようにしました。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-7-1.png" alt="" width="1404" />
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>5-3-2. Watson AssistantとDiscoveryの接続</div>
+<div class="l-content--detail p-lesson">
+先ほどWatson AssistantのDialogを設定しましたが、その中で最も重要なのは「@興味」のThen respond with:をどのように設定するかです。ここでDiscoveryに問い合わせを行い、次にどのような回答をするかを準備しなければなりません。
+<h4>IBM Cloud Functions</h4>
+Watson AssistantからDiscoveryを呼び出す方法として、IBM Cloud Functionsを使用します。IBM Cloud Functionsは、いわゆるFaaS（Function as a Service）のサービスで、プログラムの関数の単位でクラウドに登録し、実行します。類似のサービスとしてAmazon Web ServicesのLambdaを挙げることができます。
+IBM Cloud Functionsを使用するには、IBM Cloudのカタログを表示し、メニューからFunctionsをクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/catalog_-_IBM_Cloud.png" alt="" width="1404" />
+作成の開始ボタンをクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Cloud_Functions.png" alt="" width="1404" />
+Create Actionをクリックします。IBM Cloud Functionsでは、登録した関数のことをActionと呼びます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Cloud_Functions_-_Create.png" alt="" width="1404" />
+Action Nameに「getDiscoveryResponse」、Runtimeとして「Python 3」を指定しして、Createボタンをクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Cloud_Functions_-_Create-1.png" alt="" width="1406" height="744" />
+この画面で、直接Pythonコードを入力することができます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Cloud_Functions_-_Actions.png" alt="" width="1366" />
+下記のコードを入力し、Saveボタンをクリックします。
+IBM Cloud Functionsでは引数は辞書型の変数のため、topicというキーでWatson Assistantから@興味Entityの値をセットするということにして、興味を取得しています。
+また、戻り値はJSONデータで、チャットボットでのレスポンスとなる文章をセットします。このレスポンスの文章の組み立ては、<a href="https://graspy.jp/lesson/5/chapter/35#sub_381" target="_blank" rel="noopener noreferrer">5-2-5</a>の最後にNotebookで試したものと同様です。
+<pre><code class="python hljs">
+  <span class="hljs-comment">#</span>
+  <span class="hljs-comment">#</span>
+  <span class="hljs-comment"># main() will be run when you invoke this action</span>
+  <span class="hljs-comment">#</span>
+  <span class="hljs-comment"># @param Cloud Functions actions accept a single parameter, which must be a JSON object.</span>
+  <span class="hljs-comment">#</span>
+  <span class="hljs-comment"># @return The output of this action, which must be a JSON object.</span>
+  <span class="hljs-comment">#</span>
+  <span class="hljs-comment">#</span>
+  <span class="hljs-keyword">import</span> sys
+  <span class="hljs-keyword">from</span> watson_developer_cloud <span class="hljs-keyword">import</span> DiscoveryV1
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">main</span><span class="hljs-params">(dict)</span>:</span>
+      topic = dict[<span class="hljs-string">'topic'</span>]
+      discovery = DiscoveryV1(version=<span class="hljs-string">'2017-10-16'</span>, username=<span class="hljs-string">'＜Discoveryのusername＞'</span>, password=<span class="hljs-string">'＜Discoveryのpassword＞'</span>)
+      environment_id = <span class="hljs-string">'＜Discoveryのenvironment_id＞'</span>
+      collection_id = <span class="hljs-string">'＜Discoveryのcollection_id＞'</span>
+      dql = <span class="hljs-string">'enriched_description.concepts.text::"%s"'</span> % topic
+      results = discovery.query(environment_id, collection_id, query=dql)
+      <span class="hljs-keyword">if</span> len(results[<span class="hljs-string">'results'</span>]) &gt; <span class="hljs-number">0</span>:
+          <span class="hljs-keyword">for</span> result <span class="hljs-keyword">in</span> results[<span class="hljs-string">'results'</span>]:
+              <span class="hljs-keyword">if</span> len(result[<span class="hljs-string">'enriched_description'</span>][<span class="hljs-string">'keywords'</span>]) &gt; <span class="hljs-number">0</span>:
+                  name = result[<span class="hljs-string">'name'</span>]
+                  description = result[<span class="hljs-string">'description'</span>]
+                  <span class="hljs-keyword">break</span>
+      message = <span class="hljs-string">'%sについての情報があります。「%s」'</span> % (name, description)
+      <span class="hljs-keyword">return</span> { <span class="hljs-string">'message'</span>: message }
+</code></pre>
+あとで使用するので、作成したActionのEndpointsタブを開き、namespaceとactionの名前を確認しておきます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Cloud_Functions_-_Create-3.png" alt="" width="1406" />
+また、APIキーも確認しておきます。IBM Cloud Functionsのメニューから開始＞APIキーを参照します。APIキーは画面中央右の目のアイコンをクリックすると表示されます。APIキーの文字列の途中に「:」があり、その前の部分がusername、後ろの部分がpasswordです。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Cloud_Functions_-_API_Key.png" alt="" width="1406" />
+<h4>Then respond with:でCloud Functionを呼び出す</h4>
+作成したActionをWatson Assistantから呼び出します。
+Watson Assistantの画面に戻って、「@興味」ノードを開き、Then respond with:のサブメニューからOpen JSON Editorをクリックします。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-8-1.png" alt="" width="1406" />
+Watson AssistantではJSONのデータをセットすることにより、Actionを呼び出すことができます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-9-1.png" alt="" width="1406" />
+まず、context.topicに@興味Entityで認識した値をセットします。actionsには呼び出し先のIBM Cloud FunctionsのActionを設定します。actions.nameが先ほど作成したActionのnamespaceとActionの名前です。actions.parametersにはcontext.topicの値を$topicとして指定しています。actions.result_variableはActionからの戻り値をセットする変数名です。
+outputは空をセットしたので、このノードでは返答は行わず、次のノード（「@興味」ノードの子ノードである「true」ノード）でDiscoveryから取得した文字列を返答するようにします。
+<pre><code class="python hljs">
+  {
+    <span class="hljs-string">"context"</span>: {
+    <span class="hljs-string">"topic"</span>: <span class="hljs-string">"@興味"</span>,
+    <span class="hljs-string">"discovery_credentials"</span>: {
+      <span class="hljs-string">"user"</span>: <span class="hljs-string">"＜Cloud Functionsのusername＞"</span>,
+      <span class="hljs-string">"password"</span>: <span class="hljs-string">"＜Cloud Functionsのpassword＞"</span>
+    }
+    },
+    <span class="hljs-string">"output"</span>: {},
+    <span class="hljs-string">"actions"</span>: [
+    {
+      <span class="hljs-string">"name"</span>: <span class="hljs-string">"＜Actionのnamespace＞/＜Actionの名前＞"</span>,
+      <span class="hljs-string">"type"</span>: <span class="hljs-string">"server"</span>,
+      <span class="hljs-string">"parameters"</span>: {
+      <span class="hljs-string">"topic"</span>: <span class="hljs-string">"$topic"</span>
+      },
+      <span class="hljs-string">"credentials"</span>: <span class="hljs-string">"$discovery_credentials"</span>,
+      <span class="hljs-string">"result_variable"</span>: <span class="hljs-string">"$response"</span>
+    }
+    ]
+  }
+</code></pre>
+ここまで出来た状態で、画面右上のTry itをクリックして会話を試してみましょう。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-26.png" alt="" width="1366" />
+このように、Discoveryに問い合わせを行った上で返答が返ってきました。
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>5-3-3. LINEの設定</div>
+<div class="l-content--detail p-lesson">
+ここまでに作成したWatson AssistantのチャットボットをLINEで使えるようにします。
+まずは、LINE Developersにアクセスして、プロバイダー（チャットボット提供元）の作成を行います。
+LINE Developersのサイト（<a href="https://developers.line.me/ja/" target="_blank" rel="noopener noreferrer">https://developers.line.me/ja/</a>）にアクセスし、ログインします。既にLINEを使用している方はログインボタンをクリックして、登録することができます。LINEを使用していない方はチャットボットのテストのためにも必要なため、LINEのユーザー登録を行ってください。
+<img class="alignnone size-full wp-image-5125" src="https://writing.itprocollege.com/wp-content/uploads/2018/07/LINE_Developers.png" alt="" width="1174" />
+新規プロバイダー作成ボタンをクリックし、画面の指示に合わせてプロバイダーを作成します。
+<img class="alignnone size-full wp-image-5126" src="https://writing.itprocollege.com/wp-content/uploads/2018/07/LINE_Developers-1.png" alt="" width="1174" />
+次にチャネルを作成します。ここで作成するチャネルがチャットボット本体となり、チャネルとWatson Assistantを連携させます。
+<img class="alignnone size-full wp-image-5127" src="https://writing.itprocollege.com/wp-content/uploads/2018/07/LINE_Developers-2.png" alt="" width="1174" />
+チャネルはMessaging APIで作成します。
+<img class="alignnone size-full wp-image-5128" src="https://writing.itprocollege.com/wp-content/uploads/2018/07/LINE_Developers-2-1.png" alt="" width="1174" />
+プランはDeveloper Trialとして、あとは画面の指示に沿ってチャネルを作成します。
+<img class="alignnone size-full wp-image-5129" src="https://writing.itprocollege.com/wp-content/uploads/2018/07/LINE_Developers-3.png" alt="" width="1174" />
+作成したチャネルの画面を開き、チャネル基本設定タブで、下記の項目を設定します。
+<ul>
+ 	<li>アクセストークンは、後で必要となるので、再発行ボタンをクリックして発光しておいてください。</li>
+ 	<li>Webhook送信は、「利用する」を設定します。</li>
+ 	<li>Webhook URLは、後で設定します。</li>
+ 	<li>自動応答メッセージは、「利用しない」を設定します。</li>
+</ul>
+<img class="alignnone size-full wp-image-5130" src="https://writing.itprocollege.com/wp-content/uploads/2018/07/LINE_Developers-5.png" alt="" width="1171" />
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>5-3-4. Node-REDの準備</div>
+<div class="l-content--detail p-lesson">
+LINEでチャットボットのユーザから問いかけられると、Webhook URLに対してHTTPS POSTのリクエストが送信されます。そのため、Webhookを作成して送信先のURLを準備する必要があります。
+Watson AssistantだけではWebhookが準備できないため、ここではIBM Cloud上にNode-RED環境を準備し、そこでWebhookを作成することにしましょう。
+Node-REDは、GUI環境（Webブラウザ）でのドラッグアンドドロップでプログラムを作成することができる環境で、複数のサービスを連携したプログラムを開発することに向いています。
+IBM Cloudのカタログから、Starter Kits＞Node-RED Startarを開きます。
+<img class="alignnone size-full wp-image-5133" src="https://writing.itprocollege.com/wp-content/uploads/2018/07/catalog_-_IBM_Cloud-1.png" alt="" width="1216" />
+アプリ名、ホスト名を設定し、作成ボタンをクリックします。
+アプリ名とホスト名はデフォルトでは同じ値になります。ここで指定したホスト名がWebhookのURLではドメイン名となります。例えば、ホスト名としてtestを指定した場合は、https://test.mybluemix.netというURLが生成されます。
+<img class="alignnone size-full wp-image-5134" src="https://writing.itprocollege.com/wp-content/uploads/2018/07/Node-RED_Starter_-_IBM_Cloud.png" alt="" width="1206" />
+Node-RED環境の作成には少し時間がかかりますが、完了すると「このアプリは稼働中です。」と表示されるので、アプリURLにアクセスをクリックします。
+<img class="alignnone size-full wp-image-5135" src="https://writing.itprocollege.com/wp-content/uploads/2018/07/nodered.png" alt="" width="1206" />
+Node-REDの初期設定画面が開きます。Nextをクリックします。
+<img class="alignnone size-full wp-image-5136" src="https://writing.itprocollege.com/wp-content/uploads/2018/07/Node-RED_on_IBM_Cloud.png" alt="" width="1207" />
+Node-REDの画面を開く際のUsernameとPasswordを設定します。ここでのUsernameとPasswordはIBM Cloudのそれとは別の扱いとなります。
+<img class="alignnone size-full wp-image-5137" src="https://writing.itprocollege.com/wp-content/uploads/2018/07/Node-RED_on_IBM_Cloud-1.png" alt="" width="1207" />
+後の画面は特に設定の必要はありません。
+初期設定が終わるとNode-REDのトップ画面が表示されるので、Go to your Node-RED flow editorをクリックします。（この画面は、先ほど設定したホスト名で生成された https://test.mybluemix.net のようなURLを開くと常に表示されます。）
+<img class="alignnone size-full wp-image-5138" src="https://writing.itprocollege.com/wp-content/uploads/2018/07/Node-RED_on_IBM_Cloud-2.png" alt="" width="1207" />
+ログイン画面が開くので、先ほどの初期設定で指定したUsernameとPasswordを入力し、ログインします。
+<img class="alignnone size-full wp-image-5139" src="https://writing.itprocollege.com/wp-content/uploads/2018/07/Node-RED___nodered-ki_mybluemix_net.png" alt="" width="1207" />
+Node-REDでは、下図のようなflow editorを使ってプログラムを作成していきます。
+画面左のノード一覧から、中央に表示されたキャンバスにドラッグアンドドロップすると、ノードを配置できます。
+これからWebhookを作成するので、httpノードを配置します。
+<img class="alignnone size-full wp-image-5140" src="https://writing.itprocollege.com/wp-content/uploads/2018/07/node-red.png" alt="" width="1207" />
+ノードをダブルクリックすると、プロパティ画面が開きます。
+httpノードのプロパティとして、メソッドはPOST、URLには/line_hookと指定します。これで、LINEのWebhookのURLができました。
+<img class="alignnone size-full wp-image-5141" src="https://writing.itprocollege.com/wp-content/uploads/2018/07/node-red-1.png" alt="" width="1207" />
+次に、debugノードを配置し、httpノードと接続します。ノード間の接続はノードの左右に表示されている小さな四角（コネクタ）をクリックしてドラッグし、接続先のコネクタの上でドロップすると接続できます。
+ノードの左のコネクタは入力、右のコネクタは出力を示します。ノードによって入力のみ、出力のみ、入出力両方とコネクタの種類は異なります。
+最後に、画面右上のデプロイボタンをクリックし、作成したプログラムを使用可能にします。
+<img class="alignnone size-full wp-image-5142" src="https://writing.itprocollege.com/wp-content/uploads/2018/07/Node-RED___nodered-ki_mybluemix_net-1.png" alt="" width="1214" />
+LINE Developersの画面に戻り、Webhook URLの編集ボタンをクリックし、Webhook URLを設定します。Webhook URLは、Node-REDのURLの後ろにhttpノードで指定したURLを組み合わせたもの（例：https://test.mybluemix.net/line_hook）です。
+次に、接続確認ボタンをクリックします。
+<img class="alignnone size-full wp-image-5143" src="https://writing.itprocollege.com/wp-content/uploads/2018/07/LINE_Developers-6.png" alt="" width="1348" />
+Node-REDの画面に戻りデバッグ画面を確認しましょう。LINEからのリクエストが来ていることが分かります。httpノードへのリクエスト内容は、次に接続されているdebugノードによってデバッグ画面に表示されます。
+<img class="alignnone size-full wp-image-5144" src="https://writing.itprocollege.com/wp-content/uploads/2018/07/Node-RED___nodered-ki_mybluemix_net-2.png" alt="" width="1218" />
+この時、LINE Developersの画面には「Webhookとの通信エラー」が表示されますが、Node-RED側でHTTP Responseの設定をしていないためで問題ありません。
+</div>
+<div class="c-course-learn"><a class="c-course-learn__button"><i class="material-icons">check_box_outline_blank</i>習得したのでクリック</a></div>
+<div class="c-course-learn__share">
+<p class="c-course-learn__share__txt">進捗率シェアでポイントゲット！（1日1回）</p>
+<ul class="c-share-buttons__list c-share-buttons__list--small">
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+ 	<li class="c-share-buttons__list__item"></li>
+</ul>
+</div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>5-3-5. Node-REDでWebhookを作成</div>
+<div class="l-content--detail p-lesson">
+引き続き、Node-REDを使ってWebhookを作成します。
+下図が全体像です。このように配置してください。以下でプロパティの指定が必要な箇所を説明します。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/Node-RED___inoccu_mybluemix_net.png" alt="" width="1067" />
+changeノードでは、WebhookへのリクエストでPOSTされたデータから、必要な値を取得します。まず、msg.payload.events[0].replyTokenをflow.replyTokenにセットします。replyTokenはLINEでの問いかけに対する返答を返す際に必要な値です。
+Node-REDでは、msg、flow、globalの3つの変数領域があり、msgは次のノードとの間でのみ有効で、特にmsg.payloadにセットした値を使ってノード間の値のやり取りを行います。flowはキャンバス内で有効であり、離れたノード間で値のやり取りができます。globalは複数のキャンバス間で有効な領域です。
+msg.payloadには、msg.payload.events[0].message.textの値をセットします。これはLINEで問いかけられた文章そのもので、次のノードであるWatson Assistantに引き渡します。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/Node-RED___inoccu_mybluemix_net-1.png" alt="" width="1355" />
+次のWatson Assistant（Node-REDの環境構築を行った時期によってはConversationになっている場合がありますが、設定する項目は同じです）
+Username、Password、Workspace IDの3つを入力します。また、Save Contextにはチェックを入れておきましょう。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/Node-RED___nodered-ki_mybluemix_net-3.png" alt="" width="1250" />
+UsernameとPasswordは、IBM Cloudの画面でWatson Assistantを開くと表示されます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/ibm_cloud_watson_assistant.png" alt="" width="1350" />
+Workspace IDは、Watson Assistantの画面でWorkspacesを開き、使用するWorkspace（チャットボット）のサブメニューからView detailsを選択すると表示されます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-11-1.png" alt="" width="1350" />
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/IBM_Watson_Assistant-12-1.png" alt="" width="1350" />
+次に、functionノードです。Discoveryからの出力をLINEでの返答のために変換する処理を行うので、set responseという名前を付けています。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/Node-RED___inoccu_mybluemix_net-2.png" alt="" width="1356" />
+ここではJavaScriptのコードを入力します。
+headers.Authorizationには「Bearer（スペース）」という文字列の後にLINEのチャネル基本設定タブで確認したアクセストークンをセットします。
+<pre><code class="python hljs">
+  var msg = {
+    <span class="hljs-string">"headers"</span>: {
+      <span class="hljs-string">"content-type"</span>: <span class="hljs-string">"application/json; charset=UTF-8"</span>,
+      <span class="hljs-string">"Authorization"</span>: <span class="hljs-string">"Bearer "</span> + <span class="hljs-string">"＜アクセストークン＞"</span>
+    },
+    <span class="hljs-string">"payload"</span>: {
+      <span class="hljs-string">"replyToken"</span>: flow.get(<span class="hljs-string">"replyToken"</span>),
+      <span class="hljs-string">"messages"</span>: [
+        {
+          <span class="hljs-string">"type"</span>: <span class="hljs-string">"text"</span>,
+          <span class="hljs-string">"text"</span>: msg.payload.output.text[<span class="hljs-number">0</span>]
+        }
+      ]
+    }
+  };
+  <span class="hljs-keyword">return</span> msg;
+</code></pre>
+最後に、http requestノードの設定を行います。メソッドはPOST、URLはhttps://api.line.me/v2/bot/message/replyを指定します。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/Node-RED___inoccu_mybluemix_net-3.png" alt="" width="1356" />
+これで完成です。LINEのチャネル基本設定タブにはQRコードが表示されているので、これでLINEの友達となり、会話を試してみましょう。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/07/line_discovery_bot.png" alt="" width="397" />
+このように会話を行うことができました。
+</div>
+</div>

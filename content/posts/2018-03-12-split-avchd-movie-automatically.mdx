@@ -1,0 +1,72 @@
+---
+title: "SONYハンディカムHDR-PJ760で撮影したAVCHD動画を自動的にチャプタ毎分割するには（１）"
+description: "AVCHD形式で録画した子供達の成長記録mtsファイルを、録画した単位で自動的に切り出したいのだけど、自前でMPLファイルをパースしてffmpegやavconv..."
+tags:
+  - "AVCHD"
+  - "linux"
+  - "tsMuxeR"
+  - "サーバ"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2018-03-12T17:57:19.000Z
+author: takashi
+---
+
+
+<blockquote class="twitter-tweet" data-lang="ja"><p lang="ja" dir="ltr">AVCHD形式で録画した子供達の成長記録mtsファイルを、録画した単位で自動的に切り出したいのだけど、自前でMPLファイルをパースしてffmpegやavconvに食わせてやるしかないのだろうか。<a href="https://t.co/WsX39f2bZM">https://t.co/WsX39f2bZM</a></p>&mdash; takashi ando (@takashi7ando) <a href="https://twitter.com/takashi7ando/status/971537166961553408?ref_src=twsrc%5Etfw">2018年3月8日</a></blockquote>
+
+
+やりたいことは、SONYハンディカムHDR-PJ760で撮影したAVCHD動画をチャプタ毎分割すること。それだけ。
+MTSファイルそのものを分割したり結合したりトランスコードしたり、といったことは[ffmpeg](https://trac.ffmpeg.org/wiki/Map)を使えば可能なんだけど、手持ちのハンディカムで撮影した動画の中身を見ると、そう単純ではない。
+撮影後のSDカードの中身はこんな感じ。
+```
+takashi@espresso:/media/sdcard$ tree
+.
+├── AVF_INFO
+│   ├── AVIN0001.BNP
+│   ├── AVIN0001.INP
+│   ├── AVIN0001.INT
+│   └── PRV00001.BIN
+├── DCIM
+│   └── 100MSDCF
+│       └── DSC00007.JPG
+├── PRIVATE
+│   ├── AVCHD
+│   │   └── BDMV
+│   │       ├── CLIPINF
+│   │       │   ├── 00000.CPI
+│   │       │   ├── 00001.CPI
+...
+│   │       │   └── 00103.CPI
+│   │       ├── INDEX.BDM
+│   │       ├── MOVIEOBJ.BDM
+│   │       ├── PLAYLIST
+│   │       │   └── 00000.MPL
+│   │       └── STREAM
+│   │           ├── 00000.MTS
+│   │           ├── 00001.MTS
+│   │           ├── 00002.MTS
+│   │           ├── 00003.MTS
+│   │           ├── 00004.MTS
+...
+│   │           ├── 00102.MTS
+│   │           └── 00103.MTS
+│   └── SONY
+│       └── SONYCARD.IND
+└── System Volume Information
+    ├── IndexerVolumeGuid
+    └── WPSettings.dat
+```
+確かにMTSファイルが格納されているが、ハンディカムのメニューで不要な動画を消す等の操作をすると、連番のMTSファイルが撮影した時系列に並んでくれないことがある。
+更にFATファイルシステムの制約から、一連の動画が複数の2GBファイルに分割されていることもある。
+単純に `for F in $(*.MTS); do ffmpeg -i ${F} ...; done` とかしてしまうと時系列に並んでないわ場面の途中で分割されまくってるわで、もう悲惨。
+[tsMuxeR](https://www.videohelp.com/software/tsMuxeR)でGUI上で*.MPLファイルを読み込めば、正しく並んだMTSファイルを結合/分割して出力できるのだけど、<span class="bold-red"><span class="bold">GUIではなくてコマンドラインでやりたい！</span></span>
+なぜなら、SDカードを挿すだけでJenkinsにその辺り全部やってほしいから。
+・・・と、[tsMuxeR](https://www.videohelp.com/software/tsMuxeR)で落としたtarファイルを解いてみたら、普通にありますね、コマンドライン版ぽいのが。GUIが付いてない方。
+<img src="http://tech.blog.uribou.me/wp-content/uploads/sites/2/2018/03/tsmuxergui.png" alt="" width="100%" class="alignnone size-medium wp-image-2194" />
+--helpオプションつけても何も出てこないので[ネットを漁ってみる](http://forum.doom9.org/archive/index.php/t-142559.html)と、どうもGUI版のWindow下部に表示されるメタデータを.metaファイルとして保存して指定するといいみたい。
+<img src="http://tech.blog.uribou.me/wp-content/uploads/sites/2/2018/03/tsmuxergui-1.png" alt="" width="100%" class="alignnone size-medium wp-image-2196" />
+このメタデータとチャプタ情報をGUI表示させずにコマンドラインで取得するにはどうすれば良いのだろうか・・・。
+<img src="http://tech.blog.uribou.me/wp-content/uploads/sites/2/2018/03/chapters.png" alt="" width="100%" class="alignnone size-medium wp-image-2198" />
+未だ解決していないので、[次回へ続きます](http://tech.uribou.tokyo/split-avchd-movie-automatically2/)。

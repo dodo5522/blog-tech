@@ -1,0 +1,63 @@
+---
+title: "Flaskテスト環境構築は（勉強不足による）ハマりポイント多し。"
+description: "前回、ViewやMethodViewクラスを使って実装を始めたアプリのUIをテストしたい。と思って、FlaskのTesting Flask Applicatio..."
+tags:
+  - "flask"
+  - "python"
+  - "プログラミング"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2020-10-14T02:38:57.000Z
+author: takashi
+---
+
+
+<p><a href="http://tech.blog.uribou.me/python-web-application-framework-flask-pluggable-view/">前回</a>、<code>View</code>や<code>MethodView</code>クラスを使って実装を始めたアプリのUIをテストしたい。
+と思って、Flaskの<a href="http://flask.pocoo.org/docs/dev/testing/#accessing-and-modifying-sessions">Testing Flask Applications</a>を見ながら実装するも、ハマるハマる。</p>
+<h1>sessionに格納した情報を元に動作する関数のテストってどうやるの？</h1>
+<p>こうやるんだそうです。</p>
+<pre><code class="python">from flask import Flask, session
+app = Flask("hoge")
+with app.test_client() as c:
+    c.get('/login')
+    assert session['foo'] == 42
+</code></pre>
+<p>でも実行してみるとこんなエラーをraiseしてくれちゃいます。なんやこれ。</p>
+<pre><code class="bash">bash-3.2$ nosetests
+E..
+======================================================================
+ERROR: test_get (test_api_account.TestAccountApi)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/takashi/Development/necco/test/test_api_account.py", line 59, in test_get
+    with c.session_transaction() as ses:
+  File "/Users/takashi/.anyenv/envs/pyenv/versions/3.5.1/Python.framework/Versions/3.5/lib/python3.5/contextlib.py", line 59, in __enter__
+    return next(self.gen)
+  File "/Users/takashi/.anyenv/envs/pyenv/versions/3.5.1/envs/necco/lib/python3.5/site-packages/flask/testing.py", line 92, in session_transaction
+    raise RuntimeError('Session backend did not open a session. '
+RuntimeError: Session backend did not open a session. Check the configuration
+----------------------------------------------------------------------
+Ran 3 tests in 1.200s
+FAILED (errors=1)
+bash-3.2$ exit
+exit
+shell returned 1
+</code></pre>
+<p>ググってみると、Stackoverflowにありがたい記事発見。</p>
+<ul>
+<li><a href="http://stackoverflow.com/questions/21486400/how-to-test-session-in-flask-resource">How to test session in flask resource</a></li>
+</ul>
+<blockquote>
+  If you did not set a custom app.session_interface, then you forgot to set a secret key
+</blockquote>
+<p>「SECRET_KEYの設定してないんじゃないの？」というご指摘。あ、確かに。
+設定してみると、しっかり動きました。</p>
+<h1><code>session</code>を予めログイン済み状態にしてテストしたい</h1>
+<pre><code class="python">from flask import Flask
+app = Flask("hoge")
+with app.test_client() as c:
+    with c.session_transaction() as sess:
+        sess['username'] = 'hoge_user'
+    c.get()
+</code></pre>

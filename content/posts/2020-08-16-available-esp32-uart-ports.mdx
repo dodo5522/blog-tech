@@ -1,0 +1,212 @@
+---
+title: "ESP32-WROOM-32 UART1の正しい使い方"
+description: "UART1はあるけど使用不可という勘違いESP32-WROOM-32は、UART0/1/2の3つが使えるはずだったけど、<a href=https://esp3..."
+tags:
+  - "arduino"
+  - "ESP32"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2020-08-16T13:55:49.000Z
+author: takashi
+---
+
+
+
+<h2><strong>UART1はあるけど使用不可</strong>という勘違い</h2>
+
+
+<p>ESP32-WROOM-32は、UART0/1/2の3つが使えるはずだったけど、<a href="https://esp32.com/viewtopic.php?t=1457#:~:text=I%20am%20debugging%20ESP32%20with,reset%20pin%20of%20the%20sensor.">ESP32のUART1 RXD/TXDピン周りが内部Flash用に占有されているから使用不可</a>と知り、<a href="https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf" data-wplink-edit="true">公式のdatasheet</a>にも以下記載があったので、勝手に <strong>UART1はあっても使用不可</strong> なんだと勘違いしてた。</p>
+<p>しかし、本文にもある通り <strong>普通のGPIOとしては使えませんよ</strong> と言っているに過ぎず、 <strong>UART1が使えない</strong> とは言っていない。</p>
+<p>結論から言うと、もちろんUART1は使える。</p>
+
+
+<blockquote class="wp-block-quote"><p>ESP32-WROOM-32 integrates a 4 MB SPI flash, which is connected to GPIO6, GPIO7, GPIO8, GPIO9, GPIO10 and GPIO11. These six pins cannot be used as regular GPIOs.</p><cite><a href="https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf">esp32-wroom-32_datasheet_en.pdf</a></cite></blockquote>
+
+
+
+<h2>UART1の使い方</h2>
+
+
+
+<p>いきなり結論から言うと、以下のようにすれば、UART1のTX/RXピンをデフォルトピン以外に割り当てて使用することが可能。</p>
+
+
+
+<p>以下例はUART1のデフォルトのRX/TXピンをGPIO26/27に変更して使用している。</p>
+
+
+
+<pre class="EnlighterJSRAW" data-enlighter-language="generic" data-enlighter-theme="" data-enlighter-highlight="" data-enlighter-linenumbers="" data-enlighter-lineoffset="" data-enlighter-title="" data-enlighter-group="">void setup(void) {
+    Serial1.begin(115200, SERIAL_8N1, 26, 27);
+}
+
+void loop(void) {
+    Serial1.println("hoge");
+    Serial1.flush();
+    delay(1000);
+}</pre>
+
+
+
+<h2>UART1周辺情報の確認</h2>
+
+
+
+<p>まずはdatasheetを確認。以下のようにU1RXD/TXD/RTS/CTSがそれぞれGPIO9/10/11/6にアサインされている。</p>
+
+
+
+<p>公式datasheet記載の通りデフォルトのU1* ピンは全てGPIOとして使用不可なので、どうにかして別のピンに割り当てる必要がある。</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="http://tech.blog.uribou.me/wp-content/uploads/sites/2/2020/08/スクリーンショット-2020-08-16-20.24.43-1024x581.png" alt="" class="wp-image-2892" /><figcaption><a href="https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf">esp32-wroom-32_datasheet_en.pdf</a> 2.2 Pin Description</figcaption></figure>
+
+
+
+<h3>HardwareSerial クラス定義</h3>
+
+
+
+<p>以降のコードはArduino Framework使用を前提とする。</p>
+
+
+
+<p><em>framework-arduinoespressif32/cores/esp32/HardwareSerial.h</em> を確認すると、以下のようなクラス定義となっている。<em>begin()</em> の <em>rxPin/txPin</em> にGPIO9/10以外のピンを指定すれば良さそうに思える。</p>
+
+
+
+<p>が、その前に <em>HardwareSerial</em> コンストラクタ引数 <em>uart_nr</em> が気になる…。なんだこれ。</p>
+
+
+
+<pre class="EnlighterJSRAW" data-enlighter-language="generic" data-enlighter-theme="" data-enlighter-highlight="" data-enlighter-linenumbers="" data-enlighter-lineoffset="" data-enlighter-title="" data-enlighter-group="">class HardwareSerial: public Stream
+{
+public:
+    HardwareSerial(int uart_nr);
+
+    void begin(unsigned long baud, uint32_t config=SERIAL_8N1, int8_t rxPin=-1, int8_t txPin=-1, bool invert=false, unsigned long timeout_ms = 20000UL);
+    ...
+};</pre>
+
+
+
+<h3>HardwareSerial コンストラクタ実装</h3>
+
+
+
+<p>コンストラクタや <em>begin()</em> は<em> framework-arduinoespressif32/cores/esp32/HardwareSerial.cpp </em>に実装されている。</p>
+
+
+
+<p><em>HardwareSerial Serialx(1);</em> のように自前でインスタンス作っても良いが、<em>Serial1(1)</em> インスタンスに対してそのまま <em>begin() </em>しても良いことがわかる。</p>
+
+
+
+<pre class="EnlighterJSRAW" data-enlighter-language="generic" data-enlighter-theme="" data-enlighter-highlight="" data-enlighter-linenumbers="" data-enlighter-lineoffset="" data-enlighter-title="" data-enlighter-group="">#ifndef RX1
+#define RX1 9
+#endif
+
+#ifndef TX1
+#define TX1 10
+#endif
+
+#ifndef RX2
+#define RX2 16
+#endif
+
+#ifndef TX2
+#define TX2 17
+#endif
+
+#if !defined(NO_GLOBAL_INSTANCES) &amp;&amp; !defined(NO_GLOBAL_SERIAL)
+HardwareSerial Serial(0);
+HardwareSerial Serial1(1);
+HardwareSerial Serial2(2);
+#endif
+
+HardwareSerial::HardwareSerial(int uart_nr) : _uart_nr(uart_nr), _uart(NULL) {}
+
+void HardwareSerial::begin(unsigned long baud, uint32_t config, int8_t rxPin, int8_t txPin, bool invert, unsigned long timeout_ms)
+{
+    if(0 &gt; _uart_nr || _uart_nr &gt; 2) {
+        log_e("Serial number is invalid, please use 0, 1 or 2");
+        return;
+    }
+    if(_uart) {
+        end();
+    }
+    if(_uart_nr == 0 &amp;&amp; rxPin &lt; 0 &amp;&amp; txPin &lt; 0) {
+        rxPin = 3;
+        txPin = 1;
+    }
+    if(_uart_nr == 1 &amp;&amp; rxPin &lt; 0 &amp;&amp; txPin &lt; 0) {
+        rxPin = RX1;
+        txPin = TX1;
+    }
+    if(_uart_nr == 2 &amp;&amp; rxPin &lt; 0 &amp;&amp; txPin &lt; 0) {
+        rxPin = RX2;
+        txPin = TX2;
+    }
+
+    _uart = uartBegin(_uart_nr, baud ? baud : 9600, config, rxPin, txPin, 256, invert);
+    ...
+}</pre>
+
+
+
+<h3>HardwareSerial::uartBegin() 実装</h3>
+
+
+
+<p>更にFrameworkのコードを遡っていくと、ピンのアサインは以下のように実装されている。</p>
+
+
+
+<p><em>pinMode()</em> の <em>INPUT</em> や <em>OUTPUT</em> や割り込みなど、必要な設定は全て実装されていることがわかる。</p>
+
+
+
+<pre class="EnlighterJSRAW" data-enlighter-language="generic" data-enlighter-theme="" data-enlighter-highlight="" data-enlighter-linenumbers="" data-enlighter-lineoffset="" data-enlighter-title="" data-enlighter-group="">uart_t* uartBegin(uint8_t uart_nr, uint32_t baudrate, uint32_t config, int8_t rxPin, int8_t txPin, uint16_t queueLen, bool inverted)
+{
+    ...
+    if(rxPin != -1) {
+        uartAttachRx(uart, rxPin, inverted);
+    }
+
+    if(txPin != -1) {
+        uartAttachTx(uart, txPin, inverted);
+    }
+}
+
+void uartAttachRx(uart_t* uart, uint8_t rxPin, bool inverted)
+{
+    if(uart == NULL || rxPin &gt; 39) {
+        return;
+    }
+    pinMode(rxPin, INPUT);
+    pinMatrixInAttach(rxPin, UART_RXD_IDX(uart-&gt;num), inverted);
+    uartEnableInterrupt(uart);
+}
+
+void uartAttachTx(uart_t* uart, uint8_t txPin, bool inverted)
+{
+    if(uart == NULL || txPin &gt; 39) {
+        return;
+    }
+    pinMode(txPin, OUTPUT);
+    pinMatrixOutAttach(txPin, UART_TXD_IDX(uart-&gt;num), inverted, false);
+}</pre>
+
+
+
+<h2>まとめ</h2>
+
+
+
+<p>公式ドキュメントとFrameworkのコードはちゃんと読もう。</p>
+
+
+
+<p></p>

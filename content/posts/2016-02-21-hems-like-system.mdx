@@ -1,0 +1,96 @@
+---
+title: "発電状況を可視化してインターネット経由で参照したい、特異な人のためのノウハウ。"
+description: "自家発電し始めたら、近未来的なかっこいい絵面で発電状況を管理したいと思ってたんですよね。で、作ったのがこれ、発電状況管理用ダッシュボードです。上段が太陽光パネル..."
+tags:
+  - "python"
+  - "プログラミング"
+  - "可視化"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-02-21T14:59:27.000Z
+author: takashi
+---
+
+
+<a href="http://blog.rinka-blossom.com/how_to_make_diy_offgrid/">自家発電し始めたら</a>、近未来的なかっこいい絵面で発電状況を管理したいと思ってたんですよね。
+で、作ったのが<a href="http://grid.rinka-blossom.com/">これ</a>、発電状況管理用ダッシュボードです。
+<img src="https://farm2.staticflickr.com/1563/24518689514_28251b3e31_z_d.jpg" alt="" />
+上段が太陽光パネルからの電流量（ArrayCurrent）と充電流量（ChargeCurrent）を示しています。下段は太陽光パネルの電圧（ArrayVoltage）、蓄電池の電圧（BatteryBoltage）、蓄電池の目標電圧（TargetVoltage）です。
+さらに下の方に行くと、単独のグラフで見たいパラメータを並べてます。チャージコントローラのヒートシンク温度とかですね。
+<img src="https://farm2.staticflickr.com/1577/25056091411_6d9ebc0c5a_z_d.jpg" alt="" />
+こういったデータを簡単にグラフで可視化してくれるオンラインサービスがいくつかあります。
+実際に使ってみたのは以下の３つで、最終的には最も使いやすく、可視化後の見た目が良いkeenioに落ち着きました。
+<ul>
+<li><a href="https://keen.io/">keenio</a></li>
+<li><a href="https://m2x.att.com">m2x</a></li>
+<li><a href="https://xively.com/">xively</a></li>
+</ul>
+参考までに、xivelyだと以下のような無機質なグラフになります。
+<img src="https://farm6.staticflickr.com/5624/24067056806_ccfd661283_z_d.jpg" alt="" />
+xivelyは、挙げた３つのサービのなかで最も簡単に可視化できる利点を持ってますが、逆に何も変更できないのが欠点です。上の無機質なグラフ一択なんです…。
+更に致命的な欠点もあって、時々過去データを紛失します。その上、10分間隔なんて長いインターバル置いてデータを送っていても、時々エラーで受け付けてくれません。
+といった感じで、他に良いサービスはないものか…　と探していたら、m2xというサービスを見つけました。
+m2xだと以下のようなグラフになります。
+<img src="https://farm6.staticflickr.com/5629/24093132855_ce989f7ace_z_d.jpg" alt="" />
+サーバは安定しているようなんですが、この見た目がなんとも…。
+xivelyより後発のm2xでも満足できず、さらに後発のkeenioに辿り着きました。
+keenioは、xivelyやm2xとは違って、オンラインのデータベースを提供するようなサービスです。グラフで可視化してブラウザから参照できるような仕組みは、基本的に提供してくれません。
+が、PaaS等のサービスと併用することで、自分が望むデータのみを可視化して、好きなデザインを採用した<a href="http://keen.github.io/dashboards/">Dashboard</a>を設置することが出来ます。
+Dashboardサンプルのソースは<a href="https://github.com/keen/dashboards/tree/gh-pages/examples">github</a>に置いてありますが、この辺りを眺めていると、<a href="http://getbootstrap.com/css/">TwitterのBootstrap</a>と<a href="https://developers.google.com/chart/interactive/docs/">Google Charts</a>を使用していることに気付くと思います。
+例えば、<a href="http://grid.rinka-blossom.com/">発電状況管理用ダッシュボード</a>で多用しているのはAreaChartという種類のグラフですが、その設定は<a href="https://github.com/keen/dashboards/blob/gh-pages/examples/starter-kit/keen.dashboard.js">keen.dashboard.js</a>の以下の部分になります。
+<pre><code class="javascript">var client = new Keen({
+  projectId: "5368fa5436bf5a5623000000",
+  readKey: "3f324dcb5636316d6865ab0ebbbbc725224c7f8f3e8899c7733439965d6d4a2c7f13bf7765458790bd50ec76b4361687f51cf626314585dc246bb51aeb455c0a1dd6ce77a993d9c953c5fc554d1d3530ca5d17bdc6d1333ef3d8146a990c79435bb2c7d936f259a22647a75407921056"
+});
+Keen.ready(function(){
+  ...
+  // ----------------------------------------
+  // Pageviews Area Chart
+  // ----------------------------------------
+  var pageviews_timeline = new Keen.Query("count", {
+    eventCollection: "pageviews",
+    interval: "hourly",
+    groupBy: "user.device_info.browser.family",
+    timeframe: {
+      start: "2014-05-04T00:00:00.000Z",
+      end: "2014-05-05T00:00:00.000Z"
+    }
+  });
+  client.draw(pageviews_timeline, document.getElementById("chart-01"), {
+    chartType: "areachart",
+    title: false,
+    height: 250,
+    width: "auto",
+    chartOptions: {
+      chartArea: {
+        height: "85%",
+        left: "5%",
+        top: "5%",
+        width: "80%"
+      },
+      isStacked: true
+    }
+  });
+</code></pre>
+Keenクラスは<a href="https://keen.io/docs/api/">keenio API reference</a>の通りですが、chartOptionsの設定は<a href="https://developers.google.com/chart/interactive/docs/gallery/areachart">Google ChartsのAreaChart</a>そのまんまです。
+例えば、凡例をグラフ内に表示したい場合はlegendオプションを、Y軸に21000以上の値を表示したいならvAxisオプションを追加すれば良いことになります。
+<pre><code class="javascript">  client.draw(pageviews_timeline, document.getElementById("chart-01"), {
+    chartType: "areachart",
+    title: false,
+    height: 250,
+    width: "auto",
+    chartOptions: {
+      chartArea: {
+        height: "85%",
+        left: "5%",
+        top: "5%",
+        width: "80%"
+      },
+      isStacked: true
+      legend: {position: 'in'},
+      vAxis: {minValue: 21000},
+    }
+  });
+</code></pre>
+発電状況監視に限らず、何らかのデータを収集して可視化し、インターネット経由で参照したい方の参考になれば幸いです。

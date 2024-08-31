@@ -1,0 +1,38 @@
+---
+title: "Pythonをtar ballからmake installする際に気をつけるべきこと"
+description: "Ubuntu 18系でのお話。下記ライブラリをインストールしていなくても、一応make installまで可能だけれど、pipコマンドを実行したり、特定のモジュ..."
+tags:
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2020-01-04T02:11:07.000Z
+author: takashi
+---
+
+
+<p>Ubuntu 18系でのお話。
+下記ライブラリをインストールしていなくても、一応make installまで可能だけれど、pipコマンドを実行したり、特定のモジュールを使おうとしてセグってハマることになる。</p>
+<h1>Foreign Function Interface library</h1>
+<p>make installでこんなエラーが出ました。</p>
+<pre class="lang:sh decode:true ">File "/home/******/Python-3.7.3/Lib/ctypes/__init__.py", line 7, in &lt;module&gt;
+from _ctypes import Union, Structure, Array
+ModuleNotFoundError: No module named '_ctypes'
+Makefile:1130: ターゲット 'install' のレシピで失敗しました
+make: *** [install] エラー 1</pre>
+<p>apt-getでもpipでもなんでもインストールしてしまえば良いのだろうけれどモジュール名が分からないのでgoogleで検索。
+libffi-devのインストールで解決するとありました。
+libffi-devをインストール</p>
+<pre class="lang:sh decode:true "># apt install libffi-dev</pre>
+<p>参考： <a href="https://qiita.com/makoto_a/items/61ff61a1b121cfa75f9c">https://qiita.com/makoto_a/items/61ff61a1b121cfa75f9c</a></p>
+<h1>OpenSSLライブラリ</h1>
+<p>これを入た上でビルドしないと、pipコマンド実行時に公式のpypiサイトにHTTPSで接続できず、エラーとなる。</p>
+<pre class="lang:default decode:true "># apt install libssl-dev</pre>
+<h1>bz2, lzmaライブラリ</h1>
+<p>&nbsp;</p>
+<pre class="lang:default decode:true "># apt install libbz2-dev liblzma-dev</pre>
+<p>&nbsp;</p>
+<h1>sqlite3ライブラリ</h1>
+<p>&nbsp;</p>
+<pre class="lang:sh decode:true "># apt install libsqlite3-dev</pre>
+<p>&nbsp;
+&nbsp;</p>

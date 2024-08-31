@@ -1,0 +1,280 @@
+---
+title: "Material-UI, Keen, chart.jsでSingle Page Applicationを作りながらReactを学ぶ"
+description: "はじめに主に組み込みソフトウェア開発を生業としているため、フロントエンド開発には縁がなかったのですが、ここ１年仕事でNode.jsを触ってきたためフロントエンド..."
+tags:
+  - "javascript"
+  - "Node.js"
+  - "React"
+categories:
+  - programming
+  - hobby
+image: /images/software-developer.jpg
+date: 2018-11-23T22:37:40.000Z
+author: takashi
+---
+
+
+<h1>はじめに</h1>
+主に組み込みソフトウェア開発を生業としているため、フロントエンド開発には縁がなかったのですが、ここ１年仕事でNode.jsを触ってきたためフロントエンド開発にも興味が出てきて、Udemyの教材を買って黙々とtry &amp; errorしました。
+<blockquote class="twitter-tweet" data-lang="ja">
+<p dir="ltr" lang="ja">自分のような <a href="https://twitter.com/hashtag/React?src=hash&amp;ref_src=twsrc%5Etfw">#React</a> 初心者が手っ取り早く学ぶにはお勧めの教材 <a href="https://twitter.com/udemy?ref_src=twsrc%5Etfw">@Udemy</a> 。とはいえ、この動画を見て手を動かすだけではもちろんダメで、それなりに深掘りして調べつつtry&amp;errorしながら学習する必要はある。<a href="https://t.co/bHX62k3VYk">https://t.co/bHX62k3VYk</a></p>
+— takashi ando (@takashi7ando) <a href="https://twitter.com/takashi7ando/status/1066100134683918336?ref_src=twsrc%5Etfw">2018年11月23日</a></blockquote>
+
+この教材では、<a href="https://codesandbox.io/" target="_blank" rel="noopener noreferrer">CodeSandbox</a>を使ってオンライン上にサクッと開発環境を構築するため、ぶっちゃけシェルとかコマンドとか触ったことがなくても学習を始めることができるんですが、その辺りの知識をある程度持っている人にとってはモヤっと感が残る内容となっています。
+<span style="font-size: 20px">「実際の現場ではどうやって開発始めるんだ・・・？」</span>
+的な。
+<del>フロントエンド開発現場未経験者が</del>その辺についても触れつつ学びながら製作した成果物とその過程を公開しようと思います。
+<h1>成果物イメージ</h1>
+最終的には<a href="http://geiger.uribou.tokyo/" target="_blank" rel="noopener noreferrer">こんな感じ</a>のものが出来上がります。自宅周辺の空間線量をありのままに定点観測し続けるデバイスのデータを可視化したものです。
+<img class="aligncenter size-full wp-image-2314" src="http://tech.blog.uribou.me/wp-content/uploads/sites/2/2018/11/cc9719a1464da868df62a91522f0e2fb.png" alt="" width="759" height="396" />
+<h1>使用する主なライブラリ、フレームワーク</h1>
+センサデータを収集して永続化するバックエンド、そのデータを可視化するフロントエンドの両方をほぼJavaScriptで構成してますが、さすがにセンサ部は内部でArduinoと割り込みを使用しているので、C言語の知識も必要になります。
+バックエンド側は長くなるので今回は割愛。
+<h2>フロントエンド</h2>
+<ul>
+ 	<li><a href="https://reactjs.org/" target="_blank" rel="noopener noreferrer">React</a></li>
+ 	<li><a href="https://material-ui.com/" target="_blank" rel="noopener noreferrer">Material-UI</a></li>
+ 	<li><a href="https://www.chartjs.org/" target="_blank" rel="noopener noreferrer">chart.js</a></li>
+ 	<li><a href="https://github.com/keen/keen-analysis.js/blob/master/README.md" target="_blank" rel="noopener noreferrer">keen-analysis.js</a></li>
+</ul>
+<h2>バックエンド</h2>
+<ul>
+ 	<li><a href="https://github.com/keen/keen-tracking.js/" target="_blank" rel="noopener noreferrer">keen-tracking.js</a></li>
+ 	<li><a href="https://github.com/node-serialport/node-serialport" target="_blank" rel="noopener noreferrer">serialport.js</a></li>
+ 	<li><a href="https://www.raspberrypi.org/products/raspberry-pi-zero/" target="_blank" rel="noopener noreferrer">Raspberry Pi Zero</a></li>
+ 	<li><a href="https://www.sparkfun.com/products/11345" target="_blank" rel="noopener noreferrer">SEN-11345</a> (既にEOL)</li>
+</ul>
+<h1>Reactアプリケーション開発環境を構築する</h1>
+Reactアプリケーションコードはコンパイル（トランスパイル）する必要があるため、その環境を構築する必要があります。
+<h2>前提とする環境</h2>
+開発環境としてのWindowsは除外。
+<fieldset>macOS or Ubuntu (Unix系OSならなんでも)
+bash (好みに応じて)</fieldset>
+<h2>nodeをインストールする</h2>
+実行環境とパッケージ管理システムがないと何も始まらないので、整備します。
+2018/11/24 現在、下記の通り<a href="https://github.com/nodejs/Release#release-schedule" target="_blank" rel="noopener noreferrer">node v10がActive LTSとなっています</a>が、ここではv8を導入します。
+<table>
+<thead>
+<tr>
+<th align="center">Release</th>
+<th align="center">Status</th>
+<th align="center">Codename</th>
+<th align="center">Initial Release</th>
+<th align="center">Active LTS Start</th>
+<th align="center">Maintenance LTS Start</th>
+<th align="center">End-of-life</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><a href="https://nodejs.org/download/release/latest-v6.x/" rel="nofollow">6.x</a></td>
+<td align="center"><strong>Maintenance LTS</strong></td>
+<td align="center"><a href="https://nodejs.org/download/release/latest-boron/" rel="nofollow">Boron</a></td>
+<td align="center">2016-04-26</td>
+<td align="center">2016-10-18</td>
+<td align="center">2018-04-30</td>
+<td align="center">April 2019</td>
+</tr>
+<tr>
+<td align="center"><a href="https://nodejs.org/download/release/latest-v8.x/" rel="nofollow">8.x</a></td>
+<td align="center"><strong>Active LTS</strong></td>
+<td align="center"><a href="https://nodejs.org/download/release/latest-carbon/" rel="nofollow">Carbon</a></td>
+<td align="center">2017-05-30</td>
+<td align="center">2017-10-31</td>
+<td align="center">April 2019</td>
+<td align="center">December 2019<sup>1</sup></td>
+</tr>
+<tr>
+<td align="center"><a href="https://nodejs.org/download/release/latest-v10.x/" rel="nofollow">10.x</a></td>
+<td align="center"><strong>Active LTS</strong></td>
+<td align="center"><a href="https://nodejs.org/download/release/latest-dubnium/" rel="nofollow">Dubnium</a></td>
+<td align="center">2018-04-24</td>
+<td align="center">2018-10-30</td>
+<td align="center">April 2020</td>
+<td align="center">April 2021</td>
+</tr>
+</tbody>
+</table>
+とはいえ、複数バージョンのnode環境を切り替えると後々便利なので、たびたび取り上げている<a href="https://github.com/riywo/anyenv" target="_blank" rel="noopener noreferrer">anyenv</a>経由でnodenvをインストールします。
+<pre class="lang:sh decode:true">$ anyenv install nodenv
+$ exec -l $SHELL
+$ nodenv install -l | grep -E '^\s*8\.'
+  ...
+  8.10.0
+  8.11.0
+  8.11.1
+  8.11.2
+  8.11.3</pre>
+node 8系の最新は8.11.3のようなので、これをインストールします。
+<pre class="lang:sh decode:true">$ nodenv install 8.11.3</pre>
+<h2>Reactアプリケーション雛形を作成する</h2>
+nodeをインストールするとパッケージ管理システムnpmも勝手についてきます。まずはnpmでReactアプリケーション雛形生成コマンドをインストール、設定していきます。
+<h3>Reactについておさらい</h3>
+今更ですがおさらいです。
+Reactは、JavaScriptでもHTMLでもない、<a href="https://reactjs.org/docs/introducing-jsx.html#embedding-expressions-in-jsx" target="_blank" rel="noopener noreferrer">JSX</a>という独自のシンタックスでコードを書く必要があります。
+<pre class="lang:js decode:true">class GeigerChart extends Component {
+  ...
+  render() {
+    const { classes } = this.props;
+    return (
+      &lt;div className={classes.areaChart}&gt;
+        &lt;canvas ref="canvas" /&gt;
+      &lt;/div&gt;
+    );
+  }
+}</pre>
+JavaScriptでもHTMLでもないということは、そのままではブラウザが解釈できないので、JSXコードをコンパイル（トランスパイル）してブラウザが解釈できる形式に変換しないといけません。
+そのトランスパイル環境を自前で組むのは<a href="http://twins-tech.hatenablog.com/entry/2016/10/02/134714" target="_blank" rel="noopener noreferrer">とても大変</a>なので、create-react-appコマンドで生成した環境を展開して流用します。
+<h3>create-react-appコマンドを実行する</h3>
+create-react-appコマンドのインストールは簡単です。
+<pre class="lang:sh decode:true">$ nodenv local 8.11.3
+$ npm install -g create-react-app</pre>
+オプション一覧は以下の通り。
+<pre class="lang:sh decode:true">$ create-react-app --help
+Usage: create-react-app &lt;project-directory&gt; [options]
+Options:
+  -V, --version                            output the version number
+  --verbose                                print additional logs
+  --info                                   print environment debug info
+  --scripts-version &lt;alternative-package&gt;  use a non-standard version of react-scripts
+  --use-npm
+  --use-pnp
+  --typescript
+  -h, --help                               output usage information
+    Only &lt;project-directory&gt; is required.
+    A custom --scripts-version can be one of:
+      - a specific npm version: 0.8.2
+      - a specific npm tag: @next
+      - a custom fork published on npm: my-react-scripts
+      - a local path relative to the current working directory: file:../my-react-scripts
+      - a .tgz archive: https://mysite.com/my-react-scripts-0.8.2.tgz
+      - a .tar.gz archive: https://mysite.com/my-react-scripts-0.8.2.tar.gz
+    It is not needed unless you specifically want to use a fork.
+    If you have any problems, do not hesitate to file an issue:
+      https://github.com/facebook/create-react-app/issues/new
+</pre>
+TypeScript版の雛形も生成できますが、今回は指定しません。keen-analysis.js等のライブラリに対応した型定義ファイルがなく、自前で書くのがめんどくさいので…。
+<em>Only &lt;project-directory&gt; is required. </em>の通り、雛形のproject名のみ引数に指定してcreate-react-appコマンドを実行します。
+<pre class="lang:sh decode:true">$ create-react-app geiger-viewer
+Creating a new React app in /Users/takashi/Development/geiger-viewer.
+Installing packages. This might take a couple of minutes.
+Installing react, react-dom, and react-scripts...
+[fsevents] Success: "/Users/takashi/Development/geiger-viewer/node_modules/fsevents/lib/binding/Release/node-v57-darwin-x64/fse.node" already installed
+Pass --update-binary to reinstall or --build-from-source to recompile
++ react-scripts@2.1.1
++ react@16.6.3
++ react-dom@16.6.3
+added 1768 packages in 94.867s
+Initialized a git repository.
+Success! Created test at /Users/takashi/Development/geiger-viewer
+Inside that directory, you can run several commands:
+  npm start
+    Starts the development server.
+  npm run build
+    Bundles the app into static files for production.
+  npm test
+    Starts the test runner.
+  npm run eject
+    Removes this tool and copies build dependencies, configuration files
+    and scripts into the app directory. If you do this, you can’t go back!
+We suggest that you begin by typing:
+  cd test
+  npm start
+Happy hacking!</pre>
+geiger-viewerディレクトリ下にコードと設定ファイル一式が生成されたので、確認しましょう。
+<pre class="lang:sh decode:true">$ tree -L 1 geiger-viewer/
+geiger-viewer/
+├── README.md
+├── node_modules
+├── package-lock.json
+├── package.json
+├── public
+└── src</pre>
+これで雛形となるコードはできたんですが、IE等の古いブラウザを使っている人はまだまだ多いので（涙）、これに対応するための設定を追加する必要があります。
+でもその設定ファイルは、現段階では隠蔽されているので、展開する必要があります。
+先ほどのcreate-react-appコマンドオプション一覧に表示されていた、これですね。
+<pre class="lang:sh decode:true">  npm run eject
+    Removes this tool and copies build dependencies, configuration files
+    and scripts into the app directory. If you do this, you can’t go back!</pre>
+やってみると、
+<pre class="lang:sh decode:true">$ npm run eject
+&gt; geiger-viewer@0.1.0 eject /Users/takashi/Development/geiger-viewer
+&gt; react-scripts eject
+? Are you sure you want to eject? This action is permanent. Yes
+Ejecting...</pre>
+<em>Are you sure you want to eject? This action is permanent. （後戻りできないけど本当にいいの？）</em>と聞いてくるので、yを入力します。すると…
+<pre class="lang:sh decode:true ">Copying files into /Users/takashi/Development/temp/geiger-viewer
+  Adding /config/env.js to the project
+  Adding /config/paths.js to the project
+  Adding /config/webpack.config.dev.js to the project
+  Adding /config/webpack.config.prod.js to the project
+  Adding /config/webpackDevServer.config.js to the project
+  Adding /config/jest/cssTransform.js to the project
+  Adding /config/jest/fileTransform.js to the project
+  Adding /scripts/build.js to the project
+  Adding /scripts/start.js to the project
+  Adding /scripts/test.js to the project
+Updating the dependencies
+  Removing react-scripts from dependencies
+  Adding @babel/core to dependencies
+  Adding @svgr/webpack to dependencies
+  Adding babel-core to dependencies
+  Adding babel-eslint to dependencies
+  Adding babel-jest to dependencies
+  Adding babel-loader to dependencies
+  Adding babel-plugin-named-asset-import to dependencies
+  Adding babel-preset-react-app to dependencies
+  Adding bfj to dependencies
+  Adding case-sensitive-paths-webpack-plugin to dependencies
+  Adding chalk to dependencies
+  Adding css-loader to dependencies
+  Adding dotenv to dependencies
+  Adding dotenv-expand to dependencies
+  Adding eslint to dependencies
+  Adding eslint-config-react-app to dependencies
+  Adding eslint-loader to dependencies
+  Adding eslint-plugin-flowtype to dependencies
+  Adding eslint-plugin-import to dependencies
+  Adding eslint-plugin-jsx-a11y to dependencies
+  Adding eslint-plugin-react to dependencies
+  Adding file-loader to dependencies
+  Adding fork-ts-checker-webpack-plugin-alt to dependencies
+  Adding fs-extra to dependencies
+  Adding html-webpack-plugin to dependencies
+  Adding identity-obj-proxy to dependencies
+  Adding jest to dependencies
+  Adding jest-pnp-resolver to dependencies
+  Adding jest-resolve to dependencies
+  Adding mini-css-extract-plugin to dependencies
+  Adding optimize-css-assets-webpack-plugin to dependencies
+  Adding pnp-webpack-plugin to dependencies
+  Adding postcss-flexbugs-fixes to dependencies
+  Adding postcss-loader to dependencies
+  Adding postcss-preset-env to dependencies
+  Adding postcss-safe-parser to dependencies
+  Adding react-app-polyfill to dependencies
+  Adding react-dev-utils to dependencies
+  Adding resolve to dependencies
+  Adding sass-loader to dependencies
+  Adding style-loader to dependencies
+  Adding terser-webpack-plugin to dependencies
+  Adding url-loader to dependencies
+  Adding webpack to dependencies
+  Adding webpack-dev-server to dependencies
+  Adding webpack-manifest-plugin to dependencies
+  Adding workbox-webpack-plugin to dependencies
+Updating the scripts
+  Replacing "react-scripts start" with "node scripts/start.js"
+  Replacing "react-scripts build" with "node scripts/build.js"
+  Replacing "react-scripts test" with "node scripts/test.js"
+Configuring package.json
+  Adding Jest configuration
+  Adding Babel preset
+  Adding ESLint configuration
+Running npm install...
+up to date in 18.573s
+Ejected successfully!
+Please consider sharing why you ejected in this survey:
+  http://goo.gl/forms/Bi6CZjk1EqsdelXk1</pre>
+webpackやbabel等のツール、ライブラリと共に、./config下に設定ファイルが展開されました。古いIEにもちゃんと対応するにはwebpackの設定ファイルを修正して<em>@babel/polyfill </em>をかけてやる必要があるんですが、長くなってきたので続きは次回。
+<!--more-->

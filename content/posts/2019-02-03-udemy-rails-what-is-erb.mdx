@@ -1,0 +1,56 @@
+---
+title: "フルスタックエンジニアが教える即戦力Railsエンジニア養成講座 @Udemy 学習記録: ERBとはなんぞ"
+description: "突然出てくる.erbファイル。Embedded RuByの略なのね。納得。&lt;table class=table table-hover boards__t..."
+tags:
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2019-02-03T01:00:46.000Z
+author: takashi
+---
+
+
+突然出てくる.erbファイル。<a href="https://puppet.com/docs/puppet/5.3/lang_template_erb.html"><strong>E</strong>mbedded <strong>R</strong>u<strong>B</strong>yの略</a>なのね。納得。
+<pre class="lang:default decode:true">&lt;table class="table table-hover boards__table"&gt;
+  &lt;thead class="thead-dark"&gt;
+    &lt;tr&gt;
+      &lt;th&gt;ID&lt;/th&gt;
+      &lt;th&gt;タイトル&lt;/th&gt;
+      &lt;th&gt;作成者&lt;/th&gt;
+      &lt;th&gt;作成日時&lt;/th&gt;
+      &lt;th&gt;更新日時&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;% @boards.each do |board| %&gt;
+      &lt;tr&gt;
+        &lt;th&gt;&lt;%= board.id %&gt;&lt;/th&gt;
+        &lt;td&gt;&lt;%= board.title %&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;%= board.name %&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;%= board.created_at %&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;%= board.updated_at %&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+    &lt;% end %&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+</pre>
+シンタックスは結構単純。
+<ul>
+ 	<li><code>&lt;%= EXPRESSION %&gt;</code> — Inserts the value of an expression.
+<ul>
+ 	<li>With <code>-%&gt;</code> — Trims the following line break.</li>
+</ul>
+</li>
+ 	<li><code>&lt;% CODE %&gt;</code> — Executes code, but does not insert a value.
+<ul>
+ 	<li>With <code>&lt;%-</code> — Trims the preceding indentation.</li>
+ 	<li>With <code>-%&gt;</code> — Trims the following line break.</li>
+</ul>
+</li>
+ 	<li><code>&lt;%# COMMENT %&gt;</code> — Removed from the final output.
+<ul>
+ 	<li>With <code>-%&gt;</code> — Trims the following line break.</li>
+</ul>
+</li>
+ 	<li><code>&lt;%%</code> or <code>%%&gt;</code> — A literal <code>&lt;%</code> or <code>%&gt;</code>, respectively.</li>
+</ul>

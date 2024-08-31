@@ -1,0 +1,37 @@
+---
+title: "使えば使うほど嫌いになっていくOS、それはWindows。"
+description: "先月会社都合の異動（というよりほぼ転職）を果たしたんですが、以前の職場のUbuntu Linux:Windows=50:50環境と違って、今の職場はLinux:..."
+tags:
+  - "Windows"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-05-12T06:55:26.000Z
+author: takashi
+---
+
+
+先月会社都合の異動（というよりほぼ転職）を果たしたんですが、以前の職場のUbuntu Linux:Windows=50:50環境と違って、今の職場はLinux:Windows=99:1。
+超少数を除いて、OSSのオの字も通じない人多数の、ほぼアウェー状態。
+Ubuntu用に物理マシン１台欲しいなんて夢のまた夢です。
+そうなると当然、WindowsホストにLinuxゲストのVM環境なっちゃうんですが…
+使うほどに、Windows OSに憎悪すら感じるようになってきました。
+<hr />
+<h1>とにかく遅いWindows</h1>
+TortoiseSVN、git bash、Office、ターミナル…
+<strong>ことごとく重い！</strong>
+TortoiseはGUIの処理が重いんでしょう。
+んで、CUIで使おうとターミナル（コマンドプロンプト）を開くと、あの貧弱なシェルと付き合わされるので、git bashみたいなWindows版bashを使うと、これまた輪をかけて重い。
+Core部分をUnix系と共通化するためにPOSIXをWrapしているせい？
+同じマシンにインストールしたVM上のLinuxでCUIのsvn/gitを使う方が速いんだから、救いようがない。
+<h1>bashが使えない</h1>
+git bashみたいな外部ツールをインストールすればbash自体は使えるけど、ほんっとーに基本的なコマンドしか入っていない上、追加したくてもaptやyumのようなパッケージ管理システムはもちろん、無い。
+お陰さまで、ちょっと複雑なテキスト処理を自動化してソフト開発環境に繋げたくても、そう簡単にはできない。
+そもそもgit bashも重い。
+<a href="http://www.atmarkit.co.jp/ait/articles/1604/11/news031.html">近い将来、標準でbashが動く上、ELF実行バイナリがそのまま動いたり、aptが使えるそうですが</a>、正直期待しておりません。エミュレーションしてる時点で重いんでしょ？どーせ。
+<h1>pythonが使えない</h1>
+いや、使えるんですけど。
+<a href="http://qiita.com/HirofumiYashima/items/f5f72f3006f8af03ddad">pip(パッケージ管理システム)が使えないのです。</a>
+<hr />
+要するにWindowsではおとなしくVisualホゲホゲを使ってGUIアプリ作れってことですかね。
+萎えてきた。

@@ -1,0 +1,94 @@
+---
+title: "「不倫」データセットを機械学習して妻の説明変数パラメータを与えたところ、結果は…"
+description: "結果はシロでした！ 不倫しないそうです。（本人に結果報告したら「わかんないよ」と言われましたが…）まずは学習データをロードします。import pandas a..."
+tags:
+  - "python"
+  - "udemy"
+  - "プログラミング"
+  - "可視化"
+  - "機械学習"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-06-06T03:05:39.000Z
+author: takashi
+---
+
+
+結果はシロでした！ 不倫しないそうです。（本人に結果報告したら「わかんないよ」と言われましたが…）
+まずは学習データをロードします。
+<pre><code class="python">import pandas as pd
+import numpy as np
+from pandas import DataFrame, Series
+import statsmodels.api as sm
+X = sm.datasets.fair.load_pandas().data
+</code></pre>
+学習データに対する正解を作ります。
+未知のデータ（妻パラメータ）に対する不倫するか（1）しないか(0)の結果を知りたいんですよね。
+<pre><code class="python">def is_affairs(affairs):
+    return 1 if affairs &gt; 0 else 0
+Y = X.affairs.apply(is_affairs)
+</code></pre>
+affairsは「不倫情事に費やした時間」です。生々しい表現だなぁ・・・。
+<pre><code class="python">print(sm.datasets.fair.NOTE)
+::
+    Number of observations: 6366
+    Number of variables: 9
+    Variable name definitions:
+        rate_marriage   : How rate marriage, 1 = very poor, 2 = poor, 3 = fair,
+                        4 = good, 5 = very good
+        age             : Age
+        yrs_married     : No. years married. Interval approximations. See
+                        original paper for detailed explanation.
+        children        : No. children
+        religious       : How relgious, 1 = not, 2 = mildly, 3 = fairly,
+                        4 = strongly
+        educ            : Level of education, 9 = grade school, 12 = high
+                        school, 14 = some college, 16 = college graduate,
+                        17 = some graduate school, 20 = advanced degree
+        occupation      : 1 = student, 2 = farming, agriculture; semi-skilled,
+                        or unskilled worker; 3 = white-colloar; 4 = teacher
+                        counselor social worker, nurse; artist, writers;
+                        technician, skilled worker, 5 = managerial,
+                        administrative, business, 6 = professional with
+                        advanced degree
+        occupation_husb : Husband's occupation. Same as occupation.
+        affairs         : measure of time spent in extramarital affairs
+    See the original paper for more details.
+</code></pre>
+正解をYに入れてあるので、その目的変数に強く相関する値affairsを説明変数から除きます。
+<pre><code class="python">X.drop("affairs", inplace=True, axis=1)
+</code></pre>
+ちょっとめんどくさいんですが、数字の大小に意味がない変数、職業をダミー変数に変換しつつ、多重共線性を排除して、説明変数に連結します。
+<pre><code class="python">occs = pd.get_dummies(X.occupation)
+occs.columns = Series(["occ" + str(num) for num in range(1,7)])
+occs.drop("occ1", axis=1, inplace=True)
+occs_husb = pd.get_dummies(X.occupation_husb)
+occs_husb.columns = Series(["occ_husb" + str(num) for num in range(1,7)])
+occs_husb.drop("occ_husb1", axis=1, inplace=True)
+X = pd.concat([X, occs, occs_husb], axis=1)
+</code></pre>
+occ, occ_husbの元となったデータを削除します。強く相関してますしね。
+<pre><code class="python">X.drop(["occupation", "occupation_husb"], inplace=True, axis=1)
+</code></pre>
+学習用データと、答えあわせ用データに分けてモデルを作ります。9割を学習用データとして使います。より正確さを追求したいので。
+<pre><code class="python">from sklearn.linear_model import LogisticRegression
+from sklearn.cross_validation import train_test_split
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, train_size=0.9)
+model = LogisticRegression()
+model.fit(X_train, Y_train)
+</code></pre>
+答えあわせをしてみます。
+<pre><code class="python">from sklearn.metrics import accuracy_score
+predicted = model.predict(X_test)
+print(accuracy_score(Y_test, predicted))
+0.70800627943485084
+</code></pre>
+正答率70%。
+愛妻の説明変数を与えて、不倫するかしないかを予測してみると・・・
+<pre><code class="python">my_wife = Series([2, 31, 6, 2, 3, 16, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0])
+model.predict(my_wife)
+</code></pre>
+結果は array([0]) ＝ 不倫しない となりました。
+こういう一見アホらしいことを全力でやるのは、やっぱり楽しいですね。
+今度は別のモデルを使って予測してみよう。

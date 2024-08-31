@@ -1,0 +1,60 @@
+---
+title: "Python製WebアプリフレームワークFlaskが思っていたよりパワフルで深い。"
+description: "せっかくPython始めたのでWebアプリの一つでも作ってみたいと思い、この本を読みながらFlaskの使い方を勉強していたんですが、正直扱いづらいなぁ・・・と感..."
+tags:
+  - "flask"
+  - "python"
+  - "プログラミング"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2017-05-27T18:48:32.000Z
+author: takashi
+---
+
+
+せっかくPython始めたのでWebアプリの一つでも作ってみたいと思い、この本を読みながらFlaskの使い方を勉強していたんですが、正直扱いづらいなぁ・・・と感じていました。
+<div class="kaerebalink-box" style="text-align:left;padding-bottom:20px;font-size:small;overflow: hidden"><div class="kaerebalink-image" style="float:left;margin:0 15px 10px 0"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB00XZTYMG6%2Fref%3Dnosim" target="_blank" rel="noopener"><img src="https://images-fe.ssl-images-amazon.com/images/I/51sRmBNqesL._SL160_.jpg" style="border: none" /></a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="kaerebalink-info" style="line-height:120%;overflow: hidden"><div class="kaerebalink-name" style="margin-bottom:10px;line-height:120%"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB00XZTYMG6%2Fref%3Dnosim" target="_blank" rel="noopener">Pythonプロフェッショナルプログラミング 第2版</a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"><div class="kaerebalink-powered-date" style="font-size:8pt;margin-top:5px;font-family:verdana;line-height:120%">posted with <a href="http://kaereba.com" rel="nofollow noopener" target="_blank">カエレバ</a></div></div><div class="kaerebalink-detail" style="margin-bottom:5px">株式会社ビープラウド 秀和システム 2015-05-21    </div><div class="kaerebalink-link1" style="margin-top:10px"><div class="shoplinkamazon" style="margin:5px 0"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fgp%2Fsearch%3Fkeywords%3DPython%25E3%2583%2597%25E3%2583%25AD%25E3%2583%2595%25E3%2582%25A7%25E3%2583%2583%25E3%2582%25B7%25E3%2583%25A7%25E3%2583%258A%25E3%2583%25AB%25E3%2583%2597%25E3%2583%25AD%25E3%2582%25B0%25E3%2583%25A9%25E3%2583%259F%25E3%2583%25B3%25E3%2582%25B0%26__mk_ja_JP%3D%25E3%2582%25AB%25E3%2582%25BF%25E3%2582%25AB%25E3%2583%258A" target="_blank" rel="noopener">Amazon</a><img src="//i.moshimo.com/af/i/impression?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062" width="1" height="1" style="border:none"></div><div class="shoplinkrakuten" style="margin:5px 0"><a href="//af.moshimo.com/af/c/click?a_id=602828&amp;p_id=54&amp;pc_id=54&amp;pl_id=616&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fsearch.rakuten.co.jp%2Fsearch%2Fmall%2FPython%25E3%2583%2597%25E3%2583%25AD%25E3%2583%2595%25E3%2582%25A7%25E3%2583%2583%25E3%2582%25B7%25E3%2583%25A7%25E3%2583%258A%25E3%2583%25AB%25E3%2583%2597%25E3%2583%25AD%25E3%2582%25B0%25E3%2583%25A9%25E3%2583%259F%25E3%2583%25B3%25E3%2582%25B0%2F-%2Ff.1-p.1-s.1-sf.0-st.A-v.2%3Fx%3D0" target="_blank" rel="noopener">楽天市場</a><img src="//i.moshimo.com/af/i/impression?a_id=602828&amp;p_id=54&amp;pc_id=54&amp;pl_id=616" width="1" height="1" style="border:none"></div></div></div><div class="booklink-footer" style="clear: left"></div></div>
+ちょっと規模が大きくなると、Viewを機能ごとに複数のソースファイルに分けたり、機能ごとにテストを組みたくなってきて。
+デコレータで手軽にroute設定できるのは利点なんですが、このappインスタンスを複数ファイルから参照するのは何か嫌だし。
+<pre><code class="python">from flask import Flask
+app = Flask("hoge")
+@app.route('/users/')
+def show_users(page):
+    users = User.query.all()
+    return render_template('users.html', users=users)
+if __name__ = "__main__":
+    app.run(host="0.0.0.0", port=80)
+</code></pre>
+何かもっと綺麗な書き方があるはずだと思ってFlaskの公式ドキュメントをみていたら、やっぱりありました。
+<a href="http://flask.pocoo.org/docs/0.12/views/">Flask 0.7以降でサポートされたPluggable View</a>というものがあります。
+<blockquote>
+  ビュー関数の代わりにDjangoのクラスベースの汎用ビューにインスパイアされた拡張可能なビューが導入されています。<br />
+  主な目的として、カスタマイズ可能な拡張可能なビューを使って、実装の一部分を置き換えることができます。
+</blockquote>
+公式ページのサンプルそのままですが、下のように<code>View</code>を継承したクラスを作っておいて、appインスタンスに<code>add_url_rule</code>すればいいんですね。これはいい！
+<pre><code class="python">from flask.views import View
+class ShowUsers(View):
+    methods = ['GET', 'POST']
+    def dispatch_request(self):
+        users = User.query.all()
+        return render_template('users.html', objects=users)
+app.add_url_rule('/users/', view_func=ShowUsers.as_view('show_users'))
+</code></pre>
+Viewクラスがサポートするmethodを指定することも可能ですが、この書き方はいまいちな気が・・・
+という方向けに、<code>MethodView</code>クラスがあります。
+これは対応するmethod名（小文字）をオーバーライドしてやれば、そのmethodに対応した関数がマップされるというものです。
+<pre><code class="python">from flask.views import MethodView
+class UserAPI(MethodView):
+    def get(self):
+        users = User.query.all()
+        ...
+    def post(self):
+        user = User.from_form_data(request.form)
+        ...
+app.add_url_rule('/users/', view_func=UserAPI.as_view('users'))
+</code></pre>
+これならViewクラスごとにテストが書けるので、メンテナンス性も良いですね。
+現在制作中のちょっとしたWebアプリは、上記View/MethodViewに置き換えました。
+後から機能を付け足しやすくなって、いい感じです。
+まだ使ったことがない方は、ぜひ試してみてください。

@@ -1,0 +1,27 @@
+---
+title: "pythonのunittestフレームワーク、doctest+MiniMock"
+description: "class IntUtil:    def twice(self, n):         引数を 2 倍して返す関数        &gt;&gt;&gt; ..."
+tags:
+  - "python"
+  - "プログラミング"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2017-07-15T00:37:35.000Z
+author: takashi
+---
+
+
+<pre><code class="python">class IntUtil:
+    def twice(self, n):
+        """ 引数を 2 倍して返す関数
+        &gt;&gt;&gt; mine.twice(8)
+        16
+        &gt;&gt;&gt; mine.twice(1850923)
+        3701846
+        """
+        return n * 2
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod(extraglobs = {'mine': IntUtil()})
+</code></pre>

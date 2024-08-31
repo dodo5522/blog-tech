@@ -1,0 +1,53 @@
+---
+title: "太陽光発電システムの要、チャージコントローラまとめ。"
+description: "太陽光パネルで発電した電力を蓄電池に貯めるには、チャージコントローラ（略してチャーコン）が必要です。チャーコンを選定する際に気にするべき仕様は、使うパネルの発電..."
+tags:
+  - "DIY"
+  - "オフグリッド"
+  - "電子工作"
+categories:
+  - hobby
+image: /images/software-developer.jpg
+date: 2015-12-18T07:20:15.000Z
+author: takashi
+---
+
+
+太陽光パネルで発電した電力を蓄電池に貯めるには、チャージコントローラ（略してチャーコン）が必要です。チャーコンを選定する際に気にするべき仕様は、使うパネルの発電能力や蓄電池の容量に寄るので、ここでは触れません。規模別に大まかな分類と、個人的に必須な機能、その機能を持ったチャーコンをリストアップしておこうと思います。
+<h1>株式会社電菱SA-Bシリーズ（PWM制御）</h1>
+<img src="http://www.denryo.com/solar_controller/charge_discharge/img/p/sa-ba.gif" alt="SA-B" />
+手軽に手頃に太陽光発電するなら、PWM制御のコントローラにしましょう。株式会社電菱さんのSA-Bシリーズがオススメです。スマホ充電用のシステムにはこれを使っています。
+細かい仕様は<a href="http://www.denryo.com/solar_controller/charge_discharge/sa-ba.html">公式サイト</a>を参照してもらうとして、特徴は何よりその小ささ。手のひら半分に収まり、軽いです。値段もお手頃で、12V用Max10Aならアマゾンで3000円程度で入手できます。12V用20A, 24V用Max10A…と容量が増すにつれて値段も1000円程度ずつ高くなります。
+
+
+
+とても良い製品なんですが、欠点もあります。
+PWM制御なので、充電効率があまり良くありません。
+また、蓄電池の寿命をできる限り延ばすために、バッテリー低電圧保護という機能が付いているんですが、~~一旦この機能が働くと、その後蓄電池の電圧が回復しても、負荷への電力供給が止まったままになります。電力供給を再開するには、一旦太陽光パネルと蓄電池の接続線を外して再接続する必要があるのが地味に手間です。間にスイッチを挟めば少しはその手間も軽減できるかな…。~~ <strong>スイマセン、嘘でした。</strong>12.5V？程度以上までバッテリーの電圧が回復すると、負荷への電力供給を再開してくれるようです。
+<h1>TriStar TS-MPPT-45/60（MPPT制御）</h1>
+<img src="http://www.morningstarcorp.com/wp-content/uploads/2013/11/TS-MPPT_Angled-60-F_retouch_feature.png" alt="TS-MPPT-60" />
+より効率的な太陽光発電システムを作るなら、TriStar社製TS-MPPT-60がオススメです。家電用のシステムには、これを使っています。
+これを選んだ決定的な機能として、Ethernetがあります。無線LANコンバータと併用することで、無線で発電状況を監視できるのが、他では得られない利点ですね。（EthernetなしのTS-MPPT-45もあります）
+機能面だけでなく、性能面でも優れています。名前の通りMPPT制御なので、気象条件毎の太陽電池からの最大電力を取り出すことができます。MPPT制御チャーコンの中でもこのTS-MPPTシリーズは定評があるようです。<a href="http://www.morningstarcorp.com/wp-content/uploads/2014/02/150V-TS-MPPT-Operators-Manual.pdf">マニュアル</a>には、システム電圧毎の充電効率が記載されています。12Vなら約92%〜98%、24Vなら約95%〜99%、48Vなら約97%〜99%と、かなりの高効率です。
+実際の計測値を見るとイメージしやすいと思うので、我が家の実データを以下に記載します。…下記の計算は、充電量が発電量を上回るという矛盾した結果になりますが、データ取得時刻に誤差があるせいなので、あくまで参考ということにしてください…。
+下のグラフから、蓄電池の電圧12.5、チャーコンから蓄電池への電流9.89Aの積、約123Wの電力で充電していることが分かります。
+<img src="https://farm6.staticflickr.com/5698/21661854836_fa3cf5c416_z_d.jpg" alt="chargecurrent" />
+下のグラフは、その時の太陽光パネルの生の発電量です。パネルの電圧50V、電流2.29Aの積で、約114.5Wの電力を発電できていることが分かります。ざっくり言うと、太陽光パネルと蓄電池の電圧差も無駄にすることなく、充電にまわしているということですね。
+<img src="https://farm1.staticflickr.com/636/21065228364_58aed76ccc_z_d.jpg" alt="arraycurrent" />
+ただ、これには重大な欠点が３つあります。<br />
+<strong>デカい。重い。値段が高い。</strong>
+巨大なヒートシンクのせいなんですが、とにかくデカくて重いです。高さ約30cm、重さは5kgあります。
+さらに、値段も張ります。日本で並行輸入品を買うと、軽く10万円以上します。
+
+わざわざ「日本で」と書いたのは理由があって… <a href="http://www.amazon.com/Morningstar-TS-MPPT-60-Tristar-Mppt-Amp/dp/B007NMVL7E">amazon本店</a>だと、6〜7万円程度なんです。関税かかってるのか詳細はわかりませんが、個人で輸入する勇気はなかったので、代理店経由で購入しました。
+<h1>BlueSkyENERGY SBシリーズ+UCM（MPPT制御）</h1>
+（調査中）オプションでEthernet機能を付加できるらしい。
+<img src="http://www.blueskyenergyinc.com/images/site/product-family-banner.jpg" alt="SOLARBOOST" /><img src="http://www.blueskyenergyinc.com/images/made/images/uploads/products/UCM_1_150_150.jpg" alt="UCM" />
+<a href="http://www.blueskyenergyinc.com/uploads/pdf/BSE_UCM_datasheet.pdf">UCMデータシート</a>
+UCMとの接続可能な機種は以下の通り
+<ul>
+<li>SB2512i</li>
+<li>SB2512iX</li>
+<li>SB1524iX</li>
+<li>SB3024iL</li>
+</ul>

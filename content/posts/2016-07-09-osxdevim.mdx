@@ -1,0 +1,107 @@
+---
+title: "lua有効版vimをOSXターミナルで使いたい。"
+description: "vim使ってますか？vimでコード書く人ならほぼ100%使っているであろう、コード補完プラグインneocompleteをOSXターミナル版vimでも使えるように..."
+tags:
+  - "vim"
+  - "ツール"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-07-09T13:21:05.000Z
+author: takashi
+---
+
+
+<br />
+vim使ってますか？
+vimでコード書く人ならほぼ100%使っているであろう、コード補完プラグインneocompleteをOSXターミナル版vimでも使えるようにする方法の紹介です。
+有名なので知っている人は多いと思いますが、neocomplete動作要件は<code>7.3.885+ compiled with if_lua.</code>です。
+んで、OSXにデフォルトで入っているvimは7.3なのです。
+<h1>luaなしvimでも使えるneocomplcacache</h1>
+同じ作者様のコード補完プラグインに、neocomplcacacheがあります。
+が、github README.mdに記載されている通り、neocomplcacacheは既にメンテされておらず、使っているとその旨の警告が出たりします。
+<strong><a href="https://github.com/Shougo/neocomplcache.vim">Shougo/neocomplcache.vim@github</a></strong>
+<pre><code class="markdown">**neocomplcache**
+=================
+Note:  It is not maintained well.  You should use neocomplete instead.
+https://github.com/Shougo/neocomplete.vim
+</code></pre>
+<h1>neocompleteを使いましょう</h1>
+neocompleteのREADMEには以下のように書かれていますが、誇張でもなんでもなく、ほんとに強力なキーワード補完をしてくれます。下手なIDEよりいいんじゃないでしょうか。vimの方が軽量で起動も早いですし。
+<strong><a href="https://github.com/Shougo/neocomplete.vim">Shougo/neocomplete.vim</a></strong>
+<pre><code class="markdown">neocomplete
+===========
+neocomplete is the abbreviation of "neo-completion with cache". It provides keyword completion system by maintaining a cache of keywords in the current buffer. neocomplete can be customized easily and has many more features than Vim's built-in completion.
+</code></pre>
+<h1>Mac OSXでneocompleteを使いましょう</h1>
+使いたいところなんですが、何も考えずに使おうとすると、躓きます。
+デフォルトで入っているvimのバージョンが7.3な上、brewで普通にインストールしても7.4 -lua版なんですよね・・。
+lua有効版vimのインストール方法を調べるのが面倒くさくて、しばらくの間KaoriyaさんMacVimをエイリアスして使っていましたが、これだとvimの軽量・軽快さというメリットがなくなります。MacVim.appにエイリアスしていることからわかる通りGUI版なので、起動がとっても重い。
+<pre><code class="diff">~ $ svn diff -r PREV:HEAD .bash_profile
+Index: .bash_profile
+===================================================================
+--- .bash_profile   (revision 599)
++++ .bash_profile   (revision 600)
+@@ -15,6 +15,4 @@
+ if [ "$(uname)" = 'Darwin' ]; then
+     alias markright="open -a /opt/homebrew-cask/Caskroom/markright/0.1.10/MarkRight.app"
+-    alias vim="open -a /usr/local/Cellar/macvim-kaoriya/HEAD/MacVim.app"
+-    alias vi="open -a /usr/local/Cellar/macvim-kaoriya/HEAD/MacVim.app"
+ fi
+</code></pre>
+で、lua有効版vimのインストール方法を調べてみたら、思いの外簡単でした。
+brew info vimコマンドを実行すればすぐわかることだった…　それ以前に、<a href="https://github.com/Shougo/neocomplete.vim#vim-for-mac-os-x">neocompleteのREADME.md</a>にガッツリ書いてあった…。
+<pre><code class="bash">~ $ brew info -h
+brew info formula:
+    Display information about formula.
+~ $ brew info vim
+vim: stable 7.4.1830, HEAD
+Vi "workalike" with many additional features
+http://www.vim.org/
+Conflicts with: ex-vi
+/usr/local/Cellar/vim/7.4.1830 (1,688 files, 25.0M) *
+  Built from source on 2016-07-10 at 05:30:49 with: --with-lua
+From: https://github.com/Homebrew/homebrew-core/blob/master/Formula/vim.rb
+==&gt; Dependencies
+Optional: lua _, luajit _
+==&gt; Options
+--disable-nls
+    Build vim without National Language Support (translated messages, keymaps)
+--override-system-vi
+    Override system vi
+--with-client-server
+    Enable client/server mode
+--with-lua
+    Build vim with lua support
+--with-luajit
+    Build with luajit support
+...
+</code></pre>
+ということで、インストール手順です。
+<h2>lua有効版vimのインストール手順</h2>
+インストールコマンドを叩く。
+<pre><code class="bash">~$ brew install vim --with-lua
+</code></pre>
+デフォルトのvi/vimより先にlua有効版vimにヒットするようにPATHを設定する。
+<pre><code class="bash">export PATH="/usr/local/bin:$PATH"
+</code></pre>
+viコマンドでlua有効版vimに向くようにエイリアスを貼る。brew install後そのままだと、viコマンドでデフォルトの7.3が起動しちゃいました。
+<pre><code class="bash">~ $ which vim
+/usr/local/bin/vim
+~ $ which vi
+/usr/bin/vi
+~ $ ls /usr/local/bin/vi
+ls: /usr/local/bin/vi: No such file or directory
+~ $ cd /usr/local/bin; ln -s vim vi
+</code></pre>
+<h2>おまけ</h2>
+luaってそもそもなんなんだ？ と思った方は、引用元<a href="https://ja.wikipedia.org/wiki/Lua">Wikipedia</a>を参照ください。
+<blockquote>
+  Lua（ルア）は、...(略)...らによって設計開発されたスクリプト言語およびその処理系の実装である。
+  手続き型言語として、また、プロトタイプベースのオブジェクト指向言語としても利用する事が出来、関数型言語、データ駆動型としての要素も併せ持っている。
+  Luaという名前は、ポルトガル語の月に由来する。
+</blockquote>
+ちなみに、LuaJITはLuaのコンパイラだそうです。<code>brew install vim</code>のオプションに<code>--with-luajit</code>が出てきたので。
+neocompleteの一部またはコア部分がLuaで書かれてるってことなんでしょうね。多分。
+<h1>教訓</h1>
+READMEは必ず読みましょう。

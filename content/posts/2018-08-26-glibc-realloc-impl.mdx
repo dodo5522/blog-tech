@@ -1,0 +1,33 @@
+---
+title: "glibcのrealloc実装、こうなってたのね"
+description: "[gfm]`realloc`は`glibc`というオープンソースのライブラリ内部に実装された関数なので、そのソースコードがインターネット上に公開されています。オ..."
+tags:
+  - "glibc"
+  - "OSS"
+  - "realloc"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2018-08-26T20:50:08.000Z
+author: takashi
+---
+
+
+[gfm]
+`realloc`は`glibc`というオープンソースのライブラリ内部に実装された関数なので、そのソースコードがインターネット上に公開されています。
+オリジナルは[こちら](http://sourceware.org/git/?p=glibc.git)ですが、扱いやすいようにgithubにforkした人がいるようなので、有り難く[github](https://github.com/lattera/glibc/blob/895ef79e04a953cac1493863bcae29ad85657ee1/malloc/malloc.c#L536)の方を参考にさせてもらいましょう。
+関数ヘッダ（関数の仕様の概略をコメントで記述したもの）には以下の記述があります。
+&gt;  If space is not available, realloc returns null, errno is set (if on
+&gt;  ANSI) and **p is NOT freed**.
+&gt;
+&gt;   if n is for fewer bytes than already held by p, the newly unused
+&gt;  space is lopped off and **freed if possible**.  Unless the #define
+&gt;  REALLOC_ZERO_BYTES_FREES is set, realloc with a size argument of
+&gt;  zero (re)allocates a minimum-sized chunk.
+**p is NOT freed** と **freed if possible** の辺りに着目しながら、`libc`の`realloc`関数本体のコード[__libc_realloc (void *oldmem, size_t bytes)](https://github.com/lattera/glibc/blob/895ef79e04a953cac1493863bcae29ad85657ee1/malloc/malloc.c#L3113)を読んでみましょう。この関数の実装を一字一句理解する必要はなく、今回知りたいことの要点だけ調べれば良いです。
+関数ヘッダにも書いてあることですが、以下のように面白いことがわかります。
+- [reallocの第一引数に0(NULL)を指定した場合はmallocと同じ動作をする](https://github.com/lattera/glibc/blob/895ef79e04a953cac1493863bcae29ad85657ee1/malloc/malloc.c#L3132)
+- [reallocは、内部でmallocして新しい領域を確保し、reallocの第一引数に指定されたポインタが示す領域のデータをコピーしている](https://github.com/lattera/glibc/blob/895ef79e04a953cac1493863bcae29ad85657ee1/malloc/malloc.c#L3194)
+- [上記コピー処理した後、reallocの第一引数に指定されたポインタが示す領域をunmapして解放しているが、エラーした場合はunmapせずに終了している](https://github.com/lattera/glibc/blob/895ef79e04a953cac1493863bcae29ad85657ee1/malloc/malloc.c#L3199)
+ということで、[こちら(cppreference.com)](https://en.cppreference.com/w/c/memory/realloc)の Example に記載されているコードのように、reallocがエラーとなった場合は、前回のバッファポインタを取っておいて、ちゃんとfreeしてあげないといけないようです。
+[/gfm]

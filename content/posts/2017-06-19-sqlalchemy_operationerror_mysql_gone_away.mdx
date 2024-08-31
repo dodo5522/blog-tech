@@ -1,0 +1,85 @@
+---
+title: "SQLAlchemy OperationalError (2006, MySQL server has gone away (BrokenPipeError(32, 'Broken pipe')) を解決する"
+description: "SQLAlchemy経由でMySQL読み書きするWebアプリを作ったのだけど、時間を空けてアクセスした時、たまに掲題のエラーで接続できない状態に陥る。mysql..."
+tags:
+  - "MySQL"
+  - "python"
+  - "sqlalchemy"
+  - "サーバ"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2017-06-19T21:18:37.000Z
+author: takashi
+---
+
+
+
+SQLAlchemy経由でMySQL読み書きするWebアプリを作ったのだけど、時間を空けてアクセスした時、たまに掲題のエラーで接続できない状態に陥る。
+mysql serverを再起動しても復帰せず、gunicorn経由起動のサーバアプリを再起動すると復帰する。
+MySQL server gone awayと言ってるけど、SQLAlchemyとのセッション的な何かが切れたのでは、と予想。
+## とりあえずググる
+参考にした記事は以下。
+* [Python: SQLAlchemy で 'MySQL server has gone away' になる問題を解決する](http://blog.amedama.jp/entry/2015/08/15/133322)
+&gt; 上記のエラーは MySQL とのコネクションがタイムアウトを起こした状態で
+ SQLAlchemy が SQL 文を発行したときに発生する。 対策については、MySQL とのコネクションがタイムアウトを起こさないように、一定時間毎にコネクションを張り直す設定を SQLAlchemy に行えば良い。
+まんま書いてあった。
+ただし、以下の記事を見ると解決できなかった？ようにも見える。
+* [SQLAlchemyの OperationalError: MySQL Connection not available エラー](http://aroundthedistance.hatenadiary.jp/entry/2015/04/27/121230)
+&gt; wait_timeoutは最後に接続したコネクションの生き残ることができる秒数っぽい。だんだん良く分からなくなってきたので、connect_timeout,interactive_timeout,wait_timeoutを1日設定(86400秒)に設定し、pool_recycleを3600秒に変更した。
+以下はSQLAlchemy公式ドキュメント。
+* [Setting Pool Recycle](http://docs.sqlalchemy.org/en/latest/core/pooling.html#setting-pool-recycle)
+公式ドキュメントも言っているので、とりあえず`pool_recycle`を設定し、MySQLのtimeout設定に合わせて変更して様子を見ることにする。
+## MySQLのwait_timeout設定を確認する
+自分のmysql設定を見たところ、`wait_timeout`は以下の通り8時間に設定されている。
+```
+mysql&gt; show global variables like "wait_timeout";
++---------------+-------+
+| Variable_name | Value |
++---------------+-------+
+| wait_timeout  | 28800 |
++---------------+-------+
+```
+## SQLAlchemyの`create_engine`で`pool_recycle`を指定する
+MySQL設定は上記の通りなので、SQLAlchemyは半分の4時間=14400秒に設定し、MySQLがtimeoutする前にSQLAlchemyがrecycleするように設定。
+```diff
+@@ -57,7 +57,8 @@ def __new__(
+              engine = create_engine(
+                  "mysql+pymysql://{USER}:{PASSWORD}@{SERVER}:{PORT}/{DB}?charset=utf8".format(
+                      USER=user,
+                      PASSWORD=password,
+                      SERVER=server,
+                      PORT=port,
+ -                    DB=db)) if url is None else create_engine(url)
+ +                    DB=db),
+ +                pool_recycle=14400) if url is None else create_engine(url)
+              cls.__db_meta = MetaData(bind=engine)
+              cls.__db_meta.reflect()
+```
+## 結果どうなったかというと・・・
+無事、解決したようです。
+8時間以上間をあけてアクセスしても正常動作していることを確認。
+## おまけ
+pool_recycleを設定しても解決できなかった場合は以下の記事を参考にevent listenerを設定してみるつもりだったが、解決したのでお蔵入り。
+念のためメモを残しておく。
+* [Python SQLAlchemy - “MySQL server has gone away"](https://stackoverflow.com/questions/18054224/python-sqlalchemy-mysql-server-has-gone-away)
+&gt; There was a talk about this, and this doc describes the problem pretty nicely, so I used their recommended approach to handle such errors: http://discorporate.us/jek/talks/SQLAlchemy-EuroPython2010.pdf
+```python
+from sqlalchemy import create_engine, event
+from sqlalchemy.exc import DisconnectionError
+def checkout_listener(dbapi_con, con_record, con_proxy):
+    try:
+        try:
+            dbapi_con.ping(False)
+        except TypeError:
+            dbapi_con.ping()
+    except dbapi_con.OperationalError as exc:
+        if exc.args[0] in (2006, 2013, 2014, 2045, 2055):
+            raise DisconnectionError()
+        else:
+            raise
+db_engine = create_engine(DATABASE_CONNECTION_INFO,
+                          pool_size=100,
+                          pool_recycle=3600)
+event.listen(db_engine, 'checkout', checkout_listener)
+```

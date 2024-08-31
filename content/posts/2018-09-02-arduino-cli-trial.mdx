@@ -1,0 +1,162 @@
+---
+title: "使いづらいArduino IDEを脱却する！公式ツール arduino-cli リリース"
+description: "[gfm]Arduino IDEのエディタが使いづらくてしょうがないと思っている人は自分だけではないはず。[Arduino Makefile](https://..."
+tags:
+  - "arduino"
+  - "linux"
+categories:
+  - programming
+  - hobby
+image: /images/software-developer.jpg
+date: 2018-09-02T16:43:30.000Z
+author: takashi
+---
+
+
+[gfm]
+Arduino IDEのエディタが使いづらくてしょうがないと思っている人は自分だけではないはず。
+[Arduino Makefile](https://github.com/sudar/Arduino-Makefile)という非公式ツールを`git submodule`した上で簡単なMakefileを書けば、自分好みのテキストエディタを使うことができて、且つ`make upload`で実機への書き込みもできる。
+ただ、`submodule`したりMekefile書いたりと、ちょっとだけ面倒な作業が玉に瑕。
+## arduino-cli来ました
+何かのニュースでarduino-cliという公式ツールがリリースされるという情報を目にしました。
+[/gfm]
+<blockquote class="twitter-tweet" data-lang="ja"><p lang="en" dir="ltr">arduino-cli is an all-in-one solution that provides builder, boards/library manager, uploader, discovery and many other tools needed to use any Arduino compatible board and platforms:<a href="https://t.co/wL4DI10Wlt">https://t.co/wL4DI10Wlt</a></p>&mdash; Chema Fdez Varela (@jmfvarela) <a href="https://twitter.com/jmfvarela/status/1033696129844699136?ref_src=twsrc%5Etfw">2018年8月26日</a></blockquote>
+
+[gfm]
+**これでMakefileを書く必要もなくなるではないか！**
+と思い、早速インストール。go環境があると、インストールがとても楽。
+## anyenv/goenv 導入
+rbenvやpyenv同様、goにもgoenvという仮想環境構築ツールが存在します。
+そんな`**env`系ツールをまとめたフロントエンド的なツール[anyenv](https://github.com/riywo/anyenv)を使用して、まずはgoenvをインストールします。
+```
+$ anyenv install -l
+Available **envs:
+  crenv
+  denv
+  erlenv
+  exenv
+  goenv
+  hsenv
+  jenv
+  luaenv
+  ndenv
+  nenv
+  nodenv
+  phpenv
+  plenv
+  pyenv
+  rbenv
+  Renv
+  sbtenv
+  scalaenv
+  swiftenv
+$ anyenv install goenv
+```
+goenvでgoの最新版をインストールした上で、とりあえずglobalなgoを最新版に設定します。
+```
+$ goenv install -l | tail
+  1.10rc2
+  1.10.1
+  1.10.2
+  1.10.3
+  1.10.4
+  1.11.0
+  1.11beta2
+  1.11beta3
+  1.11rc1
+  1.11rc2
+$ goenv install 1.11.0
+$ goenv global 1.11.0
+```
+## arduino-cli導入
+[公式なarduino-cli github](https://github.com/arduino/arduino-cli)に記載されている手順の通りにインストールしていきます。
+```
+You should have a recent Go compiler installed.
+Run go get -u github.com/arduino/arduino-cli
+The arduino-cli executable will be produced in $GOPATH/bin/arduino-cli
+```
+まずはGOPATHとPATH環境変数設定。以下のようにarduino開発環境用の設定を追加します。
+```
+$ cat /etc/profile.d/arduino.sh
+export GOPATH="$HOME/go"
+export PATH="$GOPATH/bin:$PATH"
+```
+goenv設定でgoコマンドは使えるようになっているはずなので、以下コマンドでarduino-cliをインストール。
+```
+go get -u github.com/arduino/arduino-cli
+```
+成功すると、以下のように`${GOPATH}/bin`下に実行ファイルが生成されているはず。
+```
+$ tree ~/go/ -L 3
+/home/takashi7ando/go/
+├── bin
+│   └── arduino-cli
+└── src
+    └── github.com
+        └── arduino
+```
+## arduino-cliコマンド動作確認
+まずは実行してみましょう。
+```
+$ arduino-cli -h
+Arduino Command Line Interface (arduino-cli).
+Usage:
+  arduino-cli [command]
+Examples:
+  arduino-cli  [flags...]
+Available Commands:
+  board         Arduino board commands.
+  compile       Compiles Arduino sketches.
+  config        Arduino Configuration Commands.
+  core          Arduino Core operations.
+  help          Help about any command
+  lib           Arduino commands about libraries.
+  sketch        Arduino CLI Sketch Commands.
+  upload        Upload Arduino sketches.
+  version       Shows version number of arduino CLI.
+Flags:
+      --config-file string   The custom config file (if not specified ./.cli-config.yml will be used).
+      --debug                Enables debug output (super verbose, used to debug the CLI).
+      --format string        The output format, can be [text|json]. (default "text")
+  -h, --help                 help for arduino-cli
+Use "arduino-cli [command] --help" for more information about a command.
+```
+[githubのREADME](https://github.com/arduino/arduino-cli)を見ると、ボード選択、3rd partyライブラリの検索からインストール、ビルド、書き込みまで一通りのことが実行可能ぽい。
+## VS codeの設定例
+最近使う機会が増えてきたVS codeのtasks.jsonからarduino-cliを叩くように設定してみた。
+```
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "arduino compile",
+            "type": "shell",
+            "command": "arduino-cli",
+            "args": [
+                "compile"
+            ]
+        },
+        {
+            "label": "arduino upload",
+            "type": "shell",
+            "command": "arduino-cli",
+            "args": [
+                "upload",
+                "-p",
+                "/dev/ttyACM0"
+            ]
+        }
+    ]
+}
+```
+Run Taskを選択し、
+<img src="http://tech.blog.uribou.me/wp-content/uploads/sites/2/2018/09/Selection_052.png" alt="" width="957" height="231" class="aligncenter size-full wp-image-2269" />
+設定したlabelのタスクを実行すると、
+<img src="http://tech.blog.uribou.me/wp-content/uploads/sites/2/2018/09/Selection_053.png" alt="" width="960" height="234" class="aligncenter size-full wp-image-2268" />
+無事コマンドが実行された。
+<img src="http://tech.blog.uribou.me/wp-content/uploads/sites/2/2018/09/Selection_054.png" alt="" width="742" height="154" class="aligncenter size-full wp-image-2274" />
+## 実機での動作確認
+次回にて（後回し）。
+[/gfm]

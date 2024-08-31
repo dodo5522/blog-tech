@@ -1,0 +1,74 @@
+---
+title: "MNIST手書き文字機械学習。TensorFlowチュートリアルの前に、scikit-learnのSVMで復習する。その２。"
+description: "前回惨敗の正答率だった、SVMによるMNIST手書き文字分類。まずはscikit-learn付属のデータセットで復習してみることにする。scikit-learn..."
+tags:
+  - "AI"
+  - "python"
+  - "機械学習"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2017-02-16T18:10:04.000Z
+author: takashi
+---
+
+
+<a href="http://blog.rinka-blossom.com/mnist-with-sklearn-svm/">前回</a>惨敗の正答率だった、SVMによるMNIST手書き文字分類。
+まずはscikit-learn付属のデータセットで復習してみることにする。
+<h1>scikit-learn付属の手書き文字データセットは解像度がひどい</h1>
+こんな感じで試してみると、
+[code lang=python]
+from sklearn.datasets import load_digits
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+from sklearn.svm import SVC
+d = load_digits()
+X_train, X_test, y_train, y_test = train_test_split(d.data, d.target, train_size=0.8)
+svc = SVC()
+f = svc.fit(X_train, y_train)
+score = accuracy_score(f.predict(X_test), y_test)
+print(score)
+[/code]
+正答率は、0.467。
+低！
+…って、ここまで荒い手書き文字で正しい回答を得るのは、無理あるんじゃ…。
+<img src="https://farm1.staticflickr.com/320/32826230346_e8aec079cc_o_d.png" alt="" /> <img src="https://farm3.staticflickr.com/2838/32782582632_7a35a623b5_o_d.png" alt="" />
+SVMを責められないと個人的には思う。
+<h1>kernel typeを変えてみる</h1>
+でもちょっとだけ、SVCのパラメータを変えて試してみると、意外と正答率が上がったりします。
+docstringを見ると、とりあえずkernel typeだけでも変えて試してみたくなった。
+[code lang=text]
+Init signature: SVC(C=1.0, kernel=&#039;rbf&#039;, degree=3, gamma=&#039;auto&#039;, coef0=0.0, shrinking=True, probability=False, tol=0.001, cache_size=200, class_
+Docstring:
+C-Support Vector Classification.
+The implementation is based on libsvm. The fit time complexity
+is more than quadratic with the number of samples which makes it hard
+to scale to dataset with more than a couple of 10000 samples.
+Parameters
+----------
+C : float, optional (default=1.0)
+Penalty parameter C of the error term.
+kernel : string, optional (default=&#039;rbf&#039;)
+Specifies the kernel type to be used in the algorithm.
+It must be one of &#039;linear&#039;, &#039;poly&#039;, &#039;rbf&#039;, &#039;sigmoid&#039;, &#039;precomputed&#039; or
+a callable.
+If none is given, &#039;rbf&#039; will be used. If a callable is given it is
+used to pre-compute the kernel matrix from data matrices; that matrix
+should be an array of shape ``(n_samples, n_samples)``.
+[/code]
+ということで試してみました。
+[python]
+ps = [accuracy_score(SVC(kernel=kernel).fit(X_train, y_train).predict(X_test), y_test) for kernel in ['linear', 'poly', 'rbf', 'sigmoid']]
+for i, kernel in enumerate(['linear', 'poly', 'rbf', 'sigmoid']):
+    print(kernel + &quot;: &quot; + str(ps[i]))
+[/python]
+結果は以下の通り。
+[bash]
+linear: 0.966666666667
+poly: 0.977777777778
+rbf: 0.427777777778
+sigmoid: 0.0888888888889
+[/bash]
+デフォルトのrbfよりも、linearやpolyの方がはるかに高い正答率。
+kernel typeを変えて前回の復習をもう一回やってみるか…。
+<a href="">次回</a>に続く。

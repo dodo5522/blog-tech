@@ -1,0 +1,330 @@
+---
+title: "太陽光チャージコントローラTS-MPPT-60の発電状況取得Pythonパッケージを作ってみた"
+description: "これはなに？自作した自家発電機で、発電状態を監視するシステムの根幹部分をどうやって作ったか、の記録。コントローラがブラウザに返すhtml/jsをリバースして作っ..."
+tags:
+  - "DIY"
+  - "オフグリッド"
+  - "プログラミング"
+  - "電子工作"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2017-01-01T18:10:09.000Z
+author: takashi
+---
+
+
+
+<h2>これはなに？</h2>
+
+
+
+<p><a href="http://blog.rinka-blossom.com/how_to_make_diy_offgrid/">自作した自家発電機</a>で、発電状態を監視するシステムの根幹部分をどうやって作ったか、の記録。</p>
+
+
+
+<p>コントローラがブラウザに返すhtml/jsをリバースして作ったのだけど、念のためコントローラメーカーのエンジニアに問い合わせてOK頂いたので、安心して公開できる。</p>
+
+
+
+<h2>まずはチャージコントローラ選別</h2>
+
+
+
+<p>「発電状況を外部から取得できるコントローラ」って意外と少ない。少なくとも個人で手が出る価格帯の範囲では。</p>
+
+
+
+<p>外部から取得できないなら、センサー類を自前で揃えて自作するしかないのだけど、家電が使える容量のシステムだと流す電流量が多いので、それに耐えるセンサーとなるとまた難しい。</p>
+
+
+
+<p class="has-medium-font-size"><strong>そこで、このTristar社製チャージコントローラ TS-MPPT-60。</strong></p>
+
+
+
+<p>10万円程度のお値段で、Ethernetポートを備えている上HTTP経由でバッテリ電圧、太陽光パネル電圧、充電流量、放電流量、ヒートシンク温度に至るまで、様々な情報を得ることができる、お得な製品。</p>
+
+
+
+<figure class="wp-block-image is-resized"><a href="//af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB0041O2KPY%2Fref%3Dnosim" target="_blank" rel="noreferrer noopener"><img src="https://images-fe.ssl-images-amazon.com/images/I/31bdqgXUG2L._SL160_.jpg" alt="" width="123" height="160" /></a><figcaption><a rel="noreferrer noopener" href="http://af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fexec%2Fobidos%2FASIN%2FB0041O2KPY%2Fref%3Dnosim" target="_blank">ソーラーチャージコントローラー TS-MPPT-60 Morningstar社　桐生保証有　日本語取扱い説明書付き</a> posted with <a rel="noreferrer noopener" href="http://kaereba.com/" target="_blank">カエレバ</a> Morningstar社 <a rel="noreferrer noopener" href="http://af.moshimo.com/af/c/click?a_id=602830&amp;p_id=170&amp;pc_id=185&amp;pl_id=4062&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fwww.amazon.co.jp%2Fgp%2Fsearch%3Fkeywords%3DTS-MPPT-60%26__mk_ja_JP%3D%25E3%2582%25AB%25E3%2582%25BF%25E3%2582%25AB%25E3%2583%258A" target="_blank">Amazon</a><a rel="noreferrer noopener" href="http://af.moshimo.com/af/c/click?a_id=602828&amp;p_id=54&amp;pc_id=54&amp;pl_id=616&amp;s_v=b5Rz2P0601xu&amp;url=http%3A%2F%2Fsearch.rakuten.co.jp%2Fsearch%2Fmall%2FTS-MPPT-60%2F-%2Ff.1-p.1-s.1-sf.0-st.A-v.2%3Fx%3D0" target="_blank">楽天市場</a></figcaption></figure>
+
+
+
+<p>この情報を収集するための手段としてPythonパッケージ化したライブラリを用意し、データを収集して、最終的にはクラウドデータベースに記録して可視化したい、というわけ。</p>
+
+
+
+<h2>Tristar社製 TS-MPPT-60 API仕様</h2>
+
+
+
+<p>TS-MPPT-60から得る情報や、その取得方法の仕様は<a href="http://support.morningstarcorp.com/wp-content/uploads/2014/07/TSMPPT.APP_.Modbus.EN_.10.2.pdf">TriStar-MPPT Modbus specification document</a>を見れば分かるよと、Tristar社のエンジニアの方が教えてくれた。</p>
+
+
+
+<p>けど、結構な文量な上、まさに「仕様書」って感じで読みづらい。</p>
+
+
+
+<p>ならば、ブラウザ経由でチャージコントローラにアクセスした際に参照するJavascriptソースを解析した方が、目的達成には近道。</p>
+
+
+
+<p>のはず。</p>
+
+
+
+<h2>発電状況取得方法の検証</h2>
+
+
+
+<p>ということで、まずは普通にブラウザで表示されるフロントエンドの解析をしてみることに。</p>
+
+
+
+<h3>ChromeのDevelopper Toolsを使う</h3>
+
+
+
+<figure class="wp-block-image"><img src="https://farm1.staticflickr.com/639/21084348354_cf74e29137_o_d.png" alt="web_tsmppt60.png" /></figure>
+
+
+
+<p>ブラウザで取得できる情報は以下のとおり。</p>
+
+
+
+<p>TS-MPTT-60が何かしらのAPIを提供しているはずなので、ChromeのDevelopper Toolを使ってhtml/jsを抜き出して眺めてみる。</p>
+
+
+
+<h3>index.html</h3>
+
+
+
+<figure class="wp-block-image"><img src="https://farm1.staticflickr.com/669/21519120200_59e27a8c41_o_d.png" alt="web_tsmppt60_elem_battery.png" /></figure>
+
+
+
+<p>Battery項目に着目。</p>
+
+
+
+<p>battery voltageの値は、fD0というname属性がついたform要素内にある、input要素のlblcurrentValue属性に対して、誰かが属性値を設定していると思われる。</p>
+
+
+
+<p>index.htmlヘッダでloadしているliveview.jsを見ると、ページ読み込み完了イベントでLVInit()をコールしていたので、その辺りを深堀りする。</p>
+
+
+
+<h3>liveview.js</h3>
+
+
+
+<p>jsをfD0でgrepしてみると、ScaledValueDisplayClassを発見。</p>
+
+
+
+<p>ただ、できる限り転送量を減らすためか、全ての変数がABCDE…等のアルファベット１文字で宣言されており、とてもreadableとは呼べないコード…。</p>
+
+
+
+<p>以下に引用するjsコードは全て、引数名をそれなりの意味を込めた名前に修正した。</p>
+
+
+
+<h4>LVInit()</h4>
+
+
+
+<pre class="EnlighterJSRAW" data-enlighter-language="generic" data-enlighter-theme="" data-enlighter-highlight="" data-enlighter-linenumbers="" data-enlighter-lineoffset="" data-enlighter-title="" data-enlighter-group="">var rowsToUpdate=new Array();
+var UPDATE_FREQ_SECS=5;
+var Vb=new ScaledValueDisplayClass(MBID,38,""V"",""fD0"",""Battery Voltage"",1);
+var VbT=new ScaledValueDisplayClass(MBID,51,""V"",""fD1"",""Target Voltage"",1);
+var IbC=new ScaledValueDisplayClass(MBID,39,""A"",""fD2"",""Charge Current"",1);
+...</pre>
+
+
+
+<p>上記のように各要素のクラスインスタンスを生成し、LVInit()でrowsToUpdate配列に格納し、一定時間毎に全ての要素を更新するようになっている。</p>
+
+
+
+<pre class="EnlighterJSRAW" data-enlighter-language="generic" data-enlighter-theme="" data-enlighter-highlight="" data-enlighter-linenumbers="" data-enlighter-lineoffset="" data-enlighter-title="" data-enlighter-group="">function LVInit(){
+    ShowMenu();
+    Factors.Init();
+    rowsToUpdate[rowsToUpdate.length]=Vb;
+    rowsToUpdate[rowsToUpdate.length]=VbT;
+    rowsToUpdate[rowsToUpdate.length]=IbC;
+    ...
+    intervalHandle=setInterval(updateAllLVText,100)
+}</pre>
+
+
+
+<h4>ScaledValueDisplayClass</h4>
+
+
+
+<p>先のコードと、index.htmlに記述された要素や属性と合わせて読むと、fD0フォームのlblDataName属性が付いたinput要素に対してはそのままlblNameを、lblcurrentValue属性が付いたinput要素に対してはGetScaledValue()が返す値を格納して表示するようになっている。</p>
+
+
+
+<pre class="EnlighterJSRAW" data-enlighter-language="generic" data-enlighter-theme="" data-enlighter-highlight="" data-enlighter-linenumbers="" data-enlighter-lineoffset="" data-enlighter-title="" data-enlighter-group="">function ScaledValueDisplayClass(MBID, MBaddress, ScaleFactor, FormName, LabelName, Register){
+    this.MBID=MBID;
+    this.MBaddress=MBaddress;
+    this.frmName=FormName;
+    this.lblName=LabelName;
+    this.ScaleFactor=ScaleFactor;
+    this.updateLVText=function(){
+        try{
+            document.forms[this.frmName].elements.lblDataName.value = this.lblName.toString();
+            document.forms[this.frmName].elements.lblcurrentValue.value = GetScaledValue(this.MBID, this.MBaddress, this.ScaleFactor, Register).toString() + "" "" + this.ScaleFactor.toString();
+            return 1
+        }
+        catch(G){
+            return 0
+        }
+    }
+}</pre>
+
+
+
+<h4>GetScaledValue()</h4>
+
+
+
+<p>そのGetScaledValue()が以下。[V]、[A]、[W]、[Ah]、[kWh]、それぞれの単位に応じた計算アルゴリズムが見て取れる。<br>計算元の生データはMBJSReadModbusInts()で取得できるらしい。</p>
+
+
+
+<pre class="EnlighterJSRAW" data-enlighter-language="generic" data-enlighter-theme="" data-enlighter-highlight="" data-enlighter-linenumbers="" data-enlighter-lineoffset="" data-enlighter-title="" data-enlighter-group="">function GetScaledValue(MBID, MBaddress, ScaleFactor, Register){
+    var rawValue = 0;
+    rawValue = MBJSReadModbusInts(MBP, MBID.toString(), MBaddress.toString(), Register);
+    if(Register &gt; 1){
+        var values = rawValue.split(""#"");
+        rawValue = (parseInt(values[0]) * 65536) + parseInt(values[1])
+    }
+    else{
+        rawValue &lt;&gt;= 16
+    }
+    if(ScaleFactor.toString() == ""V""){
+        return((rawValue * Factors.VScale) / 32768 / 10).toFixed(2)
+    }
+    else{
+        if(ScaleFactor.toString() == ""A""){
+            return((rawValue*Factors.IScale) / 32768 / 10).toFixed(1)
+        }
+        else{
+            if(ScaleFactor.toString() == ""W""){
+                return((rawValue * Factors.IScale * Factors.VScale) / 131072 / 100).toFixed(0)
+            }
+            else{
+                if(ScaleFactor.toString() == ""Ah""){
+                    return(rawValue * 0.1).toFixed(1)
+                }
+                else{
+                    if(ScaleFactor.toString() == ""kWh""){
+                        return(rawValue).toFixed(0)
+                    }
+                    else{
+                        return(rawValue).toFixed(2)
+                    }
+                }
+            }
+        }
+    }
+}</pre>
+
+
+
+<h3>utilities.js</h3>
+
+
+
+<h4>MBJSReadModbusInts()</h4>
+
+
+
+<p>そのMBJSReadModbusInts()が以下。ここで ""#"" で区切った値をreturnするので、GetScaledValue()側で ""#"" でsplitした上でulong値に計算し直す処理があるわけですな。<br>さらにMBJSReadCSV()に降りてみる。</p>
+
+
+
+<pre class="EnlighterJSRAW" data-enlighter-language="generic" data-enlighter-theme="" data-enlighter-highlight="" data-enlighter-linenumbers="" data-enlighter-lineoffset="" data-enlighter-title="" data-enlighter-group="">function MBJSReadModbusInts(MBPVAL, MBIDVAL, MBaddress, Register){
+    var rawValueGotByCgi = MBJSReadCSV(MBPVAL, MBIDVAL, MBaddress, Register);
+    var valuesGotByCgi = rawValueGotByCgi.split("","");
+    var idxMax = valuesGotByCgi[2];
+    var idxValue = 3;
+    var retValueString = """";
+    var retValueShort;
+    while(idxValue &lt; parseInt(idxMax) + 2){
+        retValueShort = (parseInt(valuesGotByCgi[idxValue++]) * 256);
+        retValueShort += parseInt(valuesGotByCgi[idxValue++]);
+        if(idxValue &gt; 8);
+    var addressLow = encodeURIComponent(parseInt(MBaddress) &amp; 255);
+    var registerHigh = encodeURIComponent(parseInt(Register) &gt;&gt; 8);
+    var registerLow = encodeURIComponent(parseInt(Register) &amp; 255);
+    ajax.open(""GET"", ""MBCSV.cgi?ID="" + id + ""&amp;F="" + field + ""&amp;AHI="" + addressHigh + ""&amp;ALO="" + addressLow + ""&amp;RHI="" + registerHigh + ""&amp;RLO="" + registerLow, IsAsync);
+    ajax.send(null);
+    if(!IsAsync){
+        response = ajax.responseText;
+    }
+    return response;
+}</pre>
+
+
+
+<h2>発電状況を取得するPythonパッケージ</h2>
+
+
+
+<p>そういったPythonモジュールを作成し、<a href="https://github.com/dodo5522/tsmppt60_driver">github</a>に置きました。<br><a href="https://pypi.python.org/pypi/tsmppt60-driver/0.1.3">PyPI</a>にも公開しているので、ご興味ある方は<code>pip install</code>してみてください。</p>
+
+
+
+<h3>簡単な使い方紹介</h3>
+
+
+
+<p>pipコマンドでインストールして、ヘルプ表示すれば使い方もわかるようになってます。</p>
+
+
+
+<pre class="EnlighterJSRAW" data-enlighter-language="generic" data-enlighter-theme="" data-enlighter-highlight="" data-enlighter-linenumbers="" data-enlighter-lineoffset="" data-enlighter-title="" data-enlighter-group="">$ pip install tsmppt60_driver</pre>
+
+
+
+<pre class="EnlighterJSRAW" data-enlighter-language="generic" data-enlighter-theme="" data-enlighter-highlight="" data-enlighter-linenumbers="" data-enlighter-lineoffset="" data-enlighter-title="" data-enlighter-group="">In [1]: import tsmppt60_driver as ts
+In [2]: ts.SystemStatus?
+Init signature: ts.SystemStatus(host)
+Docstring: This is class to get the system status of TS-MPPT-60. Use this like below.
+print(SystemStatus(""192.168.1.20"").get())
+{'Amp Hours': {'group': 'Counter', 'unit': 'Ah', 'value': 18097.9}, 'Array Current': {'group': 'Array', 'unit': 'A', 'value': 1.4}, 'Array Voltage': {'group': 'Array', 'unit': 'V', 'value': 53.41}, 'Battery Voltage': {'group': 'Battery', 'unit': 'V', 'value': 23.93}, 'Charge Current': {'group': 'Battery', 'unit': 'A', 'value': 3.2}, 'Heat Sink Temperature': {'group': 'Temperature', 'unit': 'C', ...}, 'Kilowatt Hours': {'group': 'Counter', 'unit': 'kWh', 'value': 237.0}, 'Target Voltage': {'group': 'Battery', 'unit': 'V', 'value': 28.6}}
+
+The above data is limited information. You can disable the limitter like below.
+print(SystemStatus(""192.168.1.20"", False).get())
+{'Amp Hours': {'group': 'Counter', 'unit': 'Ah', 'value': 18097.8}, 'Array Current': {'group': 'Array', 'unit': 'A', 'value': 1.3}, 'Array Voltage': {'group': 'Array', 'unit': 'V', 'value': 53.41}, 'Battery Temperature': {'group': 'Temperature', 'unit': 'C', ...}, 'Battery Voltage': {'group': 'Battery', 'unit': 'V', 'value': 24.01}, 'Charge Current': {'group': 'Battery', 'unit': 'A', 'value': 3.2}, 'Heat Sink Temperature': {'group': 'Temperature', 'unit': 'C', ...}, 'Kilowatt Hours': {'group': 'Counter', 'unit': 'kWh', 'value': 237.0}, 'Output Power': {'group': 'Battery', 'unit': 'W', 'value': 76.0}, 'Sweep Pmax': {'group': 'Array', 'unit': 'W', 'value': 73.0}, 'Sweep Vmp': {'group': 'Array', 'unit': 'V', 'value': 53.41}, 'Sweep Voc': {'group': 'Array', 'unit': 'V', 'value': 60.05}, 'Target Voltage': {'group': 'Battery', 'unit': 'V', 'value': 28.6}}
+Init docstring: Initialize class object.
+Keyword arguments: host -- TS-MPPT-60 host address like ""192.168.1.20""
+File: ~/.anyenv/envs/pyenv/versions/3.5.1/lib/python3.5/site-packages/tsmppt60_driver/__init__.py Type: type</pre>
+
+
+
+<p>実際にやってみるとこうなります。</p>
+
+
+
+<pre class="EnlighterJSRAW" data-enlighter-language="generic" data-enlighter-theme="" data-enlighter-highlight="" data-enlighter-linenumbers="" data-enlighter-lineoffset="" data-enlighter-title="" data-enlighter-group="">In [1]: import tsmppt60_driver as ts
+In [3]: d = ts.SystemStatus(""192.168.1.20"")
+In [4]: d.get()
+Out[4]: {'Amp Hours': {'group': 'Counter', 'unit': 'Ah', 'value': 32885.7}, 'Array Current': {'group': 'Array', 'unit': 'A', 'value': 0.0}, 'Array Voltage': {'group': 'Array', 'unit': 'V', 'value': 0.3900146484375}, 'Battery Voltage': {'group': 'Battery', 'unit': 'V', 'value': 23.631591796875}, 'Charge Current': {'group': 'Battery', 'unit': 'A', 'value': -0.09521484375}, 'Heat Sink Temperature': {'group': 'Temperature', 'unit': 'C', 'value': 11}, 'Kilowatt Hours': {'group': 'Counter', 'unit': 'kWh', 'value': 604}, 'Target Voltage': {'group': 'Battery', 'unit': 'V', 'value': 0.0}}</pre>
+
+
+
+<h2>まとめ</h2>
+
+
+
+<p>API仕様を読むより、実装されたjsクライアントを読んだ方が早いっすね。</p>

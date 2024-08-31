@@ -1,0 +1,374 @@
+---
+title: "NURO光 + RTX830でVPNが使えるようにする"
+description: "前置き我が家にNURO光が来た！本来はルータ不要（RTX830ある）、WiFi不要（メッシュある）、モデムだけ欲しかったんだけど…　一体型のみ利用可なので、しぶ..."
+tags:
+  - "NURO"
+  - "RTX830"
+  - "YAMAHA"
+  - "インターネット"
+  - "ネットワーク"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2022-02-26T06:57:37.000Z
+author: takashi
+---
+
+
+
+<h2>前置き</h2>
+
+
+
+<p>我が家にNURO光が来た！</p>
+
+
+
+<p>本来はルータ不要（RTX830ある）、WiFi不要（メッシュある）、モデムだけ欲しかったんだけど…　一体型のみ利用可なので、しぶしぶミニマム仕様のSGP200Wを選び、昨日無事設置完了。ルータ直結時の速度計測は700Mbps超えていて、速度面は大満足。</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/スクリーンショット-2022-02-26-22.44.45-1-1024x676.png" alt="" class="wp-image-3544" /><figcaption><a href="https://fast.com/ja/">https://fast.com/ja/</a></figcaption></figure>
+
+
+
+<p>速度面は満足だが、外部から自宅へのL2TP/IPsec接続環境は捨て難いので、維持したい。でも、SGP200W内部のモデムをRTX830に直結することはできない。さて、どうするか…。</p>
+
+
+
+<p>参考サイトの情報を見ると、どうやらRTX830をDMZに割り当てて、外部からのアクセスをRTX830に向けることで、VPN接続環境を実現できるらしい。早速試してみると、無事VPN接続することができた。</p>
+
+
+
+<p>その設定手順を忘れないうちにメモしておく。</p>
+
+
+
+<h2>ネットワーク構成</h2>
+
+
+
+<p>取り急ぎ、簡易的にネットワーク構成を書き出してみた。</p>
+
+
+
+<pre class="EnlighterJSRAW" data-enlighter-language="generic" data-enlighter-theme="" data-enlighter-highlight="" data-enlighter-linenumbers="" data-enlighter-lineoffset="" data-enlighter-title="" data-enlighter-group="">インターネット
+└── (x.x.x.x @WAN) SGP200W (192.168.2.1 @LAN)
+                       ├── (192.168.2.2 @WAN) RTX830 (192.168.1.1 @LAN)
+                       │                         ├── (192.168.1.x @LAN) WN-DX1300GNEX (メッシュWiFi)
+                       │                         └── (192.168.1.x @LAN) Samba, Jenkinsなど
+                       └── (192.168.2.x @LAN) FireTV ドングルなど</pre>
+
+
+
+<p>SGP200W (<code>192.168.2.0/24</code>)、RTX830 (<code>192.168.1.0/24</code>) 共に、DPCHサーバ機能を有したまま運用する。速度優先機器は前者、外部からVPN接続して制御したい機器は後者に配置する。</p>
+
+
+
+<p>上記構成でメッシュWiFi APに接続、速度計測すると、50〜70Mbps程度しか出ない。SGP200Wに直結すれば、700Mbps程度出る。計測は<a href="https://fast.com/ja/">FastCOM powered by NETFLIX</a>で実施した。FireTVドングルを<code>192.168.2.x</code>下に接続したのはこれが理由。(宅内配線のLANケーブルがCAT5以下っぽいな…)</p>
+
+
+
+<p>念のため、以下に全機器のスループット理論値をメモしておく。</p>
+
+
+
+<ul><li><a href="https://www.nuro.jp/article/router/#:~:text=%E3%81%BF%E3%81%BE%E3%81%97%E3%82%87%E3%81%86%E3%80%82-,NURO%20%E5%85%89%E3%81%AEONU%EF%BC%88%E3%83%AB%E3%83%BC%E3%82%BF%E3%83%BC%EF%BC%89%E6%AF%94%E8%BC%83,-%E3%81%BE%E3%81%9A%E3%81%AF%E3%80%81%E4%BB%A5%E4%B8%8B%E3%81%AE">SGP200W</a> 有線2Gbps, 無線1.3Gbps</li><li><a href="https://network.yamaha.com/products/routers/rtx830/index">RTX830</a> 有線2Gbps (VPN 1Gbps)</li><li><a href="https://www.iodata.jp/product/network/wnlan/wn-dx1300gnex/#:~:text=WN%2DDX1300GNEX%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA%E3%81%AFIEEE802,%E6%B8%88%E3%81%BF%E3%81%AE%E3%82%BB%E3%83%83%E3%83%88%E3%83%A2%E3%83%87%E3%83%AB%E3%81%A7%E3%81%99%E3%80%82">WN-DX1300GNEX</a> 無線867Mbps</li></ul>
+
+
+
+<h2>設定手順</h2>
+
+
+
+<p>一旦、既存の<code>192.168.1.0/24</code>下にあるPCでブラウザ起動し、RTX830管理画面　<code><a href="http://192.168.1.1">http://192.168.1.1</a></code> でWAN側のMACアドレスを取得、メモしておく。</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/IMG_4660-1.jpg" alt="" class="wp-image-3664" /></figure>
+
+
+
+<h3>SGP200Wの設定</h3>
+
+
+
+<p>SGP200Wに接続するため、SGP200W本体側面に記載されたSSID/WPA keyに接続する。出荷状態のLAN側のデフォルトIPアドレスは<code>192.168.1.1</code>なので、ブラウザで<code><a href="http://192.168.1.1">http://192.168.1.1</a></code>にアクセスし、NURO説明書に記載のアカウント、パスワードを入力してログインする。</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/スクリーンショット-2022-02-26-16.50.39-1-1024x219.png" alt="" class="wp-image-3727" /></figure>
+
+
+
+<p>LAN &gt; LANホスト設定　で、プライマリIPアドレスを<code>192.168.2.1</code>に変更して適用し、<code><a href="http://192.168.2.1">http://192.168.2.1</a></code>にログインし直す。</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/スクリーンショット-2022-02-26-16.31.13-1-1024x385.png" alt="" class="wp-image-3787" /></figure>
+
+
+
+<p>LAN &gt; DHCPサーバ設定 で、IPアドレスの開始と終了を適宜設定する。<br>（<code>192.168.1.200</code>以上は将来別用途を想定して予約）</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/スクリーンショット-2022-02-27-13.27.09-1-1024x539.png" alt="" class="wp-image-4748" /></figure>
+
+
+
+<p>LAN &gt; DHCPスタティックIP設定 で、RTX830のWAN側MACアドレスを<code>192.168.2.2</code>に割り当てる。<br>（SGP200W DHCPアドレスrange外のアドレスを割り当てた）</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/スクリーンショット-2022-02-26-16.35.05-1024x373.png" alt="" class="wp-image-3742" /></figure>
+
+
+
+<p>転送ルール &gt; DMZ設定 で新規作成ボタンを押し、DMZを有効にするにチェックを入れ、WAN名は選択肢が1個しかないのでそれを選択、DHCPスタティックIP設定でRTX830に割り当てた<code>192.168.2.2</code>をホストアドレスとして入力し、適用する。</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/スクリーンショット-2022-02-26-16.44.19-1024x447.png" alt="" class="wp-image-3822" /></figure>
+
+
+
+<p>ここまで来たら、RTX830のWANポートと、SGP200WのLANポートをCAT 5e以上のLANケーブルで接続する。</p>
+
+
+
+<h3>RTX830の設定</h3>
+
+
+
+<p>再び<code>192.168.1.0/24</code>下にあるPCでブラウザ起動し、RTX830管理画面　<code><a href="http://192.168.1.1">http://192.168.1.1</a></code> を開き、かんたん設定 &gt; プロバイダー接続 を選択、新規ボタンを押す。</p>
+
+
+
+<p>ここで、設定の一覧に既存のWANインタフェース設定がある場合は、後工程で選択肢がグレーアウトしていることがあるので、削除する。</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/IMG_4661.jpg" alt="" class="wp-image-3942" /></figure>
+
+
+
+<p>削除した場合はこうなる。</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/IMG_4674.jpg" alt="" class="wp-image-4034" /></figure>
+
+
+
+<p>新規ボタンを押した後に表示される画面で、WANを選択して次へ。</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/IMG_4675.jpg" alt="" class="wp-image-4051" /></figure>
+
+
+
+<p>回線状況を自動判別してくれる。しばらく待った後、DHCP利用可能と表示されたら次へ。</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/IMG_4677.jpg" alt="" class="wp-image-4058" /></figure>
+
+
+
+<p>DHCPによる接続を選択して、次へ。</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/IMG_4678.jpg" alt="" class="wp-image-4078" /></figure>
+
+
+
+<p>設定名を入力し、DHCPクライアントを選択して次へ。</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/IMG_4679.jpg" alt="" class="wp-image-4095" /></figure>
+
+
+
+<p>DNSサーバアドレスを指定しない (指定したい場合は入力) を選択して次へ。</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/IMG_4680.jpg" alt="" class="wp-image-4109" /></figure>
+
+
+
+<p>推奨のIPフィルターを設定、または設定しないを選択して次へ。</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/IMG_4681.jpg" alt="" class="wp-image-4125" /></figure>
+
+
+
+<p>設定内容の確認画面が表示されるので、確認後、設定の確定ボタンを押す。</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/IMG_4682.jpg" alt="" class="wp-image-4141" /></figure>
+
+
+
+<p>設定が確定する。この時点では接続状態が<code>0.0.0.0</code>と表示されているが、画面更新すると、SGP200Wで設定した固定IPが反映されたことを確認できる。</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/IMG_4683-1.jpg" alt="" class="wp-image-4218" /></figure>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/IMG_4684-1.jpg" alt="" class="wp-image-4221" /></figure>
+
+
+
+<h4>VPN(L2TP/IPsec)設定</h4>
+
+
+
+<p>事前に設定済みだったVPN設定手順も記載しておく。</p>
+
+
+
+<p>かんたん設定 &gt; VPN &gt; リモートアクセス を選択、共通設定の設定ボタンを押す。</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/IMG_4685-2.jpg" alt="" class="wp-image-4239" /></figure>
+
+
+
+<p>以下にチェックを入れて、認証鍵 (pre-shared key) に任意の文字列を入力する。後でPC等からVPN接続する際に使用するので、入力した値を覚えておく。認証/暗号アルゴリズム、方式は以下に示す値を選択し (全てを検証しきれていない) 、次へを押して、設定を確定する。</p>
+
+
+
+<ul><li>L2TP/IPsecを使用する</li></ul>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/IMG_4690.jpg" alt="" class="wp-image-4263" /></figure>
+
+
+
+<p>次に、登録ユーザの追加、変更設定ボタンを押す。</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/IMG_4685.jpg" alt="" class="wp-image-4323" /></figure>
+
+
+
+<p>ユーザ名とパスワードを入力して次へを押し、設定を確定する。入力した値を覚えておく。</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/IMG_4688.jpg" alt="" class="wp-image-4334" /></figure>
+
+
+
+<h2>VPN接続確認</h2>
+
+
+
+<p>macOS Big Sur 11.6.4環境でのみ確認。<br>話は逸れるが、Montereyへのアップデートはいつになることやら…</p>
+
+
+
+<figure class="wp-block-embed-twitter wp-block-embed is-type-rich is-provider-twitter"><div class="wp-block-embed__wrapper">
+https://twitter.com/applechinfo/status/1477531286378061824?s=20&amp;t=fOyUTxyiQpDGSuRgwdXfPA
+</div></figure>
+
+
+
+<p>自宅ネットワーク外から接続するため、スマホにHotspot接続する。</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/スクリーンショット-2022-02-27-13.46.46.png" alt="" class="wp-image-4389" /></figure>
+
+
+
+<p>システム環境設定のネットワークを開き、</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/スクリーンショット-2022-02-27-13.58.13-1010x1024.png" alt="" class="wp-image-4383" /></figure>
+
+
+
+<p>VPNインターフェイス (VPNタイプ: L2TP over IPSec) を追加、作成する。</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/スクリーンショット-2022-02-27-15.14.44-1024x903.png" alt="" class="wp-image-4417" /></figure>
+
+
+
+<p>作成したVPN接続インターフェイスを選択して、構成はデフォルトを選択、サーバアドレス、アカウント名を入力する。<br>サーバアドレスは、SGP200W管理画面に表示されるWAN側IPアドレスを入力する。アカウント名は、RTX830のVPN(L2TP/IPsec)設定で設定したユーザ名を入力して、認証設定ボタンを押す。<br>DDNSサービスを利用している場合は、それをサーバアドレスとして入力する。</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/スクリーンショット-2022-02-27-15.11.52-1-1024x903.png" alt="" class="wp-image-4864" /></figure>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/スクリーンショット-2022-02-27-15.18.05-1024x272.png" alt="" class="wp-image-4454" /></figure>
+
+
+
+<p>ユーザ認証パスワード、コンピュータ認証共有シークレットには、それぞれ以下を入力してOKボタンを押す。</p>
+
+
+
+<ul><li>RTX830のVPN(L2TP/IPsec)登録ユーザ設定のパスワード</li><li>RTX830のVPN(L2TP/IPsec)共通設定の認証鍵 (pre-shared key) </li></ul>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/スクリーンショット-2022-02-27-13.52.02-1024x903.png" alt="" class="wp-image-4513" /></figure>
+
+
+
+<p>その後、接続ボタンを押すと、</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/スクリーンショット-2022-02-27-15.11.52-2-1-1024x903.png" alt="" class="wp-image-4848" /></figure>
+
+
+
+<p>以下のように接続される。RTX830のDHCPで割り当てられたIPアドレスが表示されることが確認できる。</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/スクリーンショット-2022-02-27-13.52.26-1024x903.png" alt="" class="wp-image-4845" /></figure>
+
+
+
+<p>この状態で、例えば <code>ssh -i ~/.ssh/id_ecdsa takashi@192.168.1.5</code> 等とすれば、以下のようにVPN経由で自宅サーバにログインできる。</p>
+
+
+
+<figure class="wp-block-image size-large"><img src="https://tech.blog.uribou.me/wp-content/uploads/sites/2/2022/02/スクリーンショット-2022-02-27-13.55.33-1024x781.png" alt="" class="wp-image-4584" /></figure>
+
+
+
+<h2>まとめ</h2>
+
+
+
+<p>設定手順メモのつもりが、かなりのボリュームになってしまった…。</p>
+
+
+
+<h2>参考サイト</h2>
+
+
+
+<ul><li><a href="https://mono96.jp/network/yamaha/41783/">Nuro光 + RTX1200 で VPNが使えるようにする（一部制限あり）- 逸般の誤家庭 向け情報</a></li><li><a href="https://4mo.co/nuro-onu-with-your-own-router/">NURO光でも自前ルーター(YAMAHA NVR500)を使う</a></li><li><a href="https://qiita.com/hellfire/items/e10bf16bfffdf21d30f6">ONUとルータがくっついてるやつをどうにかする</a></li></ul>

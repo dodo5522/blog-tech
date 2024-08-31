@@ -1,0 +1,103 @@
+---
+title: "Amazon Cloud Driveをコマンド操作するには"
+description: "大量の写真データバックアップ用ストレージとして、ACD(Amazon Cloud Drive)が最強です。ACDに写真をアップするのにWebアプリや専用ネイティ..."
+tags:
+  - "python"
+  - "プログラミング"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-04-03T04:08:14.000Z
+author: takashi
+---
+
+
+大量の写真データバックアップ用ストレージとして、<a href="http://blog.rinka-blossom.com/xie-zhen-detabatukuatupuniamazon-cloud-drivewoshi-ukotonomerituto/">ACD(Amazon Cloud Drive)</a>が最強です。
+ACDに写真をアップするのにWebアプリや専用ネイティブアプリケーションが用意されていますが、コマンドライン版アプリケーションacdcliを使えば、Jenkinsなどと組み合わせた自動化が簡単にできます。
+<h1>acdcliのインストール</h1>
+Pythonで書かれたアプリケーションなのでpipを使いますが、python3.2以降が必須なので注意してください。
+proxy環境下であれば、sudo時のhttp_proxy, https_proxy環境変数設定を忘れずに。
+<pre class="lang:sh decode:true ">$ sudo pip3 install acdcli</pre>
+<h1>初期設定</h1>
+まずはOAuth認証などの初期化が必要です。`acdcli init`を実行してください。
+<pre class="lang:sh decode:true ">$ acdcli init
+For the one-time authentication a browser (tab) will be opened at https://tensile-runway-92512.appspot.com/.
+Please accept the request and save the plaintext response data into a file called ""oauth_data"" in the directory ""/Users/xxxx/Library/Caches/acd_cli"".
+Press a key to open a browser.</pre>
+Enterキーを入力するとブラウザが起動し、Amazonアカウントでのログインを迫ってきます。
+OSXのターミナルで作業したので普通にブラウザが起動しますが、headlessなLinuxサーバ上で作業している場合はw3cが立ち上がると思うので、Prime会員のAmazonアカウントでログインし、oauth_dataファイルを取得してください。サインインボタンを押すとoauth_dataファイルがダウンロードされます。
+<img class="alignnone size-full" src="https://farm2.staticflickr.com/1696/25764484790_d0cbf7ca48_z_d.jpg" width="640" height="419" />
+oauth_dataファイルが取得できたら、acdcliのキャッシュディレクトリに配置します。
+Linux（Ubuntu）のacdcliキャッシュディレクトリは以下で、
+<pre class="lang:sh decode:true ">$ mv ~/Downloads/oauth_data .cache/acd_cli/.</pre>
+OSX（EI Capitan）の場合は以下です。
+<pre class="lang:sh decode:true ">$ mv ~/Downloads/oauth_data ~/Library/Caches/acd_cli/.</pre>
+これで初期設定は完了です。
+<h1>コマンドの使い方</h1>
+acdcli syncして、使用状況を閲覧したり、lsしたりしてみてください。
+<h2>sync</h2>
+<pre class="lang:sh decode:true ">$ acdcli sync -h | grep sync
+sync (s) [+] refresh node list cache; fetches complete node listif cache is empty or incremental changes if cache is non-empty
+$ acdcli sync
+Syncing...
+Done.</pre>
+<h2>usage</h2>
+$ acdcli usage
+Documents: 15276, 162.1 MiB
+Other: 213, 42.6 MiB
+Photos: 79067, 273.1 GiB
+Videos: 0, 0.0 B
+Total: 94556, 273.3 GiB
+<h2>ls</h2>
+$ acdcli ls /
+[tmFoJO-RTEaZ-KWpTnoAqg] [A] ドキュメント/
+[E_QJy_j6RgCa7g9D2OzAOg] [A] ビデオ/
+[ss6Bjft-RXyJjgWW1L_5qw] [A] 写真/
+<h2>mount</h2>
+FUSE(Filesystem in Userspace)がインストール済みであれば、ACDをファイルシステムとしてマウントすることもできます。
+$ acdcli mount /mnt/media
+ただ、Ubuntuだとうまくいったんですが、OSXではうまくいきませんでした。[OSXFUSE](https://osxfuse.github.io/)をインストールしたんですが…　未だ解決方法がわかりません。
+$ acdcli mount ./temp
+~ $ 16-04-03 22:01:42.961 [ERROR] [acd_cli] - Traceback (most recent call last):
+File ""/Users/takashi/.anyenv/envs/pyenv/versions/3.5.1/lib/python3.5/site-packages/sqlalchemy/engine/base.py"", line 1139, in _execute_context
+context)
+File ""/Users/takashi/.anyenv/envs/pyenv/versions/3.5.1/lib/python3.5/site-packages/sqlalchemy/engine/default.py"", line 450, in do_execute
+cursor.execute(statement, parameters)
+sqlite3.OperationalError: no such table: metadata
+<h2>upload</h2>
+ACDにファイルをアップロードするには`acdcli ul`コマンドを使います。
+$ acdcli ul -h
+usage: acd_cli upload [-h] [--max-connections MAX_CONNECTIONS]
+path [path ...] parent
+...
+--overwrite, -o overwrite if local modification time is higher or
+local ctime is higher than remote modification time
+and local/remote file sizes do not match.
+--deduplicate, -d exclude duplicate files from upload
+我が家の場合は年ごとにディレクトリを分けているので、以下のようにしてアップロードしてみます。ローカル側で更新があったファイルは、ACD上のファイルを上書きするように、-oオプションをつけます。
+$ acdcli upload -o /pictures/???? /写真/
+かなり時間がかかりましたが、以下のようにアップロードできました。
+$ acdcli ls /写真
+[a3ShzU9rQImK4IUJogtCYA] [A] 1940/
+[TRCOKEClSvO0Vn8mR49M7g] [A] 1950/
+[z-5K-rIvTcK6LhE95ttmVQ] [A] 1970/
+[FjUOR6sIR0-HRfj-Kue0fQ] [A] 1980/
+[fNM3D46wTK2ZH-Qs0kqJyA] [A] 1999/
+[3VGG1_R8SPSDSagKmwb_rA] [A] 2000/
+[T5rDJjBoR8-jma2frjwleQ] [A] 2001/
+[qLfe8wjoSca_PkGAV8rt_Q] [A] 2002/
+[yajl1HN9ShChVpc61acIIQ] [A] 2003/
+[nCZBDL-kSyWK4Jselhg3XA] [A] 2004/
+[f9I2UYKeTJ6btt9qoPmPEg] [A] 2005/
+[sTKEX8E4Qry8cr8RCg2V5w] [A] 2006/
+[_9epoPv7Tbu1ZCkH91UNAQ] [A] 2007/
+[2JL9gJUES5OIm3aHOyROLg] [A] 2008/
+[Lk6ZZlM9SBKjJmaThvj4Jg] [A] 2009/
+[IwhZVxNPQg2yf7MGXHcG1A] [A] 2010/
+[UzhetmcbRg6fNMtIZ3uiZg] [A] 2011/
+[6yYeb13ARhqlx8xjzNJFwA] [A] 2012/
+[cE2d8gPMTwGc6gy0Hs0FZg] [A] 2013/
+アップロードした写真は、[ブラウザ](http://www.amazon.co.jp/gp/feature.html?docId=3077664656)やiPhoneアプリ（Amazon Photo）から閲覧できます。Fire TV Stickを接続したTVからも閲覧可能です。
+<img class="alignnone size-full" src="https://farm2.staticflickr.com/1585/26170368746_5557cb0043_z_d.jpg" width="361" height="640" />
+我が家では写真と動画の日付別整理をJenkinsにやってもらっているので、最後にACDへのアップロード操作を追加しておきました。
+これで写真データが完全に二重化されて安心♪

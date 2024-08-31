@@ -1,0 +1,52 @@
+---
+title: "写真をflickrに自動アップロードして、月ごとのアルバムを自動作成する方法（導入編）"
+description: "我が家は写真好き。iPhone（夫婦２台）、ミラーレス一眼（嫁所有）、フルサイズ一眼、防水コンデジ（長女所有）、さらにはフルHDカムも。それぞれが撮影した静止画..."
+tags:
+  - "flickr"
+  - "python"
+  - "自動化"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2017-07-10T23:32:53.000Z
+author: takashi
+---
+
+
+
+我が家は写真好き。
+iPhone（夫婦２台）、ミラーレス一眼（嫁所有）、フルサイズ一眼、防水コンデジ（長女所有）、さらにはフルHDカムも。
+それぞれが撮影した静止画や動画を個々に管理してたんじゃ手間もストレージも無駄に食うだけ…。
+ということで、[BitTorrentSyncやJenkinsを駆使して](http://tech.uribou.tokyo/recommend-diy-server-description/)、一つのファイルサーバに撮影日ごとのディレクトリを自動的に掘って振り分けた上、RAWデータ込みで[Amazon Cloud Storageに自動バックアップしています](http://tech.uribou.tokyo/xie-zhen-detabatukuatupuniamazon-cloud-drivewoshi-ukotonomerituto/)。
+<blockquote class="twitter-tweet" data-lang="ja"><p lang="ja" dir="ltr">快適!全部入りメディアサーバ自作のススメ。<br /> 超低消費電力なARMマイコンLinuxサーバとして活用できるRaspberry Pi。 我が家では、既に販売終了している初代のRaspberry Pi 1 Mode... <a href="https://t.co/Jx4QNq4j13">https://t.co/Jx4QNq4j13</a></p>&mdash; webdesignStatio (@webdesignStatio) <a href="https://twitter.com/webdesignStatio/status/802981621448085504">2016年11月27日</a></blockquote>
+
+アップした写真はAmazon経由で見れるんですが、あくまでプライベートな空間で、SNS共有に使える雰囲気ではない。
+なので、JPEGはflickrにもアップして、ついでに月ごとのアルバムも自動生成してしまいたい。Pythonで。
+## そもそもflickrとは
+flickrとは、写真共有SNSです。
+<blockquote class="twitter-tweet" data-lang="ja"><p lang="en" dir="ltr">Today’s for all the dads out there. <a href="https://twitter.com/hashtag/HappyFathersDay?src=hash">#HappyFathersDay</a> What&#039;s your favorite memory with your dad? <a href="https://t.co/bGhSlD6fPC">https://t.co/bGhSlD6fPC</a> <a href="https://t.co/ItfVM78Smh">pic.twitter.com/ItfVM78Smh</a></p>&mdash; Flickr (@Flickr) <a href="https://twitter.com/Flickr/status/876425017692741634">2017年6月18日</a></blockquote>
+
+似て非なるサービスにGoogle Photosがありますが、オリジナル画質のままアップロードできるflickrが好きで、今も愛用しています。
+Google Photsには、AIを活用した面白機能がたくさんあるようで、興味はあるんですが、リサイズされちゃうのは嫌だなぁ…。
+## flickr APIを使う
+昨今APIを公開しないWebサービスの方が少なく、flickrさんも[APIを公開](https://www.flickr.com/services/api/)しています。
+これを使えば、先ほどの願いは簡単に実現できてしまいます。
+## flickr APIとは
+flickrのアカウントを作り、マイページで色々な操作ができると思います。
+写真をアップしたり、タイトルを変更したり、タグをつけたりアルバム作ったり…。
+そういった操作がAPIとして用意されており、以下のように[一覧にまとめて公開されています](https://www.flickr.com/services/api/)。
+![](https://farm5.staticflickr.com/4255/35017831634_cbf6722567_z_d.jpg)
+例えば、 **写真をアップした後、月ごとにアルバム（photoset）を作成して、アップした写真をそこに追加する** 機能が欲しいので、flickrが公開している下記のAPIを組み合わせて実行すれば、ChromeやIEなどのブラウザで画面見ながら日付などの情報を入力したり、マウスをぽちぽちクリックしたり、といった操作が不要になるわけです。
+### Photo Upload API
+その名の通り、写真をアップロードすることができます。
+![](https://farm5.staticflickr.com/4230/35906994895_dea771237c_z_d.jpg)
+### Photoset Create API
+アルバムを作成する機能です。
+flickrではアルバムをphotosetと呼びます。
+![](https://farm5.staticflickr.com/4261/35866333376_db8bacd064_z_d.jpg)
+## Pythonのflickr APIラッパーを使う（次回）
+flickr APIを直接叩くのって、実は意外とめんどくさいんです。
+OAuthのフロー通りに、長ったらしい引数付きURLを叩く必要があるので…。
+そんな[flickr APIをより簡単に叩けるようにしたライブラリ](https://www.flickr.com/services/api/)が、数多く公開されています。
+Python flickrapiパッケージも、そのうちの一つです。
+[次回](http://tech.uribou.tokyo/python_flickrapi_2/)はPython flickrapiパッケージを使って、具体的なコードを交えて紹介します。

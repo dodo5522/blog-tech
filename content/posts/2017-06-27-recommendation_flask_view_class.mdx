@@ -1,0 +1,98 @@
+---
+title: "FlaskのViewクラスを使う。"
+description: "言わずと知れた、Pythonの軽量Webアプリケーションフレームワーク、Flask。最もお手軽で、よく紹介される使い方がこちら↓、routeデコレータです。``..."
+tags:
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2017-06-27T21:53:20.000Z
+author: takashi
+---
+
+
+言わずと知れた、Pythonの軽量Webアプリケーションフレームワーク、Flask。
+最もお手軽で、よく紹介される使い方がこちら↓、routeデコレータです。
+```python
+from flask import Flask
+app = Flask("hoge")
+@app.route('/users/')
+def show_users(page):
+    users = User.query.all()
+    return render_template('users.html', users=users)
+if __name__ = "__main__":
+    app.run(host="0.0.0.0", port=80)
+```
+手軽にroute追加できるのは有難いんですが、複数モジュールに分割してコードを書くと、同一appインスタンスを参照してrouteを設定する必要が出てくるので、モジュール間の依存関係が面倒なことになります。
+## Pluggable Views
+作るアプリの規模が大きくなってきたら、View / MethodViewクラスを使うのがお勧め。
+&gt; Flask 0.7 introduces pluggable views inspired by the generic views from Django which are based on classes instead of functions. The main intention is that you can replace parts of the implementations and this way have customizable pluggable views.
+```python
+In [2]: MethodView.as_view??
+Signature: MethodView.as_view(name, *class_args, **class_kwargs)
+Source:
+    @classmethod
+    def as_view(cls, name, *class_args, **class_kwargs):
+        """Converts the class into an actual view function that can be used
+        with the routing system.  Internally this generates a function on the
+        fly which will instantiate the :class:`View` on each request and call
+        the :meth:`dispatch_request` method on it.
+        The arguments passed to :meth:`as_view` are forwarded to the
+        constructor of the class.
+        """
+        def view(*args, **kwargs):
+            self = view.view_class(*class_args, **class_kwargs)
+            return self.dispatch_request(*args, **kwargs)
+        if cls.decorators:
+            view.__name__ = name
+            view.__module__ = cls.__module__
+            for decorator in cls.decorators:
+                view = decorator(view)
+        # We attach the view class to the view function for two reasons:
+        # first of all it allows us to easily figure out what class-based
+        # view this thing came from, secondly it's also used for instantiating
+        # the view class so you can actually replace it with something else
+        # for testing purposes and debugging.
+        view.view_class = cls
+        view.__name__ = name
+        view.__doc__ = cls.__doc__
+        view.__module__ = cls.__module__
+        view.methods = cls.methods
+        return view
+File:      ~/.anyenv/envs/pyenv/versions/3.5.1/envs/dev_necco/lib/python3.5/site-packages/flask/views.py
+Type:      method
+```
+## おまけ
+冒頭に出てきた`route`メソッド、実は内部で`add_url_rule`を呼んでいるのでした。
+```python
+In [4]: Flask.route??
+Signature: Flask.route(self, rule, **options)
+Source:
+    def route(self, rule, **options):
+        """A decorator that is used to register a view function for a
+        given URL rule.  This does the same thing as :meth:`add_url_rule`
+        but is intended for decorator usage::
+            @app.route('/')
+            def index():
+                return 'Hello World'
+        For more information refer to :ref:`url-route-registrations`.
+        :param rule: the URL rule as string
+        :param endpoint: the endpoint for the registered URL rule.  Flask
+                         itself assumes the name of the view function as
+                         endpoint
+        :param options: the options to be forwarded to the underlying
+                        :class:`~werkzeug.routing.Rule` object.  A change
+                        to Werkzeug is handling of method options.  methods
+                        is a list of methods this rule should be limited
+                        to (``GET``, ``POST`` etc.).  By default a rule
+                        just listens for ``GET`` (and implicitly ``HEAD``).
+                        Starting with Flask 0.6, ``OPTIONS`` is implicitly
+                        added and handled by the standard request handling.
+        """
+        def decorator(f):
+            endpoint = options.pop('endpoint', None)
+            self.add_url_rule(rule, endpoint, f, **options)
+            return f
+        return decorator
+File:      ~/.anyenv/envs/pyenv/versions/3.5.1/envs/dev_necco/lib/python3.5/site-packages/flask/app.py
+Type:      function
+```

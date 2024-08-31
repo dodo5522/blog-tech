@@ -1,0 +1,50 @@
+---
+title: "PythonのMockフレームワーク、unittest.mockを試す"
+description: "$ nosetests --with-coverage --cover-html --cover-html-dir=html --include=solar_m..."
+tags:
+  - "python"
+  - "プログラミング"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2017-07-15T00:36:43.000Z
+author: takashi
+---
+
+
+<pre><code class="bash">$ nosetests --with-coverage --cover-html --cover-html-dir=html --include=solar_monitor/.
+...
+html.py                                                       37     37     0%   5-132
+html/entities.py                                               9      9     0%   3-2509
+http/cookiejar.py                                           1100   1100     0%   28-2092
+http/cookies.py                                              246    246     0%   39-636
+mimetypes.py                                                 194    194     0%   26-593
+unittest/mock.py                                            1278   1278     0%   7-2373
+uuid.py                                                      331    331     0%   47-615
+solar_monitor.py                                               0      0   100%
+solar_monitor/cloud.py                                         0      0   100%
+solar_monitor/cloud/base.py                                    6      2    67%   33, 36
+solar_monitor/cloud/keenio.py                                 20     13    35%   34, 39, 42-55
+solar_monitor/cloud/xively.py                                 19     11    42%   36-37, 40, 43-59
+solar_monitor/event.py                                         0      0   100%
+solar_monitor/event/base.py                                   82     12    85%   94, 103, 177, 180, 183, 194, 203-206, 260, 270
+solar_monitor/event/handler.py                                31     17    45%   29-30, 38-48, 55-56, 66-67, 74-75, 84-85
+solar_monitor/event/trigger.py                                38     26    32%   51-53, 67-85, 99-101, 115-133
+solar_monitor/logger.py                                       22     13    41%   38-50, 70, 80, 90, 100
+solar_monitor/timer.py                                        60      3    95%   115, 166-167
+----------------------------------------------------------------------------------------
+TOTAL                                                       9621   8108    16%
+----------------------------------------------------------------------
+</code></pre>
+<pre><code class="python"><br />&gt;&gt;&gt; import requests
+&gt;&gt;&gt; requests.get("https://www.google.co.jp")
+&lt;Response [200]&gt;
+&gt;&gt;&gt; p = patch("requests.get", autospec=True)
+&gt;&gt;&gt; m = p.start()
+&gt;&gt;&gt; m.return_value = "hogehoge"
+&gt;&gt;&gt; requests.get("https://www.google.co.jp")
+'hogehoge'
+&gt;&gt;&gt; p.stop()
+&gt;&gt;&gt; requests.get("https://www.google.co.jp")
+&lt;Response [200]&gt;
+</code></pre>

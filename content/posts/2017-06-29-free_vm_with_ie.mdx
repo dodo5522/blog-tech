@@ -1,0 +1,50 @@
+---
+title: "Windowsライセンス購入不要。IE11動作確認用VMを使ってみた。"
+description: "のんびりと開発中のWebアプリ。まとまった機能を実装したら時々リリースしてるんですが、数少ない利用者の方から 「ローディングアイコンが消えてくれず、コンテンツが..."
+tags:
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2017-06-29T23:37:41.000Z
+author: takashi
+---
+
+
+のんびりと開発中のWebアプリ。
+まとまった機能を実装したら時々リリースしてるんですが、数少ない利用者の方から 「ローディングアイコンが消えてくれず、コンテンツが見れない」 と連絡あり。
+はて…　と思いましたが、すぐに思い当たりました。
+Web業界に疎いのでうっかり忘れていた、 **悪名高いIE** での動作確認。
+でも残念ながら、我が家にはWindowsパソコンがない！
+## BootCamp経由でWindowsを起動すれば…
+メインに使っているのはMacBookAirなので、BootCamp入れてWindowsを起動すればいいんですが…
+動作確認のたびにMacを再起動するのは正直めんどい。
+のでパス。
+## VMでWindowsを起動すれば…
+Mac使いながら動作確認したい時だけVM起動すれば良いので、理想的。
+でもそのためにWindowsをインストールするのは正直めんどい。
+## MS提供のIE動作確認用VMを使えばよい
+MSさん、こんな有り難いものを公式に提供してくれていたんですね。
+感謝…　はしてるんですが、なんか微妙。
+むしろ、モダンブラウザは軒並み対応しているJS構文に対応しないIEを撲滅して欲しい…。
+といっても始まらないので、以下からVMを落とします。
+**[Test Microsoft Edge and versions of IE8 through IE11 using free virtual machines you download and manage locally.](https://developer.microsoft.com/en-us/microsoft-edge/tools/vms/)**
+プルダウンメニューから目的のブツを選択してください。
+![select_vm](https://user-images.githubusercontent.com/1362607/27688376-53faf98e-5d15-11e7-979c-d8ab5b949c0d.png)
+VMの種類を選択できます。お好みに応じて選んでください。
+![select_platform](https://user-images.githubusercontent.com/1362607/27688375-53f40e94-5d15-11e7-926d-b029dbc32809.png)
+ネットワークカードなどの設定は適当にいじった上で起動すると…
+無事IEが起動！
+早速デベロッパモードにして、Webアプリが動作しない原因を探ります。
+![dev_mode](https://user-images.githubusercontent.com/1362607/27688519-c8b40022-5d15-11e7-80aa-7da0aff6c271.png)
+あっという間に原因発見。セミコロンがない？？
+![missing_semicolon](https://user-images.githubusercontent.com/1362607/27688521-c8c07b86-5d15-11e7-9050-14631b806306.png)
+ソースを見るとごく一般的なfor文。もしや・・・
+![source](https://user-images.githubusercontent.com/1362607/27688520-c8ba7c22-5d15-11e7-80aa-593225c06baa.png)
+あー、そういうこと。
+**[for...of ステートメント (JavaScript)](https://msdn.microsoft.com/ja-jp/library/dn858238(v=vs.94).aspx)**
+&gt; Quirks、Internet Explorer 6 標準、Internet Explorer 7 標準、Internet Explorer 8 標準、Internet Explorer 9 標準、Internet Explorer 10 標準、および Internet Explorer 11 標準の各ドキュメント モードでサポートされません。Windows 8.1 ではサポートされません。
+はい、普通にカウンタをインクリメントするfor文で書きます。
+## VMのライセンス有効期限
+もちろん永久無料で使えるわけはなく、90日で使えなくなるのでご注意を。
+&gt; These virtual machines expire after 90 days.
+当然ながら、あくまでテスト用ってことですね。

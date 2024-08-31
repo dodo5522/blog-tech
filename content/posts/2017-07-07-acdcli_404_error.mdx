@@ -1,0 +1,68 @@
+---
+title: "Amazon Cloud Driveをコマンド操作できるacdcliが、動作不能に陥る。困った。"
+description: "Amazon Prime会員入会後、[活用しているAmazon Cloud Drive](http://tech.uribou.tokyo/amazonkura..."
+tags:
+  - "acdcli"
+  - "amazon"
+  - "linux"
+  - "サーバ"
+  - "写真"
+  - "自動化"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2017-07-07T19:47:25.000Z
+author: takashi
+---
+
+
+Amazon Prime会員入会後、[活用しているAmazon Cloud Drive](http://tech.uribou.tokyo/amazonkuraudodoraibunikomandodeakusesusurufang-fa/)。
+写真なら、Rawデータだろうが容量無制限でアップロード可能だから、活用しない手はない。
+さらに、ブラウザを介さずにファイルのアップロード、ダウンロード、同期、マウントできてしまう、とても便利な`acdcli`というツールがあります。
+我が家ではJenkinsさんが写真整理をするたびに、このツールを使ってAmazon Cloud Driveに自動バックアップしています。
+## `acdcli`が404エラーを吐いて止まる
+それがいつの間にか404エラーを吐いていました。
+![](https://farm5.staticflickr.com/4263/34962016454_5eab44a343_z_d.jpg)
+![](https://farm5.staticflickr.com/4279/35632984672_1727014c12_z_d.jpg)
+ビルド失敗メール送るようにせんとなぁ…。
+ハテなぜだろう？と調べてみました。
+## 原因は２段階認証
+エラーを吐くようになった日付を見てみると、どうも２段階認証を有効化したことが原因と思われます。
+[Amazonの2段階認証](https://www.amazon.co.jp/gp/help/customer/display.html?nodeId=201962400)
+&gt; 2段階認証は、信頼済みでない端末からサインインする場合に、パスワードに加えてセキュリティコードの入力が必要になる機能です。お使いのアカウントで2段階認証を有効にした場合、端末を登録する際に、追加のセキュリティコードを入力する必要があります。
+でも、試しに元に戻してもacdcliのエラーは解消されないんですよね。
+それならと`acdcli init`からやり直し、oauth_dataを取得しようとすると、なんと認証ページが404 not found。
+![](https://farm5.staticflickr.com/4238/35670449081_0424956810_z_d.jpg)
+ツール側の問題にやっと気づく。
+## Upcoming Appspot OAuth proxy switch の文字に心踊るも…
+acdcliって今もメンテ続いてるんだろうか…　と[github](https://github.com/yadayada/acd_cli#recent-changes)を覗いてみると、**0.3.3 upcoming Appspot OAuth proxy switch**の文字が！
+betaだけどgithub最新コードで試してみました。
+結論から言うと、諸事情によりうまくいかないんですけどね。
+### 既存の`acdcli`をアンインストールする
+`pip`コマンドで調べてみると、2015年時点の最新バージョン 0.3.2 のままです。
+![](https://farm5.staticflickr.com/4290/34961884104_a357401035_z_d.jpg)
+これをアンインストールします。
+![](https://farm5.staticflickr.com/4257/34961883884_81a4ec4983_z_d.jpg)
+### github最新の`acdcli`をインストールする
+以下のように`pip install git+https://github.com/yadayada/acd_cli.git`コマンドで、githubのmaster HEADの`acdcli`をインストールします。
+![](https://farm5.staticflickr.com/4216/34961883864_5e2878bf36_z_d.jpg)
+現在のところbeta版の扱いなのでご注意ください。
+### Amazon Cloud Drive認証成功するも…
+あとは従来と同じ、`acdcli init`コマンドを実行し、アクセストークンを生成します。
+![](https://farm5.staticflickr.com/4232/35670042911_b2cd7d58f0_z_d.jpg)
+Enterキー入力すると、ブラウザ経由でAmazonの認証画面が起動します。
+![](https://farm5.staticflickr.com/4206/35761632396_a08af54d58_z_d.jpg)
+サインインすると、acdcli 0.3.2には無かった２段階認証画面が！
+![](https://farm5.staticflickr.com/4211/34961883684_925e3c8cc7_z_d.jpg)
+登録済みの携帯端末にメッセージで認証コードが送られるので入力し、OKボタンを押すと、oauth.jsonファイルのダウンロードを開始します。
+![](https://farm5.staticflickr.com/4285/34961883994_eca4b9e5f6_z_d.jpg)
+acdcli 0.3.2時点と比較してキャッシュファイル名が変わりましたが、コードを見ると上記ファイル名で間違いないので、そのままのファイル名称でキャッシュディレクトリに配置します。
+Linux（Ubuntu）のacdcliキャッシュディレクトリは `~/.cache/acd_cli` 、OSXなら `~/Library/Caches/acd_cli/.` です。
+・・・と、ここまで順調だったのに、結局`acdcli`コマンドは以下のエラーを吐いて動作しません。
+![](https://farm5.staticflickr.com/4213/35803244575_558651f5f1_z_d.jpg)
+&gt; Error getting endpoint data. Response: {"message":"Rate exceeded"}
+## 解決策（今のところなし）
+[AWSのDeveloper Guide](http://docs.aws.amazon.com/ja_jp/Route53/latest/DeveloperGuide/DNSLimitations.html)に**Amazon Route 53 API リクエストの頻度**として記載があるけど、これのことかな・・・？よくわからず。
+`acdcli`のgithubに[issue](https://github.com/yadayada/acd_cli/issues/572)として提起されており、すでに色々と議論されていました。
+上記チケットで困っている方々も、別サービスへの移行を考えているとか。。
+うーん、どうしよう。

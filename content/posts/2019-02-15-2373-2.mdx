@@ -1,0 +1,427 @@
+---
+title: "3. ディープラーニング"
+description: "fitでvalidation_split引数を指定することにより、訓練データを分割して検証データとして使用することができます。EarlyStoppingを使う章..."
+tags:
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2019-02-15T01:21:47.000Z
+author: takashi
+---
+
+
+<div class="l-content--detail p-lesson">
+<div></div>
+<div></div>
+<blockquote>
+<div><strong>fitでvalidation_split引数を指定することにより、訓練データを分割して検証データとして使用することができます。</strong></div></blockquote>
+<div></div>
+<div>EarlyStoppingを使う章で上記を忘れると下記エラーとなるため注意。</div>
+</div>
+<div>https://stackoverflow.com/questions/49035200/keras-early-stopping-callback-error-val-loss-metric-not-available</div>
+<div></div>
+<div class="l-content--detail p-lesson">
+<div>
+<pre class="lang:default decode:true ">(60000, 28, 28)
+(60000, 28, 28, 1)
+(10000, 28, 28, 1)
+Train on 45000 samples, validate on 15000 samples
+Epoch 1/3
+45000/45000 [==============================] - 85s 2ms/step - loss: 0.2021 - acc: 0.9382 - val_loss: 0.0976 - val_acc: 0.9700
+Epoch 2/3
+45000/45000 [==============================] - 86s 2ms/step - loss: 0.0695 - acc: 0.9794 - val_loss: 0.1016 - val_acc: 0.9693
+10000/10000 [==============================] - 5s 459us/step
+Accuracy: 0.97, Loss: 0.09</pre>
+</div>
+</div>
+&nbsp;
+&nbsp;
+<pre class="lang:default decode:true ">(60000, 28, 28)
+(60000, 28, 28, 1)
+(10000, 28, 28, 1)
+Train on 45000 samples, validate on 15000 samples
+Epoch 1/3
+45000/45000 [==============================] - 84s 2ms/step - loss: 0.3380 - acc: 0.8979 - val_loss: 0.1234 - val_acc: 0.9625
+Epoch 2/3
+45000/45000 [==============================] - 86s 2ms/step - loss: 0.1709 - acc: 0.9491 - val_loss: 0.0979 - val_acc: 0.9716
+Epoch 3/3
+45000/45000 [==============================] - 85s 2ms/step - loss: 0.1312 - acc: 0.9597 - val_loss: 0.0829 - val_acc: 0.9757
+10000/10000 [==============================] - 5s 459us/step
+Accuracy: 0.98, Loss: 0.07</pre>
+&nbsp;
+<div class="l-content--detail p-lesson">
+<div></div>
+<div></div>
+<div></div>
+<div>3-2-4. 10種類の手書き数字を分類する</div>
+<div class="l-content--detail p-lesson">
+前節では10種類の手書き数字を、敢えて2種類（4と9）に絞り込んでモデルを作成しましたが、今度は10種類のすべてを分類できるモデルを作ることにします。
+ここで作成するモデルは畳み込み処理を行うため、処理が重くなります。Watson Studioではデフォルトの「Default Python 3.5 Free」では処理の途中に落ちてしまう可能性があるため、CPU性能、メモリ容量ともに優れた「Default Python 3.5 XS」のランタイムを使用してNotebookを作成します。また、ニューラルネットワークの可視化を行うため、pydotとgraphvizを使用しますが、そのインストールはランタイムごとに行う必要があるため、前節と同様の方法でインストールし、カーネルのリスタート（Notebookのメニューから、Kernel＞Restart）を行っておいてください。
+<pre><code class="python hljs">
+  !pip install pydot
+  !pip install graphviz
+</code></pre>
+<h4>データの前処理</h4>
+Notebookの準備が完了したら、MNISTデータセットをダウンロードします。
+<pre><code class="python hljs">
+  <span class="hljs-keyword">from</span> keras.datasets <span class="hljs-keyword">import</span> mnist
+  (X_train, y_train), (X_test, y_test) = mnist.load_data()
+</code></pre>
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/MNIST_CNN_-_IBM_Watson.png" alt="" width="1232" />
+matplotlibを使って画像を表示してみると、4と9以外の数字も確認できます。
+<pre><code class="python hljs">
+  %matplotlib inline
+  <span class="hljs-keyword">from</span> matplotlib <span class="hljs-keyword">import</span> pyplot <span class="hljs-keyword">as</span> plt
+  <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(<span class="hljs-number">0</span>, <span class="hljs-number">10</span>):
+    print(y_train[i])
+    plt.imshow(X_train[i])
+    plt.gray()
+    plt.show()
+</code></pre>
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/20180713_MNIST_CNN_-_IBM_Watson-1.png" alt="" width="1028" />
+画像データ（X_trainおよびX_test）の形状（シェイプ）を見ると、60000×28×28であることが分かります。
+<pre><code class="python hljs">
+  X_train.shape
+</code></pre>
+<figure><img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/MNIST_CNN_-_IBM_Watson-2.png" alt="" width="286" /></figure>
+60000というのは画像データの個数ですから、画像ごとでは28×28（縦横それぞれが28ピクセル）です。今回作成するニューラルネットワークには畳み込みのレイヤーを含めるのですが、畳み込みの際には画像の縦横だけではなく色情報を含む3次元のデータである必要があるため、28×28×1（MNISTはモノクロ画像のため色情報は濃淡を示す1種類です）の構造に変換します。また、データの正規化も行っています。
+<pre><code class="python hljs">
+  <span class="hljs-comment"># shape[0]はデータの個数、(28, 28)を(28, 28, 1)に</span>
+  X_train = X_train.reshape(X_train.shape[<span class="hljs-number">0</span>], <span class="hljs-number">28</span>, <span class="hljs-number">28</span>, <span class="hljs-number">1</span>)
+  X_test = X_test.reshape(X_test.shape[<span class="hljs-number">0</span>], <span class="hljs-number">28</span>, <span class="hljs-number">28</span>, <span class="hljs-number">1</span>)
+  <span class="hljs-comment"># データの正規化</span>
+  X_train =  X_train / <span class="hljs-number">255</span>
+  X_test = X_test / <span class="hljs-number">255</span>
+  print(X_train[<span class="hljs-number">0</span>])
+</code></pre>
+<figure><img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/MNIST_CNN_-_IBM_Watson-3.png" alt="" width="1381" /></figure>
+0〜9の値を持つy_trainおよびy_testを、カテゴリーデータを機械学習で扱う際に必須なOne-Hot形式に変換します。（One-Hot形式は、<a href="https://graspy.jp/lesson/5/chapter/31#sub_318" target="_blank" rel="noopener noreferrer">1-1-2. 機械学習で使用できるデータ表現</a>の説明を参照してください。）
+<pre><code class="python hljs">
+  <span class="hljs-keyword">from</span> keras.utils <span class="hljs-keyword">import</span> to_categorical
+  y_train = to_categorical(y_train, <span class="hljs-number">10</span>)
+  y_test = to_categorical(y_test, <span class="hljs-number">10</span>)
+  print(y_train[<span class="hljs-number">0</span>])
+</code></pre>
+<figure><img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/MNIST_CNN_-_IBM_Watson-4.png" alt="" width="764" /></figure>
+これでデータの前処理は完了です。
+<h4>ニューラルネットワークの組み立て</h4>
+次に、ニューラルネットワークを組み立てます。今回は畳み込みの処理を含めています。
+<pre><code class="python hljs">
+  <span class="hljs-keyword">from</span> keras.models <span class="hljs-keyword">import</span> Sequential
+  <span class="hljs-keyword">from</span> keras.layers <span class="hljs-keyword">import</span> Dense, Activation, Conv2D, MaxPooling2D, Flatten
+  model = Sequential()
+  model.add(Conv2D(<span class="hljs-number">32</span>, kernel_size=(<span class="hljs-number">3</span>, <span class="hljs-number">3</span>), padding=<span class="hljs-string">'same'</span>, input_shape=(<span class="hljs-number">28</span>, <span class="hljs-number">28</span>, <span class="hljs-number">1</span>)))
+  model.add(MaxPooling2D(pool_size=(<span class="hljs-number">2</span>, <span class="hljs-number">2</span>)))
+  model.add(Flatten())
+  model.add(Dense(<span class="hljs-number">128</span>))
+  model.add(Activation(<span class="hljs-string">'relu'</span>))
+  model.add(Dense(<span class="hljs-number">10</span>))
+  model.add(Activation(<span class="hljs-string">'softmax'</span>))
+  model.compile(optimizer=<span class="hljs-string">'adam'</span>, loss=<span class="hljs-string">'categorical_crossentropy'</span>, metrics=[<span class="hljs-string">'accuracy'</span>])
+</code></pre>
+ニューラルネットワークの可視化を行い、構造を確認しましょう。
+<pre><code class="python hljs">
+  <span class="hljs-keyword">from</span> IPython.display <span class="hljs-keyword">import</span> SVG
+  <span class="hljs-keyword">from</span> keras.utils.vis_utils <span class="hljs-keyword">import</span> model_to_dot
+  SVG(model_to_dot(model, show_shapes=<span class="hljs-keyword">True</span>).create(prog=<span class="hljs-string">'dot'</span>, format=<span class="hljs-string">'svg'</span>))
+</code></pre>
+このような構造が表示されます。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/MNIST_CNN_-_IBM_Watson-5.png" alt="" width="946" />
+このニューラルネットワークが正常に動作するか、学習と評価を行ってみることしましょう。学習の時間を短縮するため、エポックは5にしました。
+<pre><code class="python hljs">
+  <span class="hljs-comment"># 学習</span>
+  model.fit(X_train, y_train, batch_size=<span class="hljs-number">32</span>, epochs=<span class="hljs-number">5</span>, verbose=<span class="hljs-number">1</span>)
+  <span class="hljs-comment"># 評価</span>
+  loss, accuracy = model.evaluate(X_test, y_test, verbose=<span class="hljs-number">0</span>)
+  print(<span class="hljs-string">'Accuracy'</span>, <span class="hljs-string">'{:.2f}'</span>.format(accuracy))
+</code></pre>
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/MNIST_CNN_-_IBM_Watson-6.png" alt="" width="804" />このように学習と評価が行われ、0.98という高い精度を出すことができました。
+＜参考＞
+<ul>
+ 	<li><a href="https://keras.io/ja/" target="_blank" rel="noopener noreferrer">Keras</a></li>
+</ul>
+</div>
+<a class="c-button--learn c-button--learn--completed"><i class="material-icons c-chapter__check-icon--checked">check_circle</i>習得済み</a>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-2-5. 畳み込み層：Conv2D</div>
+<div class="l-content--detail p-lesson">
+それでは、このニューラルネットワークの構造を確認していきましょう。
+<pre><code class="python hljs">
+  <span class="hljs-keyword">from</span> keras.models <span class="hljs-keyword">import</span> Sequential
+  <span class="hljs-keyword">from</span> keras.layers <span class="hljs-keyword">import</span> Dense, Activation, Conv2D, MaxPooling2D, Flatten
+  model = Sequential()
+  model.add(Conv2D(<span class="hljs-number">32</span>, kernel_size=(<span class="hljs-number">3</span>, <span class="hljs-number">3</span>), padding=<span class="hljs-string">'same'</span>, input_shape=(<span class="hljs-number">28</span>, <span class="hljs-number">28</span>, <span class="hljs-number">1</span>)))
+  model.add(MaxPooling2D(pool_size=(<span class="hljs-number">2</span>, <span class="hljs-number">2</span>)))
+  model.add(Flatten())
+  model.add(Dense(<span class="hljs-number">128</span>))
+  model.add(Activation(<span class="hljs-string">'relu'</span>))
+  model.add(Dense(<span class="hljs-number">10</span>))
+  model.add(Activation(<span class="hljs-string">'softmax'</span>))
+  model.compile(optimizer=<span class="hljs-string">'adam'</span>, loss=<span class="hljs-string">'categorical_crossentropy'</span>, metrics=[<span class="hljs-string">'accuracy'</span>])
+</code></pre>
+まず、入力された画像から特徴マップを得る畳み込みの処理を行います。畳み込みは<a href="https://keras.io/ja/layers/convolutional/#conv2d" target="_blank" rel="noopener noreferrer">Conv2D</a>というレイヤーで行っています。このコードから分かるように、このニューラルネットワークでは、畳み込みは1回だけです。
+Kerasにおける畳み込み処理は、Conv1D、Conv2D、Conv3Dの3つが準備されています。Conv1Dは1次元の畳み込みで主に時間的な畳み込み（時系列データを用いたモデルなど）に使用します。Conv2Dは2次元の畳み込みで今回の画像のような畳み込みに使用します。Conv3Dは3次元の畳み込みで画像のような縦横方向に高さを加えた空間の畳み込みなどに使用します。
+Conv2Dの引数を見てみましょう。今回のコードでは、Conv2D(32, kernel_size=(3, 3), padding='same', input_shape=(28, 28, 1) のような指定となっています。第1引数の32は畳み込みを行った後の出力ユニット（ニューロン）数です。kernel_sizeは畳み込みを行う単位です。今回は縦横3ピクセルの単位で畳み込みを行っています。これを3×3のフィルタということもあります。
+今回の入力画像は28×28（ピクセル）なので、3×3のフィルタで畳み込みを行うと、通常は26×26の特徴マップ（畳み込みの結果）が得られます。もちろん、その特徴マップを再度、畳み込むと24×24の特徴マップとなります。しかし、畳み込みを行う度に得られる特徴マップが縮んでしまうのは得策とはいえないかもしれません。そこで、paddingの指定を行います。Kerasではvalidとsameが指定できます。validは通常の畳み込みを行うので得られる特徴マップは小さくなります。sameを指定すると畳み込む前に周囲をゼロで埋めて（ゼロパディング）画像を大きくするので、得られる特徴マップのサイズは入力した画像と同じになります。
+可視化されたニューラルネットワークの構造を確認すると、conv2d_2で、入力が28×28×1に対し、出力も28×28×32になっています。入出力ともに最初が28×28なのは、padding='same'を指定してゼロパディングを行ったためです。
+入力した画像がモノクロ画像のため最後が×1ですが、畳み込みレイヤーの出力を32ユニットと指定したため×32という出力になっています。
+ところで、この前提は3×3のフィルタを1ピクセルずつスライドして畳み込みを行うことです。このスライドさせる単位をstrides引数で指定することもできます。また、前節のDenseの説明と同様に、Conv2Dでもactivation引数で活性化関数を指定することができます。指定しない場合、線形活性化が行われることも同様です。
+最後に、input_shapeは入力する画像のサイズで、28×28ピクセルのモノクロ画像であることを指定しています。
+＜参考＞
+<ul>
+ 	<li><a href="https://keras.io/ja/" target="_blank" rel="noopener noreferrer">Keras</a></li>
+</ul>
+</div>
+<a class="c-button--learn c-button--learn--not-yat">習得したのでクリック</a>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-2-6. プーリング層：MaxPooling2D</div>
+<div class="l-content--detail p-lesson">
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/MNIST_CNN_-_IBM_Watson-5.png" alt="" width="946" />
+畳み込みによって得た特徴マップにプーリングの処理を行います。ここでは、プーリングを行う単位内で最大の値を使用するMaxPoolingという方法を採りました。Kearsでは畳み込みを行うConv1D、Conv2D、Conv3Dと1〜3次元に対応していますが、プーリングについてもMaxPooling1D、MaxPooling2D、MaxPooling3Dと同様に1〜3次元に対応しています。
+今回のコードでは、<a href="https://keras.io/ja/layers/pooling/#maxpooling2d" target="_blank" rel="noopener noreferrer">MaxPooling2D</a>(pool_size=(2, 2))のように指定しました。pool_size引数はプーリングを行う単位で、縦2ピクセル×横2ピクセルとしています。
+また、Conv2Dと同様に、strides引数を指定することができます。プーリングでは、デフォルト値はpool_sizeと同じ値です。
+再び可視化したニューラルネットワークの構造を見ると、max_pooling2d_2では、入力がconv2d_2の出力である28×28×32に対し、出力は14×14×32に変化しています。これはpool_sizeを2×2で指定したためです。
+畳み込みとプーリングを行った結果、14×14×32の3次元の出力を得ることができました。この出力が、入力した画像の特徴を示しています。あとは、この特徴のデータを入力として0〜9の数字に分類すれば良いわけです。ここで注意したいのは、前節では畳み込みの処理を行わずに、分類を行うためのフルコネクトのニューラルネットワーク（Dense）にデータを入力したのに対し、今回は畳み込みを行って特徴抽出を行った後でDenseにデータを入力することです。
+前節は4と9の2種類の数字を分類するのみだったため、敢えて畳み込みを行いませんでした（もちろん、畳み込みを行っても構いません）。しかし、ここでは0〜9の10種類の数字を分類する必要があるため畳み込みを行って特徴をきちんと抽出した方が精度に良い影響を与えるだろうと判断し、そのような実装を行ったのです（先ほどとは逆に、畳み込みを行わなくてもニューラルネットワークの実装として誤りではありません）。
+＜参考＞
+<ul>
+ 	<li><a href="https://keras.io/ja/" target="_blank" rel="noopener noreferrer">Keras</a></li>
+</ul>
+</div>
+<a class="c-button--learn c-button--learn--not-yat">習得したのでクリック</a>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-2-7. 特徴量抽出以降のネットワーク</div>
+<div class="l-content--detail p-lesson">
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/MNIST_CNN_2.png" alt="" width="946" />
+<h4>平坦化：Flatten</h4>
+さて、畳み込みとプーリングを行った結果である14×14×32のデータですが、Denseに入力する前に1次元のデータに変換しておきましょう。その処理を平坦化といい、<a href="https://keras.io/ja/layers/core/#flatten" target="_blank" rel="noopener noreferrer">Flattenレイヤー</a>で行います。ニューラルネットワークの構造を見ると、flatten_2のところで14×14×32という3次元のデータが、1次元のデータ（6272＝14×14×32）に変換されていることが分かります。
+<h4>フルコネクトのニューラルネットワーク</h4>
+ここまでの処理で得た画像の特徴データから、分類を行うため処理に移ります。前節では、Denseレイヤーは1つしかありませんでした。入力のユニットと出力のユニットが直結し、隠れ層はありませんでした。しかし、今回はもう少し複雑なニューラルネットワークにしてみましょう。
+コードを見ると、Denseが2つあります。1つ目のDense（dense_3）では、出力ユニット数を128と指定しています。活性化関数にはReLUを指定しました。前節で触れたようにReLUはよく使用されます。
+2つ目のDense（dense_4）で出力ユニット数を10にしました。これが最後のDenseなので、出力ユニット数を分類したい数（0〜9の10種類）に合わせる必要があります。活性化関数にはSoftmaxを使用しました。10種類の出力ユニットは0〜9の分類したい10種類のラベルに対応しており、分類したい画像が0である確率、1である確率･･･のように、10種類の確率がそれぞれの出力ユニットの値になれば、その中で最も高い確率の出力ユニットのラベルを分類結果とすることができます。Softmax関数はこのように出力を確率に変換するための活性化関数です。
+<h4>損失関数</h4>
+レイヤーの追加が終わって、model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])のようにコンパイルを行います。前節と違うのは損失関数です。前節は4と9の「どちらか（2値）」で分類するニューラルネットワークだったためbinary_crossentropyを使用しましたが、今回は0〜9の10種類の「いずれか」であるためcategorical_crossentropyを使用しています。
+＜参考＞
+<ul>
+ 	<li><a href="https://keras.io/ja/" target="_blank" rel="noopener noreferrer">Keras</a></li>
+</ul>
+</div>
+<a class="c-button--learn c-button--learn--not-yat">習得したのでクリック</a>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-2-8. 過学習とその対策</div>
+<div class="l-content--detail p-lesson">
+<a href="https://graspy.jp/lesson/5/chapter/33#sub_356" target="_blank" rel="noopener noreferrer">3-2-4.10種類の手書き数字を分類する</a>で作成した0〜9の10種類の手書き数字の分類を行うモデルは、テストデータでの精度が0.98と高い値となっていました。さらに高い精度を目指すことは可能でしょうか。
+例えば、エポック数を増やすという方法が考えられます。先ほどのモデルではエポック数が5と比較的少なめなので、それを増やすことで精度は高められるかもしれません。また、畳み込み層（Conv2D）が1層なのでそれを増やすとか、その後のフルコネクトの層（Dense）を増やすという方法も考えられます。
+こうした方法は、計算量が増えるため学習にかかる時間が伸びるという課題はありますが、まずは試してみたい方法です。
+<h4>過学習</h4>
+ただ、特にエポック数を増やすという方法にはデメリットもあります。それは訓練データによる学習を繰り返すほど、訓練データにモデルが最適化しすぎてしまい、テストデータで検証した精度が下がってしまうという問題です。これを過学習といいます。
+機械学習やディープラーニングを用いて作成しているモデルは、それが分類のモデルであれ、予測のモデルであれ、未知のデータに対する分類または予測の精度が高いものであることが望ましいはずです。
+過学習を防ぐ方法はいくつかあります。一つは訓練データとテストデータを分けて、テストデータを使って精度を評価することです。これは、いままでの演習でもやっています。訓練データを使って精度を評価すると、基本的にはエポック数を増やせば増やすほど精度が向上します。しかし、テストデータを使って精度を評価すると、どこかのエポックから精度が下がり始めるようになります。これが過学習が起きている状態ですから、その前のエポックで学習を止めてしまえば良いのです。
+<h4>EarlyStopping</h4>
+Kerasには過学習を防ぐ便利な方法があります。fitのコールバックとして<a href="https://keras.io/ja/callbacks/#earlystopping" target="_blank" rel="noopener noreferrer">EarlyStopping</a>を指定することで、エポック数を指定しなくても適切なタイミングで学習を打ち切ってくれます。
+EarlyStoppingを行うには、学習を行う際に訓練データだけでなく検証データもセットする必要があります。検証データは訓練データとは別に準備することもできますが、<strong>fitでvalidation_split引数を指定することにより、訓練データを分割して検証データとして使用することができます。</strong>
+ここで、検証データはテストデータとは別のものです。検証データは学習を行っている際に精度を評価するためのデータであり、テストデータはできあがった学習モデルの精度を評価するために使用します。
+EarlyStoppingを適用した全体のコードを示します。
+<pre><code class="python hljs">
+  <span class="hljs-keyword">from</span> keras.models <span class="hljs-keyword">import</span> Sequential
+  <span class="hljs-keyword">from</span> keras.layers <span class="hljs-keyword">import</span> Dense, Activation, Conv2D, MaxPooling2D, Flatten
+  <span class="hljs-keyword">from</span> keras.callbacks <span class="hljs-keyword">import</span> EarlyStopping
+  model = Sequential()
+  model.add(Conv2D(<span class="hljs-number">32</span>, kernel_size=(<span class="hljs-number">3</span>, <span class="hljs-number">3</span>), padding=<span class="hljs-string">'same'</span>, input_shape=(<span class="hljs-number">28</span>, <span class="hljs-number">28</span>, <span class="hljs-number">1</span>)))
+  model.add(MaxPooling2D(pool_size=(<span class="hljs-number">2</span>, <span class="hljs-number">2</span>)))
+  model.add(Flatten())
+  model.add(Dense(<span class="hljs-number">128</span>))
+  model.add(Activation(<span class="hljs-string">'relu'</span>))
+  model.add(Dense(<span class="hljs-number">10</span>))
+  model.add(Activation(<span class="hljs-string">'softmax'</span>))
+  model.compile(optimizer=<span class="hljs-string">'adam'</span>, loss=<span class="hljs-string">'categorical_crossentropy'</span>, metrics=[<span class="hljs-string">'accuracy'</span>])
+  <span class="hljs-comment"># 学習</span>
+  model.fit(X_train, y_train, batch_size=<span class="hljs-number">32</span>, validation_split=<span class="hljs-number">0.25</span>, callbacks=[EarlyStopping()], verbose=<span class="hljs-number">1</span>)
+  <span class="hljs-comment"># 評価</span>
+  loss, accuracy = model.evaluate(X_test, y_test, verbose=<span class="hljs-number">0</span>)
+  print(<span class="hljs-string">'Accuracy'</span>, <span class="hljs-string">'{:.2f}'</span>.format(accuracy))
+</code></pre>
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/MNIST_CNN_-_IBM_Watson-7.png" alt="" width="1996" />
+今回の実行例では、エポック数はわずか1回だけで学習が終了しました。EarlyStoppingではfitで出力されているloss（訓練データで評価した損失）の値をval_loss（検証データで評価した損失）の値が下回った場合、そこで学習を終了するようになっています。これは、EarlyStopping(monitor='val_acc')のように指定することで判断に使用する値を指定することができます。
+<h4>Dropout</h4>
+過学習に強く、精度を上げる方法として、<a href="https://keras.io/ja/layers/core/#dropout" target="_blank" rel="noopener noreferrer">Dropout</a>を使用することもあります。Dropoutは学習の際に、ランダムで一部のニューロンを無視するというものです。
+ニューラルネットワークの構築では、複数の構造のニューラルネットワークを用いて分類や予測を行い、その平均値を結果とするアンサンブル学習という技術があります。Dropoutはランダムでニューラルネットワークの構造を変えて学習することになるため、アンサンブル学習の簡易版としての効果が期待できます。
+3-2-4で作成したモデルをもとに、Dropoutを行ってみましょう。
+<pre><code class="python hljs">
+  <span class="hljs-keyword">from</span> keras.models <span class="hljs-keyword">import</span> Sequential
+  <span class="hljs-keyword">from</span> keras.layers <span class="hljs-keyword">import</span> Dense, Activation, Conv2D, MaxPooling2D, Flatten, Dropout
+  model = Sequential()
+  model.add(Conv2D(<span class="hljs-number">32</span>, kernel_size=(<span class="hljs-number">3</span>, <span class="hljs-number">3</span>), padding=<span class="hljs-string">'same'</span>, input_shape=(<span class="hljs-number">28</span>, <span class="hljs-number">28</span>, <span class="hljs-number">1</span>)))
+  model.add(MaxPooling2D(pool_size=(<span class="hljs-number">2</span>, <span class="hljs-number">2</span>)))
+  model.add(Flatten())
+  model.add(Dense(<span class="hljs-number">128</span>))
+  model.add(Activation(<span class="hljs-string">'relu'</span>))
+  model.add(Dropout(<span class="hljs-number">0.5</span>))
+  model.add(Dense(<span class="hljs-number">10</span>))
+  model.add(Activation(<span class="hljs-string">'softmax'</span>))
+  model.compile(optimizer=<span class="hljs-string">'adam'</span>, loss=<span class="hljs-string">'categorical_crossentropy'</span>, metrics=[<span class="hljs-string">'accuracy'</span>])
+  <span class="hljs-comment"># 学習</span>
+  model.fit(X_train, y_train, batch_size=<span class="hljs-number">32</span>, epochs=<span class="hljs-number">5</span>, verbose=<span class="hljs-number">1</span>)
+  <span class="hljs-comment"># 評価</span>
+  loss, accuracy = model.evaluate(X_test, y_test, verbose=<span class="hljs-number">0</span>)
+  print(<span class="hljs-string">'Accuracy'</span>, <span class="hljs-string">'{:.2f}'</span>.format(accuracy))
+</code></pre>
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/20180713_MNIST_CNN_-_IBM_Watson-2.png" alt="" width="1676" />
+精度は0.98と3-2-4での実行例と同じになりましたが、訓練データを用いた精度（5エポック目のaccの値：0.9743）よりテストデータを用いた精度（0.98）の方が高くなっており、Dropoutを使用していない3-2-4（5エポック目のaccの値は0.9941で訓練データでの精度の方が高い）とは違う傾向が出ていることが分かります。
+＜参考＞
+<ul>
+ 	<li><a href="https://keras.io/ja/" target="_blank" rel="noopener noreferrer">Keras</a></li>
+</ul>
+</div>
+<a class="c-button--learn c-button--learn--not-yat">習得したのでクリック</a>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-3. 再帰型ニューラルネットワーク</div>
+<div class="l-content--detail p-lesson"></div>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-3-1. 再帰型ニューラルネットワーク</div>
+<div class="l-content--detail p-lesson">
+ここまで、ディープラーニングの例として、畳み込みニューラルネットワークで画像を分類する方法について説明してきました。ディープラーニングの技術として、畳み込みニューラルネットワークは実績があり、多く用いられていますが、それ以外の技術も存在しています。また、畳み込みニューラルネットワークがどんなデータセットでもオールマイティに成果を出せるというわけではありません。
+本節では、畳み込みニューラルネットワーク以外のディープラーニングの技術として、再帰型ニューラルネットワークについて説明します。
+<h4>時系列のデータ</h4>
+畳み込みニューラルネットワークが得意とするのは、基本的には2次元の平面（画像）や、3次元の空間といったデータです。用途の代表例は、前節までに取り上げた画像の分類です。一方、再帰型ニューラルネットワークが得意とするのは時系列のデータです。例えば、株価や為替のデータ、気温、売上高などが挙げられます。
+ここでは説明を簡単にするために、正弦波にノイズを与えたものを使用します。
+<pre><code class="python hljs">
+  <span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">sin</span><span class="hljs-params">(x, T=<span class="hljs-number">100</span>)</span>:</span>
+    <span class="hljs-keyword">return</span> np.sin(<span class="hljs-number">2.0</span> * np.pi * x / T)
+  <span class="hljs-comment"># sin波にノイズを付与する</span>
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">create_data</span><span class="hljs-params">(T=<span class="hljs-number">100</span>, ampl=<span class="hljs-number">0.05</span>)</span>:</span>
+    x = np.arange(<span class="hljs-number">0</span>, <span class="hljs-number">2</span> * T + <span class="hljs-number">1</span>)
+    noise = ampl * np.random.uniform(low=<span class="hljs-number">-1.0</span>, high=<span class="hljs-number">1.0</span>, size=len(x))
+    <span class="hljs-keyword">return</span> sin(x) + noise
+  f = create_data()
+</code></pre>
+matplotlibで可視化すると、このようなグラフが表示されます。
+<pre><code class="python hljs">
+  %matplotlib inline
+  <span class="hljs-keyword">from</span> matplotlib <span class="hljs-keyword">import</span> pyplot <span class="hljs-keyword">as</span> plt
+  plt.figure()
+  plt.plot(range(<span class="hljs-number">0</span>, len(f)), f, color=<span class="hljs-string">"b"</span>, label=<span class="hljs-string">"created_sin"</span>)
+  plt.legend()
+  plt.show()
+</code></pre>
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/LSTM_sin_-_IBM_Watson.png" alt="" width="512" />
+数値で表示すると、このようになります。
+<pre><code class="python hljs">
+  print(f)
+</code></pre>
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/LSTM_sin_-_IBM_Watson-1.png" alt="" width="640" />
+＜参考＞
+<ul>
+ 	<li><a href="http://www.numpy.org/" target="_blank" rel="noopener noreferrer">NumPy</a></li>
+</ul>
+</div>
+<a class="c-button--learn c-button--learn--not-yat">習得したのでクリック</a>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-3-2. 再帰型ニューラルネットワークの考え方</div>
+<div class="l-content--detail p-lesson">
+このような時系列のデータから特徴量抽出を行うのが再帰型ニューラルネットワークです。では、どのように特徴量抽出を行うのでしょうか。
+まず、畳み込みニューラルネットワークの特徴量抽出について振り返ってみましょう。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/cnn_03-1.png" alt="" width="742" />
+畳み込みニューラルネットワークでは、上図のように3×3ピクセルといったサイズのフィルタで画像をスキャンすることにより、その範囲の特徴を抽出していきます。このことは、隣り合ったピクセルは基本的に似ていて、ときおり大きく異なったピクセルの並びが現れるという画像の特性に依存しています。例えば、山と空が写った画像があるとすると、山が写っている部分、空が写っている部分の隣り合ったピクセルは、色合いが似ています。しかし、山と空の境界線部分は色合いが大きく異なるでしょう。それを画像の特徴として抽出するのが畳み込みニューラルネットワークの考え方です。
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/rnn.png" alt="" width="1065" />
+次に、時系列データについて見てみましょう。上図左の赤でプロットされた値は、その前にある緑でプロットされた複数の値に注目すれば予想できそうです。さらに、上図右のように1つずつ値を順に移して、どのように値が変化していくかを学習していけば、この時系列データの特徴を抽出することができるかもしれません。こうした考え方に基づいて特徴量抽出を行うアルゴリズムが再帰型ニューラルネットワークです。
+ここで、各時点で赤でプロットした値を目的変数、緑でプロットした値を説明変数として用います。画像の分類のように目的変数は1つではなく、一つ前の目的変数が次の説明変数となり、それをデータが終わるまで繰り返して学習していくので「再帰型（Recurrent）」という名前が付いています。
+本節では、再帰型ニューラルネットワークのうち、LSTMというアルゴリズムを用いて、正弦波のデータを予測するモデルを作成します。
+</div>
+<a class="c-button--learn c-button--learn--not-yat">習得したのでクリック</a>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-3-3. LSTMで予測モデルを作成</div>
+<div class="l-content--detail p-lesson">
+<h4>訓練データの作成</h4>
+先ほどの正弦波のデータから訓練データを作成します。
+<pre><code class="python hljs">
+  X = []
+  y = []
+  STEPS = <span class="hljs-number">25</span>
+  <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> range(len(f) - STEPS):
+    X.append(f[i:i + STEPS])
+    y.append(f[i + STEPS])
+  X = np.array(X).reshape(len(X), STEPS, <span class="hljs-number">1</span>)
+  y = np.array(y).reshape(len(y), <span class="hljs-number">1</span>)
+</code></pre>
+前項で説明したように、再帰型ニューラルネットワークでは時系列のグラフ上で、目的変数にあたる値から、過去方向のいくつかの値を説明変数とします。どの程度の数の値を学習に用いるかをSTEPSという定数で定義しています。ここでは25時点前までの値を用いることにしました。
+実際に値を見て、確認します。
+<pre><code class="python hljs">
+  print(X[<span class="hljs-number">0</span>])
+  print(y[<span class="hljs-number">0</span>])
+  print(X[<span class="hljs-number">1</span>])
+  print(y[<span class="hljs-number">1</span>])
+</code></pre>
+<figure><img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/rnn-1.png" alt="" width="707" /></figure>
+<h4>LSTMを用いた予測モデルの作成</h4>
+LSTMを用いた予測モデルを作成します。
+<pre><code class="python hljs">
+  <span class="hljs-keyword">from</span> keras.models <span class="hljs-keyword">import</span> Sequential
+  <span class="hljs-keyword">from</span> keras.layers.core <span class="hljs-keyword">import</span> Dense, Activation
+  <span class="hljs-keyword">from</span> keras.layers.recurrent <span class="hljs-keyword">import</span> LSTM
+  model = Sequential()
+  model.add(LSTM(<span class="hljs-number">32</span>, batch_input_shape=(<span class="hljs-keyword">None</span>, STEPS, <span class="hljs-number">1</span>), return_sequences=<span class="hljs-keyword">False</span>))
+  model.add(Dense(<span class="hljs-number">1</span>))
+  model.add(Activation(<span class="hljs-string">"linear"</span>))
+  model.compile(loss=<span class="hljs-string">"mean_squared_error"</span>, optimizer=<span class="hljs-string">'adam'</span>)
+</code></pre>
+可視化すると、下図のような設計のニューラルネットワークであることが分かります。
+<pre><code class="python hljs">
+  <span class="hljs-keyword">from</span> IPython.display <span class="hljs-keyword">import</span> SVG
+  <span class="hljs-keyword">from</span> keras.utils.vis_utils <span class="hljs-keyword">import</span> model_to_dot
+  SVG(model_to_dot(model, show_shapes=<span class="hljs-keyword">True</span>).create(prog=<span class="hljs-string">'dot'</span>, format=<span class="hljs-string">'svg'</span>))
+</code></pre>
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/LSTM_sin_-_IBM_Watson-2.png" alt="" width="424" />
+<a href="https://keras.io/ja/layers/recurrent/#lstm" target="_blank" rel="noopener noreferrer">LSTM</a>で特徴量抽出した後は、フルコネクトのニューラルネットワーク（Dense）レイヤーを追加しています。これまでのような分類（離散値の予測）ではなく、値を予測する（連続値の予測）ため、出力ユニット数は1にしています。また、活性化関数は、出力値を変換しない線形活性化（linear）を用いました。Denseの出力はもともと連続値であるため、分類の時のように出力値を変換する必要がありません。損失関数には平均二乗誤差（mean_squared_error）としました。
+<h4>学習と評価</h4>
+まず、学習を行います。
+<pre><code class="python hljs">
+  model.fit(X, y, batch_size=<span class="hljs-number">300</span>, epochs=<span class="hljs-number">100</span>, verbose=<span class="hljs-number">1</span>)
+</code></pre>
+<figure><img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/LSTM_sin_-_IBM_Watson-3.png" alt="" width="630" /></figure>
+学習が終わったら、実際に値を予測してグラフを描画します。
+<pre><code class="python hljs">
+  predicted = model.predict(X)
+  plt.figure()
+  plt.plot(range(STEPS, len(predicted) + STEPS), predicted, color=<span class="hljs-string">"r"</span>, label=<span class="hljs-string">"predicted"</span>)
+  plt.plot(range(<span class="hljs-number">0</span>, len(f)), f, color=<span class="hljs-string">"b"</span>, label=<span class="hljs-string">"created_sin"</span>)
+  plt.legend()
+  plt.show()
+</code></pre>
+<img src="https://writing.itprocollege.com/wp-content/uploads/2018/06/LSTM_sin_-_IBM_Watson-4.png" alt="" width="711" />
+青い線で描かれたグラフがもともとの正弦波（ノイズを与えたもの）、赤い線で描かれたグラフが今回作成したモデルで予測された値です。概ね、うまく予測されていることが分かります。
+＜参考＞
+<ul>
+ 	<li><a href="https://keras.io/ja/" target="_blank" rel="noopener noreferrer">Keras</a></li>
+ 	<li><a href="http://www.numpy.org/" target="_blank" rel="noopener noreferrer">NumPy</a></li>
+</ul>
+</div>
+<a class="c-button--learn c-button--learn--not-yat">習得したのでクリック</a>
+</div>
+<div class="l-content--detail p-lesson">
+<div>3-4. 章末テスト</div>
+<div class="l-content--detail p-lesson">
+10個のファッションカテゴリの白黒画像によるデータセットであるFashion-MNISTを用いて、分類を行うモデルを作成し、精度を評価してください。
+ニューラルネットワークは少なくとも下記の3つを作成し、比較してください。（EarlyStoppingやDropoutも使用してみましょう。）
+<ul>
+ 	<li>畳み込みを行わないニューラルネットワーク</li>
+ 	<li>畳み込みを1層行ったニューラルネットワーク</li>
+ 	<li>畳み込みを2層以上行ったニューラルネットワーク</li>
+</ul>
+Fashion-MNISTは、Kerasを用いてダウンロードすることができます。詳細は、<a href="https://keras.io/ja/datasets/" target="_blank" rel="noopener noreferrer">https://keras.io/ja/datasets/</a>のFashion-MNISTの説明を参照してください。
+<pre><code class="python hljs">
+  <span class="hljs-keyword">from</span> keras.datasets <span class="hljs-keyword">import</span> fashion_mnist
+  (x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
+</code></pre>
+</div>
+<a class="c-button--learn c-button--learn--not-yat">習得したのでクリック</a>
+</div>

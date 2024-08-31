@@ -1,0 +1,161 @@
+---
+title: "CLIでAmazon Drive / Photosに画像ファイルをアップロードする odrive版"
+description: "以前書いた、acd_cliというCLI（GUIなしコマンド）でのAmazon Drive操作を可能にする素晴らしいツールが突然使えなくなってしまい、詳しい原因を..."
+tags:
+  - "amazon"
+  - "odrive"
+  - "python"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2019-08-24T17:51:24.000Z
+author: takashi
+---
+
+
+<p><a href="http://tech.blog.uribou.me/amazonkuraudodoraibunikomandodeakusesusurufang-fa/">以前書いた、acd_cliというCLI（GUIなしコマンド）でのAmazon Drive操作を可能にする</a>素晴らしいツールが突然使えなくなってしまい、詳しい原因を調べもせずに諦めていました。</p>
+<p>今現在も使えないことに変わりないのですが、Prime会員特典であるPhoto無制限アップロードを使わない手はないので、自力で<a href="https://developer.amazon.com/ja/amazon-drive">Amazon Drive API</a>を駆使して同期するツールを作ろうかと思ったら、リンク先にある通り新規利用申請を受け付けていないとのこと。まじか。</p>
+<img class="aligncenter size-full wp-image-2442" src="http://tech.blog.uribou.me/wp-content/uploads/sites/2/2019/08/b0bc28df7138aa46ae33aa371576909a.png" alt="" width="1994" height="1136" />
+<p>今更ながらacd_cliが使えなくなった原因を調べてみると、以下の記事を発見しました。
+<a href="https://www.reddit.com/r/DataHoarder/comments/6eebn1/amazon_banned_acd_cli_and_similiar_clients_again/">https://www.reddit.com/r/DataHoarder/comments/6eebn1/amazon_banned_acd_cli_and_similiar_clients_again/</a>
+最初の一文が原因ですね。要約すると、他人のAPI keyを共有して使いまわしていたために利用規約違反でBANされたと。</p>
+<blockquote>acd-cli was never unbanned, they simply used another Developers API key (with permission I believe from the developer but not Amazon) this developer sharing the API key with acd-cli was likely a Terms of Service violation</blockquote>
+<p>それならacd_cliに代わるアプリケーションを探してみましょう。</p>
+<h1>rclone</h1>
+<p>上記の記事でも挙がっていた<a href="https://rclone.org/">rclone</a>ですが、noteに書いてある通りAmazon Drive API新規利用不可のためKeyが取得できず、使えませんね。あっけなく脱落。</p>
+<blockquote>Important: rclone supports Amazon Drive only if you have your own set of API keys. Unfortunately the Amazon Drive developer program is now closed to new entries so if you don’t already have your own set of keys you will not be able to use rclone with Amazon Drive.
+For the history on why rclone no longer has a set of Amazon Drive API keys see the forum.
+If you happen to know anyone who works at Amazon then please ask them to re-instate rclone into the Amazon Drive developer program - thanks!</blockquote>
+<h1>odrive</h1>
+<p>Amazon Driveをキーワードに指定してググっていると、<a href="https://www.odrive.com/">odrive</a>というサービスを発見しました。Amazon Drive含む各種クラウドストレージサービスを統合して、ファイルの同期や共有を可能にするとのこと。クラアントアプリケーションはWindows版はもちろん、macOS/Linux版も提供されてる。これは期待できるのでは？GUI版しかないと困るのだけれど。</p>
+<img class="aligncenter size-full wp-image-2448" src="http://tech.blog.uribou.me/wp-content/uploads/sites/2/2019/08/99778de584bc8cdb3e170b0ce6c47524.png" alt="" width="1106" height="802" />
+<p>早速ユーザ登録してサインインしてみると、ダッシュボードの下の方にLinux Agentの文字が！（ただしBeta）</p>
+<img class="aligncenter size-full wp-image-2450" src="http://tech.blog.uribou.me/wp-content/uploads/sites/2/2019/08/2defab9986b63d504406b49d9b89c453.png" alt="" width="724" height="786" />
+<p>試してみた結果、これは良さそうです。以下に具体的な使い方を書きます。</p>
+<h2 class="header-scroll"><strong>DOWNLOAD CLI SYNC CLIENT</strong></h2>
+<p>主要なプラットフォーム向けのCLIバイナリが用意されています。フロントはPythonですね。</p>
+<ul>
+    <li>odrive CLI (Python): <a href="https://dl.odrive.com/odrive-py" target="_self" rel="noopener">https://dl.odrive.com/odrive-py</a></li>
+    <li>odrive CLI (Linux 32bit binary): <a href="https://dl.odrive.com/odrivecli-lnx-32" target="_self" rel="noopener">https://dl.odrive.com/odrivecli-lnx-32</a></li>
+    <li>odrive CLI (Linux 64bit binary): <a href="https://dl.odrive.com/odrivecli-lnx-64" target="_self" rel="noopener">https://dl.odrive.com/odrivecli-lnx-64</a></li>
+    <li>odrive CLI (OS X binary): <a href="https://dl.odrive.com/odrivecli-osx" target="_self" rel="noopener">https://dl.odrive.com/odrivecli-osx</a></li>
+    <li>odrive CLI (Windows binary): <a href="https://dl.odrive.com/odrivecli-win" target="_self" rel="noopener">https://dl.odrive.com/odrivecli-win</a></li>
+    <li>odrive CLI (RPi/ARMv6 binary): <a href="https://dl.odrive.com/odrivecli-rpi" target="_self" rel="noopener">https://dl.odrive.com/odrivecli-rpi</a></li>
+</ul>
+<h2>Linux 64bit版のインストールとAgentの起動</h2>
+<p><a href="https://docs.odrive.com/docs/odrive-sync-agent#section--install-sync-agent-on-linux-rpi-">Usage Guide</a>の通り、以下のコマンドを実行すればインストール完了です。</p>
+<pre class="lang:sh decode:true">od="$HOME/.odrive-agent/bin" &amp;&amp; \
+curl -L "http://dl.odrive.com/odrive-py" --create-dirs -o "$od/odrive.py" &amp;&amp; \
+curl -L "http://dl.odrive.com/odriveagent-lnx-64" | \
+tar -xvzf- -C "$od/" &amp;&amp; \
+curl -L "http://dl.odrive.com/odrivecli-lnx-64" | \
+tar -xvzf- -C "$od/"</pre>
+<p>Usage Guideはnohupで簡易的にデーモン化してますが、start-stop-daemon使ったり、systemdの設定をした方が個人的には好み。あとで何とかしようと思います。</p>
+<pre class="lang:sh decode:true">nohup "$HOME/.odrive-agent/bin/odriveagent" &gt; /dev/null 2&gt;&amp;1 &amp;</pre>
+<h2>odrive CLIヘルプ</h2>
+<p>主要機能は押さえてある感じがします。</p>
+<pre class="lang:sh decode:true">$ python "$HOME/.odrive-agent/bin/odrive.py" -h
+usage: odrive.py [-h]
+                 {authenticate,mount,unmount,backup,removebackup,sync,stream,refresh,unsync,xlthreshold,encpassphrase,syncstate,status,deauthorize,emptytrash,restoretrash,shutdown}
+                 ...
+odrive Make Cloud Storage THE WAY IT SHOULD BE.
+positional arguments:
+  {authenticate,mount,unmount,backup,removebackup,sync,stream,refresh,unsync,xlthreshold,encpassphrase,syncstate,status,deauthorize,emptytrash,restoretrash,shutdown}
+                        commands
+    authenticate        authenticate odrive with an auth key
+    mount               mount remote odrive path to a local folder
+    unmount             remove a mount
+    backup              backup a local folder to a remote odrive path
+    removebackup        remove a backup job
+    sync                sync a placeholder
+    stream              stream placholder/remote file eg. stream path | app -
+                        or stream to a file eg. stream path &gt; file.ext
+    refresh             refresh a folder
+    unsync              unsync a file or a folder
+    xlthreshold         split files larger than this threshold
+    encpassphrase       specify a passphrase for Encryptor folders
+    syncstate           get sync status info
+    status              get status info
+    deauthorize         deauthorize odrive to unlink the current user and exit
+    emptytrash          empty odrive trash
+    restoretrash        restore odrive trash
+    shutdown            shutdown odrive
+optional arguments:
+  -h, --help            show this help message and exit</pre>
+<h2>Amazon Drive / Photoのファイル操作</h2>
+<p>早速、Amazon Driveにコマンドでファイル操作を試していきます。</p>
+<h3>authenticate(認証)</h3>
+<p>Usage Guideに記載されている通りに、まずは認証コードをCLIツールに登録します。
+&nbsp;</p>
+<blockquote>Once you have signed-in, navigate to your <a href="https://www.odrive.com/account/authcodes" target="_self" rel="noopener">Authentication Codes</a> and click on “Create Auth Key” to create an auth key that you can then use to authenticate your odrive Sync Agent install.</blockquote>
+<pre class="lang:sh decode:true">$ python "$HOME/.odrive-agent/bin/odrive.py" authenticate 00000000-0000-0000-0000-000000000000-00000000
+Hello 安藤敬資</pre>
+<p>認証に成功すると、初期状態では下記ファイル構成だったのが</p>
+<pre class="lang:sh decode:true">$ tree
+.odrive-agent/
+└── bin
+　　　   ├── odrive
+  　　　 ├── odrive.py
+　 　　  └── odriveagent</pre>
+<p>下記のようにそれっぽいdbが生成されます。</p>
+<pre class="lang:sh decode:true">$ tree
+.odrive-agent/
+├── bin
+│   ├── odrive
+│   ├── odrive.py
+│   └── odriveagent
+├── db
+│   ├── backups
+│   ├── integrations
+│   ├── odrive-agent-db
+│   ├── odrive-agent-id
+│   ├── odrive.db
+│   ├── odrive.db-shm
+│   ├── odrive.db-wal
+│   └── tracking.db
+└── log
+    ├── agent.log
+    └── error.log</pre>
+<h3>mount</h3>
+<p>Amazon Driveをマウントしてみましょう。</p>
+<pre class="lang:sh decode:true">$ sudo mkdir /mnt/odrive
+$ python "$HOME/.odrive-agent/bin/odrive.py" mount /mnt/odrive /
+/mnt/odrive is now synchronizing with odrive.</pre>
+<p>あっさりできた。</p>
+<h3>backup(アップロード)</h3>
+<p>いよいよAmazon Driveへのファイルアップロード。これにはbackupサブコマンドを使います。</p>
+<pre class="lang:sh decode:true">$ python "$HOME/.odrive-agent/bin/odrive.py" backup \
+    /symlinks/pictures/デジカメ写真/2019/08/20190816/ \
+    /Amazon\ Cloud\ Drive/写真/2019/08/</pre>
+<p>できた。</p>
+<img class="aligncenter size-full wp-image-2451" src="http://tech.blog.uribou.me/wp-content/uploads/sites/2/2019/08/1e242dd555bde02a2842d7ecce263d15.png" alt="" width="1376" height="1062" />
+<h3>sync(ダウンロード)</h3>
+<p>こちらはsyncサブコマンドをファイルごとに実行する必要があり、めんどくさいんですが問題なくできました。</p>
+<pre class="lang:sh decode:true ">$ python "$HOME/.odrive-agent/bin/odrive.py" sync /mnt/odrive/Amazon\ Cloud\ Drive.cloudf
+/mnt/odrive/Amazon Cloud Drive
+$ python "$HOME/.odrive-agent/bin/odrive.py" sync /mnt/odrive/Amazon\ Cloud\ Drive/写真.cloudf
+/mnt/odrive/Amazon Cloud Drive/写真
+build@espresso:~$ python "$HOME/.odrive-agent/bin/odrive.py" sync /mnt/odrive/Amazon\ Cloud\ Drive/写真/2019.cloudf
+/mnt/odrive/Amazon Cloud Drive/写真/2019
+build@espresso:~$ python "$HOME/.odrive-agent/bin/odrive.py" sync /mnt/odrive/Amazon\ Cloud\ Drive/写真/2019/08
+Unable to sync 08.  Please use a placeholder path.
+build@espresso:~$ python "$HOME/.odrive-agent/bin/odrive.py" sync /mnt/odrive/Amazon\ Cloud\ Drive/写真/2019/08.cloudf
+/mnt/odrive/Amazon Cloud Drive/写真/2019/08
+build@espresso:~$ python "$HOME/.odrive-agent/bin/odrive.py" sync /mnt/odrive/Amazon\ Cloud\ Drive/写真/2019/08/20190815.cloudf
+/mnt/odrive/Amazon Cloud Drive/写真/2019/08/20190815
+$ ls  /mnt/odrive/Amazon\ Cloud\ Drive/写真/2019/08/20190815/*.cloud | while read line; do
+    python "$HOME/.odrive-agent/bin/odrive.py" sync "$line"
+done
+/mnt/odrive/Amazon Cloud Drive/写真/2019/08/20190815/DSC_9244.JPG
+/mnt/odrive/Amazon Cloud Drive/写真/2019/08/20190815/DSC_9244.NEF
+/mnt/odrive/Amazon Cloud Drive/写真/2019/08/20190815/DSC_9246.JPG
+/mnt/odrive/Amazon Cloud Drive/写真/2019/08/20190815/DSC_9246.NEF
+/mnt/odrive/Amazon Cloud Drive/写真/2019/08/20190815/DSC_9247.JPG
+/mnt/odrive/Amazon Cloud Drive/写真/2019/08/20190815/DSC_9247.NEF
+/mnt/odrive/Amazon Cloud Drive/写真/2019/08/20190815/DSC_9248.JPG
+/mnt/odrive/Amazon Cloud Drive/写真/2019/08/20190815/DSC_9248.NEF
+/mnt/odrive/Amazon Cloud Drive/写真/2019/08/20190815/DSC_9249.JPG
+/mnt/odrive/Amazon Cloud Drive/写真/2019/08/20190815/DSC_9249.NEF
+/mnt/odrive/Amazon Cloud Drive/写真/2019/08/20190815/IMG_3300.JPG</pre>
+<h1>まとめ</h1>
+<p>odriveで問題なし。Amazon Driveにコマンドでファイルをバックアップする程度の用途なら、odriveのFreeプランで問題ないと思います。Premiumに付いてくる付加機能は個人的には不要なので。</p>

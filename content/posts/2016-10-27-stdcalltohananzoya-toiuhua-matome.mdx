@@ -1,0 +1,42 @@
+---
+title: "呼び出し規約とは？stdcallとはなんぞや？という話。"
+description: "昔WindowsCEプラットフォームで製品開発していた時も、素のWin32APIを叩いてテストアプリを作ったりしていたけれど、今思うとあまり理解しないままに使っ..."
+tags:
+  - "プログラミング"
+  - "教育"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2016-10-27T15:02:38.000Z
+author: takashi
+---
+
+
+昔WindowsCEプラットフォームで製品開発していた時も、素のWin32APIを叩いてテストアプリを作ったりしていたけれど、今思うとあまり理解しないままに使って作っていたんだなぁ…と、今更ながら思う。
+<blockquote class="twitter-tweet" data-lang="ja"><p lang="ja" dir="ltr">ARMで言う所のeabiみたいなもんか。<br /><br />関数を呼び出すということ - Web/DB プログラミング徹底解説 <a href="https://t.co/Bb6Nw5icCO">https://t.co/Bb6Nw5icCO</a> <a href="https://twitter.com/ShareThis">@sharethis</a>より</p>&mdash; takashi ando (@takashi7ando) <a href="https://twitter.com/takashi7ando/status/791634275401510912">2016年10月27日</a></blockquote>
+
+上のリンク先、「関数を呼び出すということ」なんて超基本じゃん！などと思うなかれ、かなり深いところまで掘り下げて解説されています。
+最も具体的で身近な例としては、「Win32APIと標準Cライブラリとでは、スタックの巻き戻し方が違うんだよ」という点です。そうだったんだ！と、目から鱗でした^^;
+そんな__stdcallの規約、大元の情報は以下のMicrosoft本家ページに記載されています。
+<ul>
+<li><a href="https://msdn.microsoft.com/ja-jp/library/zxk0tw93.aspx">Win32APIの呼び出し規約</a></li>
+</ul>
+Cライブラリはこちらです。
+<ul>
+<li><a href="https://msdn.microsoft.com/ja-jp/library/zkwh89ks.aspx">Cライブラリの規約__cdecl</a></li>
+</ul>
+ちなみに、上記の規約ページでも触れていますが、スマホなどの組み込み機器で確固たる地位を築き上げたARMプロセッサは、インテルのx86プロセッサとは全く異なるCPUなので、当然規約も違います。
+検索したら、ARM社ではなく、なぜかMicrosoft の解説ページがトップに出てきたんですが… そのままリンク貼っちゃいます^^;
+<ul>
+<li><a href="https://msdn.microsoft.com/ja-jp/library/dn736986.aspx">ARM ABI 規則の概要</a></li>
+</ul>
+なんでこんなもん調べだしたのかというと…
+今後仕事でWindows上で動かす業務効率化するスクリプトを書く機会が増えそうで、ならPythonで書いてしまえと思いまして。
+その際、サードパーティ提供のdllを使う必要がありまして。
+その際に使うctypesパッケージ提供のモジュールが、Win32APIと通常のCライブラリとで異なるみたいなんですよね。
+<blockquote class="twitter-tweet" data-lang="ja"><p lang="ja" dir="ltr"><a href="https://twitter.com/ShareThis">@ShareThis</a> そして <a href="https://twitter.com/hashtag/python?src=hash">#python</a> からcライブラリのexport APIをコールする際に使うctypesモジュールはABI（たぶん）によって変わると。windowsをインストールして確かめてみよっと。<a href="https://t.co/1t03de3M3b">https://t.co/1t03de3M3b</a></p>&mdash; takashi ando (@takashi7ando) <a href="https://twitter.com/takashi7ando/status/791637442038075393">2016年10月27日</a></blockquote>
+
+んん？どういうことだ？
+と、今までよく理解できていなかったので、上記サイトで分かりやすい解説を読んで勉強させていただいた次第です。
+脇道に逸れまくって、本来の目的だったPythonからのWin32API呼び出しを試せていないんですが…。
+それはまた後ほど。

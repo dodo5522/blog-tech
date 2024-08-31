@@ -1,0 +1,79 @@
+---
+title: "Python asyncioのソースを眺めていて、すっかり忘れていた '*' (アスタリスク) 1個が示す意味。"
+description: "これです。__init__の引数に '*' (アスタリスク) が1個、ポツンとありますよね。class Queue:    A queue, useful fo..."
+tags:
+  - "python"
+  - "プログラミング"
+categories:
+  - programming
+image: /images/software-developer.jpg
+date: 2017-01-02T14:23:56.000Z
+author: takashi
+---
+
+
+これです。
+<code>__init__</code>の引数に '*' (アスタリスク) が1個、ポツンとありますよね。
+<pre><code class="python">class Queue:
+    """A queue, useful for coordinating producer and consumer coroutines.
+    ...
+    """
+    def __init__(self, maxsize=0, *, loop=None):
+        if loop is None:
+            self._loop = events.get_event_loop()
+        else:
+            self._loop = loop
+        self._maxsize = maxsize
+        # Futures.
+        self._getters = collections.deque()
+        # Futures.
+        self._putters = collections.deque()
+        self._unfinished_tasks = 0
+        self._finished = locks.Event(loop=self._loop)
+        self._finished.set()
+        self._init(maxsize)
+</code></pre>
+可変長引数ではないし…　これは何だったっけ…　と、Google先生にキーワードを投げかけてみるも、なかなか見つからず。
+最終的にこのキーワードで見つかりました。
+<blockquote>
+  python asterisk single only
+</blockquote>
+出てきた結果がこれ。
+<strong style="font-size:2em"><a href="http://stackoverflow.com/questions/14301967/python-bare-asterisk-in-function-argument">Python bare asterisk in function argument - Stack Overflow</a></strong>
+なるほど、bare asteriskと表現するのね…。
+気になる回答は以下。
+<blockquote>
+  Bare * is used to force the caller to use named arguments - so you cannot define a function with * as an argument when you have no following keyword arguments.
+  See this answer or Python 3 documentation for more details.
+</blockquote>
+要するに、
+<blockquote>
+  '*'は、その後ろの引数に名前付きを強制したいときに使うんだよ。Python 3の公式ドキュメントを見てみ。
+</blockquote>
+ということらしい。
+ああ、しまった…　確かに以前、Python 2-&gt;3の変更点を舐めた時に、<a href="https://docs.python.org/3/reference/compound_stmts.html#function-definitions">確かに見た</a>わ。
+以下、公式ドキュメント。
+<blockquote>
+  Parameters after * or *identifier are keyword-only parameters and may only be passed used keyword arguments.
+</blockquote>
+実際に試した結果が以下。確かに。
+<pre><code class="python">In [1]: def hoge(a, *, b=1):
+   ...:     pass
+   ...:
+In [2]: hoge(1)
+In [3]: hoge(1, 2)
+---------------------------------------------------------------------------
+TypeError                                 Traceback (most recent call last)
+&lt;ipython-input-3-6045bbdcc16a&gt; in &lt;module&gt;()
+----&gt; 1 hoge(1, 2)
+TypeError: hoge() takes 1 positional argument but 2 were given
+</code></pre>
+<pre><code class="python">In [4]: def hoge(a, b=1):
+   ...:     pass
+   ...:
+In [5]: hoge(1)
+In [6]: hoge(1,2)
+In [7]:
+</code></pre>
+教訓。
+学んだことは普段からアウトプットしないと、あっという間に忘れるんですね。。
