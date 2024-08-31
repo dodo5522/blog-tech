@@ -28,7 +28,7 @@ jobs:
           echo GITHUB_PERSONAL_ACCESS_TOKEN=${{secrets.REPO_PERSONAL_ACCESS_TOKEN}} > .env
           echo GITHUB_OWNER=${GITHUB_REPOSITORY_OWNER} >> .env
           echo GITHUB_REPO=$(basename ${GITHUB_REPOSITORY}) >> .env
-          echo GITHUB_BRANCH=${GITHUB_REF_NAME} >> .env
+          echo GITHUB_BRANCH=staging >> .env
           echo NEXT_PUBLIC_TINA_CLIENT_ID=${{secrets.TINA_CLIENT_ID}} >> .env
           echo TINA_TOKEN=${{secrets.TINA_TOKEN}} >> .env
           yarn build
