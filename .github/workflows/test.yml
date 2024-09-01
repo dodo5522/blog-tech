@@ -12,6 +12,5 @@ jobs:
     with:
       lint-only: true
     secrets:
-      REPO_PERSONAL_ACCESS_TOKEN: ${{ secrets.REPO_PERSONAL_ACCESS_TOKEN }}
       TINA_CLIENT_ID: ${{ secrets.TINA_CLIENT_ID }}
       TINA_TOKEN: ${{ secrets.TINA_TOKEN }}
