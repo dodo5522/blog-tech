@@ -1,0 +1,55 @@
+name: Build
+
+on:
+  workflow_call:
+    inputs:
+      lint-only:
+        required: true
+        type: boolean
+      artifact-name:
+        required: false
+        type: string
+      artifact-path:
+        required: false
+        type: string
+    secrets:
+      REPO_PERSONAL_ACCESS_TOKEN:
+        required: true
+      TINA_CLIENT_ID:
+        required: true
+      TINA_TOKEN:
+        required: true
+
+jobs:
+  build-html:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.9.0'
+      - uses: actions/cache@v4
+        id: cache
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+      - if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        run: yarn install
+      - name: Make env
+        run: |
+          echo GITHUB_PERSONAL_ACCESS_TOKEN=${{ secrets.REPO_PERSONAL_ACCESS_TOKEN }} > .env
+          echo GITHUB_OWNER=${GITHUB_REPOSITORY_OWNER} >> .env
+          echo GITHUB_REPO=$(basename ${GITHUB_REPOSITORY}) >> .env
+          echo GITHUB_BRANCH=${GITHUB_REF_NAME} >> .env
+          echo NEXT_PUBLIC_TINA_CLIENT_ID=${{ secrets.TINA_CLIENT_ID }} >> .env
+          echo TINA_TOKEN=${{ secrets.TINA_TOKEN }} >> .env
+      - name: Build and lint
+        run: |
+          yarn build
+      - uses: actions/upload-artifact@v3
+        if: ${{ !inputs.lint-only }}
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: ${{ inputs.artifact-path }}
