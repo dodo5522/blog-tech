@@ -9,13 +9,14 @@ jobs:
   build:
     uses: ./.github/workflows/_build.yml
     with:
+      environment: production
       lint-only: false
       artifact-name: out-html
       artifact-path: ./out
     secrets:
-      REPO_PERSONAL_ACCESS_TOKEN: ${{ secrets.REPO_PERSONAL_ACCESS_TOKEN }}
       TINA_CLIENT_ID: ${{ secrets.TINA_CLIENT_ID }}
       TINA_TOKEN: ${{ secrets.TINA_TOKEN }}
+      TINA_TOKEN_SEARCH: ${{ secrets.TINA_TOKEN_SEARCH }}
 
   deploy:
     runs-on: ubuntu-latest
@@ -23,7 +24,7 @@ jobs:
     needs: build
 
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: out-html
           path: ./out

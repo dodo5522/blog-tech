@@ -1,8 +1,12 @@
-name: Build
+name: Build and/or lint
 
 on:
   workflow_call:
     inputs:
+      environment:
+        required: false
+        type: string
+        default: test
       lint-only:
         required: true
         type: boolean
@@ -13,17 +17,17 @@ on:
         required: false
         type: string
     secrets:
-      REPO_PERSONAL_ACCESS_TOKEN:
-        required: true
       TINA_CLIENT_ID:
         required: true
       TINA_TOKEN:
+        required: true
+      TINA_TOKEN_SEARCH:
         required: true
 
 jobs:
   build-html:
     runs-on: ubuntu-latest
-    environment: production
+    environment: ${{ inputs.environment }}
 
     steps:
       - uses: actions/checkout@v4
@@ -39,16 +43,15 @@ jobs:
         run: yarn install
       - name: Make env
         run: |
-          echo GITHUB_PERSONAL_ACCESS_TOKEN=${{ secrets.REPO_PERSONAL_ACCESS_TOKEN }} > .env
           echo GITHUB_OWNER=${GITHUB_REPOSITORY_OWNER} >> .env
           echo GITHUB_REPO=$(basename ${GITHUB_REPOSITORY}) >> .env
-          echo GITHUB_BRANCH=${GITHUB_REF_NAME} >> .env
-          echo NEXT_PUBLIC_TINA_CLIENT_ID=${{ secrets.TINA_CLIENT_ID }} >> .env
+          echo TINA_CLIENT_ID=${{ secrets.TINA_CLIENT_ID }} >> .env
           echo TINA_TOKEN=${{ secrets.TINA_TOKEN }} >> .env
+          echo TINA_TOKEN_SEARCH=${{ secrets.TINA_TOKEN_SEARCH }} >> .env
       - name: Build and lint
         run: |
           yarn build
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: ${{ !inputs.lint-only }}
         with:
           name: ${{ inputs.artifact-name }}
