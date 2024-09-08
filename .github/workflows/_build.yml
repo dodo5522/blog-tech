@@ -21,6 +21,8 @@ on:
         required: true
       TINA_TOKEN:
         required: true
+      TINA_TOKEN_SEARCH:
+        required: true
 
 jobs:
   build-html:
@@ -45,6 +47,7 @@ jobs:
           echo GITHUB_REPO=$(basename ${GITHUB_REPOSITORY}) >> .env
           echo TINA_CLIENT_ID=${{ secrets.TINA_CLIENT_ID }} >> .env
           echo TINA_TOKEN=${{ secrets.TINA_TOKEN }} >> .env
+          echo TINA_TOKEN_SEARCH=${{ secrets.TINA_TOKEN_SEARCH }} >> .env
       - name: Build and lint
         run: |
           yarn build

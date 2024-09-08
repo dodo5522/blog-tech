@@ -32,4 +32,12 @@ export default defineConfig({
       Post,
     ],
   },
+  search: {
+    tina: {
+      indexerToken: process.env.TINA_TOKEN_SEARCH,
+      stopwordLanguages: ['jpn'],
+    },
+    indexBatchSize: 100,
+    maxSearchIndexFieldLength: 100,
+  },
 });

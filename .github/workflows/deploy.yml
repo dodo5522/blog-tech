@@ -16,6 +16,7 @@ jobs:
     secrets:
       TINA_CLIENT_ID: ${{ secrets.TINA_CLIENT_ID }}
       TINA_TOKEN: ${{ secrets.TINA_TOKEN }}
+      TINA_TOKEN_SEARCH: ${{ secrets.TINA_TOKEN_SEARCH }}
 
   deploy:
     runs-on: ubuntu-latest
