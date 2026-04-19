@@ -1,0 +1,27 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PostCard from "@/components/PostCard.astro";
+import { getPublishedPosts, getSiteSettings } from "@/lib/content/api";
+
+const [siteSettings, posts] = await Promise.all([
+  getSiteSettings(),
+  getPublishedPosts(),
+]);
+---
+
+<BaseLayout
+  siteSettings={siteSettings}
+  title={`Blog | ${siteSettings.siteTitle}`}
+  description="公開済み技術記事の一覧です。"
+  canonicalPath="/blog/"
+>
+  <section class="page-header">
+    <p class="eyebrow">Blog</p>
+    <h1>記事一覧</h1>
+    <p>Sanity で公開された記事を静的生成して配信します。</p>
+  </section>
+
+  <div class="stack">
+    {posts.map((post) => <PostCard post={post} />)}
+  </div>
+</BaseLayout>

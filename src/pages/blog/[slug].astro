@@ -1,0 +1,80 @@
+---
+import PortableText from "@/components/PortableText.astro";
+import TagPill from "@/components/TagPill.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import {
+  getPostBySlug,
+  getPublishedPosts,
+  getSiteSettings,
+} from "@/lib/content/api";
+import { getReadingTimeMinutes } from "@/lib/content/renderPortableText";
+
+export async function getStaticPaths() {
+  const posts = await getPublishedPosts();
+
+  return posts.map((post) => ({
+    params: {
+      slug: post.slug,
+    },
+  }));
+}
+
+const { slug } = Astro.params;
+const [siteSettings, post] = await Promise.all([
+  getSiteSettings(),
+  getPostBySlug(slug || ""),
+]);
+
+if (!post) {
+  return Astro.redirect("/404/");
+}
+
+const readingTime = getReadingTimeMinutes(post.body);
+const description =
+  post.seoDescription || post.excerpt || siteSettings.defaultSeoDescription;
+---
+
+<BaseLayout
+  siteSettings={siteSettings}
+  title={post.seoTitle || post.title}
+  description={description}
+  canonicalPath={`/blog/${post.slug}/`}
+  imageUrl={post.ogImage?.asset?.url || post.coverImage?.asset?.url}
+>
+  <article class="post">
+    <header class="post__header">
+      <p class="eyebrow">Article</p>
+      <h1>{post.title}</h1>
+      <div class="post__meta">
+        <time datetime={post.publishedAt}
+          >{new Date(post.publishedAt).toLocaleDateString("ja-JP")}</time
+        >
+        <span>{readingTime} min read</span>
+        {post.author?.name && <span>{post.author.name}</span>}
+      </div>
+      <p class="post__excerpt">{post.excerpt}</p>
+      {
+        post.tags.length > 0 && (
+          <div class="post__tags">
+            {post.tags.map((tag) => (
+              <TagPill href={`/tags/${tag.slug}/`} label={tag.name} />
+            ))}
+          </div>
+        )
+      }
+    </header>
+
+    {
+      post.coverImage?.asset?.url && (
+        <img
+          class="post__cover"
+          src={post.coverImage.asset.url}
+          alt={post.coverImage.alt || ""}
+          loading="eager"
+        />
+      )
+    }
+
+    <PortableText value={post.body} />
+  </article>
+</BaseLayout>

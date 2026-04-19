@@ -1,0 +1,50 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PostCard from "@/components/PostCard.astro";
+import { getPublishedPosts, getSiteSettings, getTags } from "@/lib/content/api";
+
+const [siteSettings, posts, tags] = await Promise.all([
+  getSiteSettings(),
+  getPublishedPosts(),
+  getTags(),
+]);
+
+const recentPosts = posts.slice(0, 5);
+---
+
+<BaseLayout siteSettings={siteSettings}>
+  <section class="hero">
+    <p class="eyebrow">Minimal Astro + Sanity blog</p>
+    <h1>{siteSettings.siteTitle}</h1>
+    <p>{siteSettings.defaultSeoDescription}</p>
+    <div class="hero__actions">
+      <a class="button" href="/blog/">記事一覧を見る</a>
+      <a class="button button--ghost" href="/about/">About</a>
+    </div>
+  </section>
+
+  <section class="section-grid">
+    <div>
+      <div class="section-heading">
+        <h2>Recent posts</h2>
+        <a href="/blog/">すべて見る</a>
+      </div>
+      <div class="stack">
+        {recentPosts.map((post) => <PostCard post={post} />)}
+      </div>
+    </div>
+
+    <aside class="sidebar-card">
+      <h2>Tags</h2>
+      <ul class="sidebar-list">
+        {
+          tags.map((tag) => (
+            <li>
+              <a href={`/tags/${tag.slug}/`}>{tag.name}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </aside>
+  </section>
+</BaseLayout>

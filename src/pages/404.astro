@@ -1,0 +1,20 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getSiteSettings } from "@/lib/content/api";
+
+const siteSettings = await getSiteSettings();
+---
+
+<BaseLayout
+  siteSettings={siteSettings}
+  title={`404 | ${siteSettings.siteTitle}`}
+  description="ページが見つかりません。"
+  canonicalPath="/404/"
+>
+  <section class="page-header">
+    <p class="eyebrow">404</p>
+    <h1>ページが見つかりません</h1>
+    <p>URL を確認するか、記事一覧から目的のページを探してください。</p>
+    <a class="button" href="/blog/">記事一覧へ戻る</a>
+  </section>
+</BaseLayout>
