@@ -24,6 +24,7 @@ Sanity のスキーマは、ブログ運営に必要な最小構成に絞る。
 - `ogImage`: image（任意）
 
 ルール:
+
 - slug は一意
 - title 必須
 - body 必須
@@ -35,11 +36,13 @@ Sanity のスキーマは、ブログ運営に必要な最小構成に絞る。
 ## 2. Tag
 
 フィールド:
+
 - `name`: string
 - `slug`: slug
 - `description`: text（任意）
 
 ルール:
+
 - slug は一意
 - name 必須
 
@@ -48,6 +51,7 @@ Sanity のスキーマは、ブログ運営に必要な最小構成に絞る。
 ## 3. Author
 
 フィールド:
+
 - `name`: string
 - `slug`: slug（任意）
 - `bio`: text（任意）
@@ -85,3 +89,16 @@ MVP では著者モデルを過剰に複雑化しない。
 - コードブロックを扱えるようにする
 - 画像には可能な限り alt を持たせる
 - MVP ではカスタムブロックを増やしすぎない
+
+## 7. 実装済みの補助オブジェクト
+
+- `codeBlock`
+  - `filename`
+  - `language`
+  - `code`
+- `imageWithAlt`
+  - 画像本体
+  - `alt`
+- `socialLink`
+  - `label`
+  - `url`
