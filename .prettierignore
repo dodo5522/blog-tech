@@ -2,3 +2,5 @@ dist
 .astro
 node_modules
 .idea
+docs
+pnpm-lock.yaml
