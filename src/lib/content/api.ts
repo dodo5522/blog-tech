@@ -43,6 +43,13 @@ async function fetchSanity<T>(
   }
 }
 
+function normalizePostSummary<T extends PostSummary>(post: T): T {
+  return {
+    ...post,
+    tags: post.tags ?? [],
+  };
+}
+
 export async function getSiteSettings(): Promise<SiteSettings> {
   const result = await fetchSanity<SiteSettings | null>(SITE_SETTINGS_QUERY);
   return result.ok ? result.data || fallbackSiteSettings : fallbackSiteSettings;
@@ -50,13 +57,13 @@ export async function getSiteSettings(): Promise<SiteSettings> {
 
 export async function getPublishedPosts(): Promise<PostSummary[]> {
   const result = await fetchSanity<PostSummary[]>(POSTS_QUERY);
-  return result.ok ? result.data : fallbackPosts;
+  return result.ok ? result.data.map(normalizePostSummary) : fallbackPosts;
 }
 
 export async function getPostBySlug(slug: string): Promise<Post | null> {
   const result = await fetchSanity<Post | null>(POST_BY_SLUG_QUERY, { slug });
   if (result.ok) {
-    return result.data;
+    return result.data ? normalizePostSummary(result.data) : null;
   }
 
   return fallbackPosts.find((entry) => entry.slug === slug) || null;
