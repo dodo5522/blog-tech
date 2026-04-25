@@ -1,0 +1,31 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getSiteSettings } from "@/lib/content/api";
+
+const siteSettings = await getSiteSettings();
+---
+
+<BaseLayout
+  siteSettings={siteSettings}
+  title={`About | ${siteSettings.siteTitle}`}
+  description="このブログについて。"
+  canonicalPath="/about/"
+>
+  <section class="page-header">
+    <p class="eyebrow">About</p>
+    <h1>About this blog</h1>
+    <p>低コスト、低運用負荷、静的配信を重視した個人向け技術ブログです。</p>
+  </section>
+
+  <div class="content-card">
+    <p>
+      このサイトは Astro で静的生成し、コンテンツ管理には Sanity
+      を使います。公開済みコンテンツのみを build 時に取得し、S3 + CloudFront
+      で配信する構成です。
+    </p>
+    <p>
+      MVP
+      では、記事公開と保守のしやすさを優先し、コメントや検索バックエンドのような追加機能は持ちません。
+    </p>
+  </div>
+</BaseLayout>

@@ -28,12 +28,15 @@
 ## 3. 実行境界
 
 ### Sanity
+
 コンテンツ作成と保存の責務を持つ。
 
 ### Astro build
+
 Sanity からコンテンツを取得し、静的ページを生成する。
 
 ### S3 / CloudFront
+
 静的ファイルの配信のみを担当する。
 
 MVP では公開サイト用の実行時アプリケーションサーバは存在しない。
@@ -55,10 +58,11 @@ MVP では公開サイト用の実行時アプリケーションサーバは存�
 - `/`
 - `/blog/`
 - `/blog/[slug]/`
+- `/tags/`
 - `/tags/[slug]/`
 - `/about/`
 - `/rss.xml`
-- `/sitemap.xml`
+- `/sitemap-index.xml`
 - `/robots.txt`
 
 ---
@@ -66,6 +70,7 @@ MVP では公開サイト用の実行時アプリケーションサーバは存�
 ## 6. SEO 設計
 
 記事ごと:
+
 - title
 - meta description
 - canonical
@@ -75,6 +80,7 @@ MVP では公開サイト用の実行時アプリケーションサーバは存�
 - 読みやすい slug URL
 
 サイト全体:
+
 - sitemap
 - robots.txt
 - RSS
@@ -115,3 +121,10 @@ CloudFront
 - preview 機能は後回しでもよい
 - 画像最適化は MVP では単純に保つ
 - アクセス解析は後から軽量なものを追加すればよい
+
+## 10. 実装メモ
+
+- Astro 側は `src/lib/content/api.ts` から Sanity を取得する
+- Sanity 未設定時でもローカル確認できるよう、最小のフォールバックコンテンツを持つ
+- Portable Text は HTML に変換して表示し、コードブロックは専用スタイルを当てる
+- Sanity Studio は `sanity/` 配下で管理し、同一リポジトリで運用する

@@ -1,0 +1,50 @@
+---
+import PostCard from "@/components/PostCard.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getPostsByTagSlug, getSiteSettings, getTags } from "@/lib/content/api";
+
+export async function getStaticPaths() {
+  const tags = await getTags();
+  return tags.map((tag) => ({
+    params: {
+      slug: tag.slug,
+    },
+  }));
+}
+
+const { slug } = Astro.params;
+const [siteSettings, tags, posts] = await Promise.all([
+  getSiteSettings(),
+  getTags(),
+  getPostsByTagSlug(slug || ""),
+]);
+
+const tag = tags.find((entry) => entry.slug === slug);
+
+if (!tag) {
+  return Astro.redirect("/404/");
+}
+---
+
+<BaseLayout
+  siteSettings={siteSettings}
+  title={`${tag.name} | ${siteSettings.siteTitle}`}
+  description={tag.description || `${tag.name} に関連する記事一覧`}
+  canonicalPath={`/tags/${tag.slug}/`}
+>
+  <section class="page-header">
+    <p class="eyebrow">Tag archive</p>
+    <h1>{tag.name}</h1>
+    {tag.description && <p>{tag.description}</p>}
+  </section>
+
+  <div class="stack">
+    {
+      posts.length > 0 ? (
+        posts.map((post) => <PostCard post={post} />)
+      ) : (
+        <p>このタグに紐づく公開記事はまだありません。</p>
+      )
+    }
+  </div>
+</BaseLayout>

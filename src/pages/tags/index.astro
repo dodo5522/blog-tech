@@ -1,0 +1,32 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getSiteSettings, getTags } from "@/lib/content/api";
+
+const [siteSettings, tags] = await Promise.all([getSiteSettings(), getTags()]);
+---
+
+<BaseLayout
+  siteSettings={siteSettings}
+  title={`Tags | ${siteSettings.siteTitle}`}
+  description="タグ一覧ページです。"
+  canonicalPath="/tags/"
+>
+  <section class="page-header">
+    <p class="eyebrow">Tags</p>
+    <h1>タグ一覧</h1>
+    <p>記事をトピックごとに辿れます。</p>
+  </section>
+
+  <ul class="tag-list">
+    {
+      tags.map((tag) => (
+        <li class="tag-list__item">
+          <a href={`/tags/${tag.slug}/`}>
+            <strong>{tag.name}</strong>
+            {tag.description && <span>{tag.description}</span>}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</BaseLayout>

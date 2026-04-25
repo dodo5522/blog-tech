@@ -1,2 +1,10 @@
 .idea
 .DS_Store
+node_modules
+.astro
+dist
+.terraform
+*.tfstate
+*.tfstate.*
+.env
+.env.local

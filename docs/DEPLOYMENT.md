@@ -10,16 +10,19 @@
 ## 2. CI/CD フロー
 
 推奨:
+
 - GitHub Actions
 
 ### ビルド手順
+
 1. リポジトリを checkout
 2. Node とパッケージマネージャをセットアップ
 3. 依存関係をインストール
-4. 環境変数を注入
-5. Astro build を実行
-6. 静的ファイルを S3 にアップロード
-7. CloudFront キャッシュを invalidation
+4. lint / format check を実行
+5. 環境変数を注入
+6. Astro build を実行
+7. 静的ファイルを S3 にアップロード
+8. CloudFront キャッシュを invalidation
 
 ---
 
@@ -53,8 +56,11 @@
 - `AWS_REGION`
 - `S3_BUCKET_NAME`
 - `CLOUDFRONT_DISTRIBUTION_ID`
+- `AWS_DEPLOY_ROLE_ARN`
 
 可能なら長期鍵ではなく GitHub OIDC を優先する。
+
+Sanity webhook を GitHub `repository_dispatch` に接続する場合は、GitHub 側で dispatch 実行用トークンも別途必要になる。
 
 ---
 
@@ -65,6 +71,7 @@
 - 削除済みファイルを消すため、必要に応じて `--delete` を使う
 
 例:
+
 - `aws s3 sync dist/ s3://$S3_BUCKET_NAME --delete`
 
 ---
@@ -96,9 +103,16 @@ MVP では更新頻度が低い前提で、必要なら `/*` の全体 invalidat
 ## 8. ロールバック
 
 ロールバック方針:
+
 - 可能なら直前のビルド成果物を保持する
 - 直近の正常版を再デプロイする
 - コンテンツ起因なら Sanity 側で修正・復元する
 - コード起因なら Git を戻して CI を再実行する
 
 実装後は、実際のロールバック手順をこの文書に追記すること。
+
+## 9. リポジトリ実装との対応
+
+- CI workflow: `.github/workflows/ci.yml`
+- Deploy workflow: `.github/workflows/deploy.yml`
+- Terraform: `infra/`

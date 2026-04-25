@@ -1,0 +1,32 @@
+---
+import TagPill from "@/components/TagPill.astro";
+import type { PostSummary } from "@/lib/content/types";
+
+interface Props {
+  post: PostSummary;
+}
+
+const { post } = Astro.props;
+---
+
+<article class="post-card">
+  <div class="post-card__meta">
+    <time datetime={post.publishedAt}
+      >{new Date(post.publishedAt).toLocaleDateString("ja-JP")}</time
+    >
+    {post.author?.name && <span>by {post.author.name}</span>}
+  </div>
+  <h2>
+    <a href={`/blog/${post.slug}/`}>{post.title}</a>
+  </h2>
+  <p>{post.excerpt}</p>
+  {
+    post.tags.length > 0 && (
+      <div class="post-card__tags">
+        {post.tags.map((tag) => (
+          <TagPill href={`/tags/${tag.slug}/`} label={tag.name} />
+        ))}
+      </div>
+    )
+  }
+</article>
