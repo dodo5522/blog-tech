@@ -27,12 +27,12 @@ const POST_PROJECTION = `
     alt,
     asset->{url}
   },
-  tags[]->{
+  "tags": coalesce(tags[]->{
     _id,
     name,
     "slug": slug.current,
     description
-  },
+  }, []),
   author->{
     _id,
     name,
@@ -86,12 +86,12 @@ export const POST_BY_SLUG_QUERY = `
     alt,
     asset->{url}
   },
-  tags[]->{
+  "tags": coalesce(tags[]->{
     _id,
     name,
     "slug": slug.current,
     description
-  },
+  }, []),
   author->{
     _id,
     name,
