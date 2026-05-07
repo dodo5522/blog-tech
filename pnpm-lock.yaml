@@ -32,6 +32,9 @@ importers:
       sanity:
         specifier: 4.6.1
         version: 4.6.1(@emotion/is-prop-valid@1.4.0)(@portabletext/sanity-bridge@1.2.14(@types/react@19.2.14))(@types/node@24.1.0)(@types/react@19.2.14)(immer@10.2.0)(jiti@2.6.1)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(styled-components@6.4.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(typescript@5.9.2)(yaml@2.8.3)
+      styled-components:
+        specifier: ^6.4.0
+        version: 6.4.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
     devDependencies:
       '@astrojs/check':
         specifier: ^0.9.8
