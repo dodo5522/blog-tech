@@ -90,12 +90,20 @@ Repository Secrets:
 
 Sanity 側の publish / unpublish を契機に GitHub Deploy workflow を起動する場合、Sanity webhook の HTTP request を GitHub API に向ける。
 
-- URL: `https://api.github.com/repos/<owner>/<repo>/dispatches`
-- Method: `POST`
-- Header:
-  - `Accept: application/vnd.github+json`
-  - `Authorization: Bearer <dispatch token>`
-- Body:
+この連携は以下の対応関係で動く。
+
+1. Sanity webhook が GitHub REST API の `POST /repos/<owner>/<repo>/dispatches` を呼び出す
+2. GitHub API が `repository_dispatch` イベントを対象 repository に作成する
+3. `.github/workflows/deploy.yml` の `on.repository_dispatch.types` が `event_type` と一致すると `Deploy` workflow が起動する
+
+このため、Sanity webhook の `Projection` で送信 body に設定する `event_type` は、`deploy.yml` の `repository_dispatch.types` と一致させる必要がある。
+
+```yaml
+on:
+  repository_dispatch:
+    types:
+      - sanity-content-changed
+```
 
 ```json
 {
@@ -103,7 +111,57 @@ Sanity 側の publish / unpublish を契機に GitHub Deploy workflow を起動�
 }
 ```
 
-dispatch token は `repo` 権限を持つトークンを使い、Sanity 側 Secret として保持する。
+GitHub PAT の権限は `Deploy` workflow を直接操作する権限ではなく、`repository_dispatch` イベントを repository に作成するための権限として判定される。  
+そのため Fine-grained PAT では `Actions: Read and write` ではなく、GitHub API の `Create a repository dispatch event` 要件に従って `Contents: Read and write` を付与する。
+
+Sanity 管理画面（Project > API > Webhooks）で以下を設定する。
+
+- Name: `github-deploy-on-publish`
+- URL: `https://api.github.com/repos/<owner>/<repo>/dispatches`
+- Dataset: `production`（運用 dataset に合わせる）
+- Trigger: publish / unpublish
+- HTTP Method: `POST`
+- API version: 最新安定版（UI 既定値で可）
+
+- URL: `https://api.github.com/repos/<owner>/<repo>/dispatches`
+- Method: `POST`
+- Header:
+  - `Accept: application/vnd.github+json`
+  - `Authorization: Bearer <dispatch token>`
+- Projection:
+
+```groq
+{
+  "event_type": "sanity-content-changed"
+}
+```
+
+Sanity webhook では送信 body を `Payload` や `Body` ではなく `Projection` で定義する。  
+`Projection` を空にすると、変更された Sanity document 全体が body として送信され、GitHub API 側で `event_type` 不足の 422 になる。
+
+dispatch token は次のいずれかを使い、Sanity webhook の HTTP Header に設定する。
+
+重要:
+
+- GitHub PAT は Sanity webhook の `Secret` 欄ではなく、HTTP Header の `Authorization` に設定する
+- Sanity webhook の `Secret` 欄は、受信側が `X-Sanity-Signature` を検証するための署名用 secret であり、GitHub API 認証には使わない
+- この構成では GitHub API が `Authorization: Bearer <dispatch token>` を検証するため、`Secret` 欄は未設定でよい
+
+- Fine-grained PAT: 対象 repo に対して `Contents: Read and write`（最低限）
+- Classic PAT: `repo`（必要最小限で運用）
+
+確認方法（GitHub 側受け口テスト）:
+
+```bash
+gh api repos/<owner>/<repo>/dispatches -X POST -f event_type='sanity-content-changed'
+```
+
+期待結果:
+
+- 成功時は HTTP 204（出力なし）
+- 403 の場合は dispatch token 権限不足。Fine-grained PAT では `Contents: Read and write` と対象 repository へのアクセスを確認する
+- 422 の場合は body 不正。Sanity webhook の `Projection` が `{ "event_type": "sanity-content-changed" }` になっていることを確認する
+- 404 の場合は owner/repo の指定ミスまたはトークン対象外
 
 ---
 

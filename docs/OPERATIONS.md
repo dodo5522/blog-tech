@@ -34,9 +34,10 @@
 ### Sanity webhook 設定確認
 
 1. Sanity webhook の送信先が `https://api.github.com/repos/<owner>/<repo>/dispatches` になっていることを確認する
-2. payload が `{"event_type":"sanity-content-changed"}` を送ることを確認する
-3. webhook 用トークンが Secret 管理され、失効期限やローテーション方針があることを確認する
-4. GitHub Actions 側で `Deploy` workflow が `repository_dispatch` を受けることを確認する
+2. `Projection` が `{ "event_type": "sanity-content-changed" }` で、送信 body に `event_type` が含まれることを確認する
+3. webhook 用トークンが HTTP Header の `Authorization: Bearer <token>` に設定され、失効期限やローテーション方針があることを確認する
+4. webhook 用トークンに repository dispatch 実行権限（Fine-grained PAT なら `Contents: Read and write`）があることを確認する
+5. GitHub Actions 側で `Deploy` workflow が `repository_dispatch` を受けることを確認する
 
 ### コード変更を含む release 後の確認
 
@@ -98,10 +99,12 @@
 ### webhook 失敗時の再送手順
 
 1. Sanity 側 webhook ログで失敗イベントを特定する
-2. 失敗原因（401/403/404/5xx）を確認する
-3. Secret や endpoint を修正する
-4. Sanity 管理画面から対象 webhook を再送する
-5. GitHub Actions の `Deploy` 実行を確認する
+2. 失敗原因（401/403/404/422/5xx）を確認する
+3. 403 の場合は GitHub トークン権限（Fine-grained PAT なら `Contents: Read and write`）と対象 repository へのアクセスを見直す
+4. 422 の場合は Sanity webhook の `Projection` が `{ "event_type": "sanity-content-changed" }` になっていることを確認する
+5. Secret や endpoint を修正する
+6. Sanity 管理画面から対象 webhook を再送する
+7. GitHub Actions の `Deploy` 実行を確認する
 
 ---
 
