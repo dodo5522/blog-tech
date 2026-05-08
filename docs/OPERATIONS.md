@@ -31,6 +31,13 @@
 3. 公開サイトで対象ページが更新されていることを確認する
 4. 必要に応じて RSS、sitemap、OGP の反映を確認する
 
+### Sanity webhook 設定確認
+
+1. Sanity webhook の送信先が `https://api.github.com/repos/<owner>/<repo>/dispatches` になっていることを確認する
+2. payload が `{"event_type":"sanity-content-changed"}` を送ることを確認する
+3. webhook 用トークンが Secret 管理され、失効期限やローテーション方針があることを確認する
+4. GitHub Actions 側で `Deploy` workflow が `repository_dispatch` を受けることを確認する
+
 ### コード変更を含む release 後の確認
 
 1. CloudFront 経由でホームと主要ページが表示されることを確認する
@@ -71,6 +78,15 @@
 - リージョン不整合
 - 認証方式（OIDC / アクセスキー）
 
+### 404 ページの返却が期待と違う
+
+確認すること:
+
+- CloudFront の Custom Error Response で `404 -> /404.html` が設定されているか
+- オリジン（S3）側の `404.html` が配信されているか
+- 無効化対象に `/*` を含めた invalidation が実行されたか
+- テストURLで HTTP ステータスが 404 になっているか
+
 ### 一次切り分けの順序
 
 1. Sanity 側で publish 済みか確認する
@@ -78,6 +94,14 @@
 3. GitHub Actions の build / deploy ログを確認する
 4. S3 sync と CloudFront invalidation の成否を確認する
 5. 公開サイトの HTML とキャッシュ反映を確認する
+
+### webhook 失敗時の再送手順
+
+1. Sanity 側 webhook ログで失敗イベントを特定する
+2. 失敗原因（401/403/404/5xx）を確認する
+3. Secret や endpoint を修正する
+4. Sanity 管理画面から対象 webhook を再送する
+5. GitHub Actions の `Deploy` 実行を確認する
 
 ---
 

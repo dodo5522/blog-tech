@@ -19,6 +19,8 @@ concurrency:
 
 jobs:
   deploy:
+    environment: production
+    if: github.ref == 'refs/heads/main' || github.event_name == 'repository_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
