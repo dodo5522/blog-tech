@@ -66,7 +66,6 @@ Repository Secrets:
 
 備考:
 
-- `deploy` job は `environment: production` を使用する
 - 将来 Environment secrets/variables に移行する場合でも、同じキー名を使えば workflow 側の参照コード変更は不要
 
 ---
