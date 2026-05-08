@@ -25,7 +25,8 @@
     "@sanity/client": "7.10.0",
     "@sanity/vision": "4.6.1",
     "astro": "5.13.5",
-    "sanity": "4.6.1"
+    "sanity": "4.6.1",
+    "styled-components": "^6.4.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.8",
