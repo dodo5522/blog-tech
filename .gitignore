@@ -8,3 +8,5 @@ dist
 *.tfstate.*
 .env
 .env.local
+.sanity
+mise.toml
