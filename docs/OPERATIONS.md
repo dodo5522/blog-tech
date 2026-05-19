@@ -10,6 +10,21 @@
 4. CI/CD が実行されたことを確認する
 5. 公開サイトでページを確認する
 
+### Markdown パッケージから Draft を作成する
+
+`article.md` と `images/` を含む記事パッケージは、import スクリプトで Sanity Draft として取り込める。
+
+```bash
+pnpm sanity:import-draft -- --source tmp/<package-dir> --dry-run
+pnpm sanity:import-draft -- --source tmp/<package-dir> --slug pve-gpu-passthrough-linux-desktop
+```
+
+- `--dry-run` は Sanity に書き込まず、変換結果の概要だけを表示する
+- 実行には `SANITY_PROJECT_ID` / `SANITY_DATASET` / `SANITY_API_VERSION` / `SANITY_WRITE_TOKEN` が必要
+- 生成される Post は `_id` が `drafts.*` の Draft document になる
+- `publishedAt` は validation を通しやすくするため import 時刻で仮設定される。公開前に Studio で確認する
+- Markdown の表は、専用テーブルスキーマを増やさず `markdown` の `codeBlock` として保持する
+
 ### サイト設定を更新する
 
 1. Site Settings ドキュメントを開く

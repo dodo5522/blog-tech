@@ -33,7 +33,17 @@ export const postType = defineType({
       type: "array",
       of: [
         defineArrayMember({ type: "block" }),
-        defineArrayMember({ type: "image" }),
+        defineArrayMember({
+          type: "image",
+          fields: [
+            defineField({
+              name: "alt",
+              title: "Alt text",
+              type: "string",
+              validation: (rule) => rule.max(160),
+            }),
+          ],
+        }),
         defineArrayMember({ type: "codeBlock" }),
       ],
       validation: (rule) => rule.required(),

@@ -3,6 +3,8 @@
 node_modules
 .astro
 dist
+tmp
+tmp__
 .terraform
 *.tfstate
 *.tfstate.*

@@ -15,7 +15,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "sanity:dev": "sanity dev",
-    "sanity:deploy": "sanity deploy"
+    "sanity:deploy": "sanity deploy",
+    "sanity:import-draft": "node scripts/import-draft-post.mjs"
   },
   "dependencies": {
     "@astrojs/rss": "4.0.12",
