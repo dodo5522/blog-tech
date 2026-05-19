@@ -19,11 +19,15 @@ export function renderPortableText(blocks: PortableTextBlock[]): string {
           const filename = value.filename
             ? `<div class="code-block__filename">${escapeHtml(value.filename)}</div>`
             : "";
+          const language = value.language || "text";
+          const languageLabel = !value.filename
+            ? `<div class="code-block__filename">${escapeHtml(language)}</div>`
+            : "";
           const languageClass = value.language
             ? `language-${escapeHtml(value.language)}`
             : "language-text";
 
-          return `<div class="code-block">${filename}<pre><code class="${languageClass}">${escapeHtml(
+          return `<div class="code-block">${filename || languageLabel}<pre><code class="${languageClass}">${escapeHtml(
             value.code || "",
           )}</code></pre></div>`;
         },
@@ -34,7 +38,24 @@ export function renderPortableText(blocks: PortableTextBlock[]): string {
           }
 
           const alt = escapeHtml(value.alt || "");
-          return `<figure><img src="${escapeHtml(src)}" alt="${alt}" loading="lazy" /></figure>`;
+          const caption = value.alt
+            ? `<figcaption>${escapeHtml(value.alt)}</figcaption>`
+            : "";
+          return `<figure><img src="${escapeHtml(src)}" alt="${alt}" loading="lazy" decoding="async" />${caption}</figure>`;
+        },
+      },
+      marks: {
+        code: ({ children }) => `<code>${children}</code>`,
+        link: ({ children, value }) => {
+          const href = typeof value?.href === "string" ? value.href : "";
+          if (!href) {
+            return `${children}`;
+          }
+
+          const isExternal = /^https?:\/\//.test(href);
+          const rel = isExternal ? ' rel="noreferrer"' : "";
+          const target = isExternal ? ' target="_blank"' : "";
+          return `<a href="${escapeHtml(href)}"${target}${rel}>${children}</a>`;
         },
       },
     },

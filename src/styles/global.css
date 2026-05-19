@@ -1,14 +1,14 @@
 :root {
-  --bg: #f5f0e7;
-  --surface: #fffaf2;
-  --surface-strong: #f0e4d2;
-  --text: #1b1b18;
-  --muted: #5a564e;
-  --border: #d1c4b0;
+  --bg: #f6f7f5;
+  --surface: #ffffff;
+  --surface-strong: #e7eee9;
+  --text: #1c2220;
+  --muted: #56615d;
+  --border: #cbd6d1;
   --accent: #0d6b58;
   --accent-strong: #084739;
-  --shadow: 0 16px 40px rgba(27, 27, 24, 0.08);
-  --radius: 20px;
+  --shadow: 0 16px 40px rgba(28, 34, 32, 0.08);
+  --radius: 8px;
   --max-width: 1120px;
 }
 
@@ -20,13 +20,7 @@ html {
   font-family:
     "Iowan Old Style", "Palatino Linotype", "URW Palladio L", Georgia, serif;
   color: var(--text);
-  background:
-    radial-gradient(
-      circle at top left,
-      rgba(13, 107, 88, 0.12),
-      transparent 28%
-    ),
-    linear-gradient(180deg, #f8f2e9 0%, var(--bg) 100%);
+  background: var(--bg);
 }
 
 body {
@@ -257,18 +251,69 @@ img {
 }
 
 .post__cover {
-  margin: 1.5rem 0;
+  width: 100%;
+  max-height: 520px;
+  margin: 1.5rem 0 2rem;
+  object-fit: cover;
+}
+
+.portable-text {
+  max-width: 78ch;
 }
 
 .portable-text h2,
 .portable-text h3,
 .portable-text h4 {
-  margin-top: 2rem;
+  margin-top: 2.4rem;
   margin-bottom: 0.75rem;
+  line-height: 1.25;
 }
 
 .portable-text a {
   color: var(--accent-strong);
+}
+
+.portable-text p,
+.portable-text ul,
+.portable-text ol,
+.portable-text figure,
+.portable-text pre {
+  margin: 1.15rem 0;
+}
+
+.portable-text code {
+  padding: 0.08rem 0.28rem;
+  border-radius: 4px;
+  background: #e7eee9;
+  color: #12352d;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.92em;
+}
+
+.portable-text blockquote {
+  margin: 1.4rem 0;
+  padding: 0.25rem 0 0.25rem 1rem;
+  border-left: 4px solid var(--accent);
+  color: var(--muted);
+}
+
+.portable-text figure {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.portable-text figure img {
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+}
+
+.portable-text figcaption {
+  font-family: "Avenir Next", "Helvetica Neue", "Segoe UI", sans-serif;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  text-align: center;
 }
 
 .portable-text pre {
@@ -276,7 +321,17 @@ img {
   padding: 1rem;
   background: #171b1a;
   color: #f8faf8;
-  border-radius: 0 0 14px 14px;
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+
+.portable-text pre code {
+  display: block;
+  min-width: max-content;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 0.9rem;
+  line-height: 1.65;
 }
 
 .code-block {
@@ -285,7 +340,7 @@ img {
 
 .code-block__filename {
   padding: 0.65rem 0.9rem;
-  border-radius: 14px 14px 0 0;
+  border-radius: var(--radius) var(--radius) 0 0;
   background: #23302b;
   color: #e9f1ef;
   font-family: "Avenir Next", "Helvetica Neue", "Segoe UI", sans-serif;
