@@ -11,6 +11,33 @@ function escapeHtml(value: string): string {
     .replaceAll("'", "&#39;");
 }
 
+function safeLinkHref(value: string): string {
+  const href = value.trim();
+  const hasUnsafeCharacter = [...href].some((character) => {
+    const code = character.charCodeAt(0);
+    return code <= 0x20 || code === 0x7f;
+  });
+
+  if (!href || hasUnsafeCharacter) {
+    return "";
+  }
+
+  if (/^https?:\/\//i.test(href) || /^mailto:/i.test(href)) {
+    return href;
+  }
+
+  if (
+    href.startsWith("#") ||
+    href.startsWith("/") ||
+    href.startsWith("./") ||
+    href.startsWith("../")
+  ) {
+    return href.startsWith("//") || href.includes("\\") ? "" : href;
+  }
+
+  return /^[a-z][a-z0-9+.-]*:/i.test(href) || href.includes("\\") ? "" : href;
+}
+
 function isMarkdownTableDivider(line: string): boolean {
   return /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(line);
 }
@@ -97,7 +124,8 @@ export function renderPortableText(blocks: PortableTextBlock[]): string {
       marks: {
         code: ({ children }) => `<code>${children}</code>`,
         link: ({ children, value }) => {
-          const href = typeof value?.href === "string" ? value.href : "";
+          const href =
+            typeof value?.href === "string" ? safeLinkHref(value.href) : "";
           if (!href) {
             return `${children}`;
           }
