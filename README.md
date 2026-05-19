@@ -49,7 +49,7 @@ pnpm sanity:import-draft -- --source tmp/<package-dir> --slug pve-gpu-passthroug
 
 この import は `article.md` と `images/` を読み取り、Sanity の Draft document と画像 asset を作成します。書き込みには `SANITY_WRITE_TOKEN` が必要です。
 
-環境変数は `env.example` を参照してください。Sanity の接続情報が未設定でも、フォールバックコンテンツで Astro 側の画面確認はできます。
+環境変数は `env.example` を参照してください。Sanity の接続情報が未設定でも、`SANITY_FALLBACK_MODE=auto` の既定動作によりフォールバックコンテンツで Astro 側の画面確認はできます。Sanity 接続済みの状態でオフライン表示確認をする場合は、一時的に `SANITY_FALLBACK_MODE=always` を使います。
 
 ## 本番デプロイ最短手順（既存AWSリソース利用）
 
@@ -60,6 +60,7 @@ pnpm sanity:import-draft -- --source tmp/<package-dir> --slug pve-gpu-passthroug
    - `CLOUDFRONT_DISTRIBUTION_ID`
    - `SANITY_DATASET`
    - `SANITY_API_VERSION`
+   - `SANITY_FALLBACK_MODE` = `never`
 2. GitHub Repository Secrets を設定
    - `SANITY_PROJECT_ID`
    - `SANITY_READ_TOKEN`

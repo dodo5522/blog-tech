@@ -11,6 +11,8 @@ export const sanityDataset =
 export const sanityApiVersion =
   import.meta.env.SANITY_API_VERSION || "2025-01-01";
 export const sanityReadToken = import.meta.env.SANITY_READ_TOKEN || "";
+export const sanityFallbackMode =
+  import.meta.env.SANITY_FALLBACK_MODE || "auto";
 
 export const isSanityConfigured = Boolean(
   sanityProjectId && sanityDataset && sanityApiVersion,

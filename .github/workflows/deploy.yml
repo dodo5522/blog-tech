@@ -48,6 +48,7 @@ jobs:
           SANITY_DATASET: ${{ vars.SANITY_DATASET || 'production' }}
           SANITY_API_VERSION: ${{ vars.SANITY_API_VERSION || '2025-01-01' }}
           SANITY_READ_TOKEN: ${{ secrets.SANITY_READ_TOKEN }}
+          SANITY_FALLBACK_MODE: never
           SANITY_STUDIO_PROJECT_ID: ${{ secrets.SANITY_PROJECT_ID }}
           SANITY_STUDIO_DATASET: ${{ vars.SANITY_DATASET || 'production' }}
 

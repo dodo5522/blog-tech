@@ -57,6 +57,7 @@ Repository Variables:
 - `CLOUDFRONT_DISTRIBUTION_ID`
 - `SANITY_DATASET`
 - `SANITY_API_VERSION`
+- `SANITY_FALLBACK_MODE`（本番 deploy は `never`）
 
 Repository Secrets:
 
@@ -173,6 +174,7 @@ gh api repos/<owner>/<repo>/dispatches -X POST -f event_type='sanity-content-cha
 - `SANITY_DATASET`
 - `SANITY_API_VERSION`
 - `SANITY_READ_TOKEN`（必要な場合）
+- `SANITY_FALLBACK_MODE`
 - `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` または OIDC によるロール引受
 - `AWS_REGION`
 - `S3_BUCKET_NAME`
@@ -185,7 +187,19 @@ Sanity webhook を GitHub `repository_dispatch` に接続する場合は、GitHu
 
 ---
 
-## 8. S3 配置時の注意
+## 8. Sanity fallback の扱い
+
+`SANITY_FALLBACK_MODE` は、Sanity から取得できない場合にローカルの fallback content を使うかを制御する。
+
+- `auto`: Sanity 未設定時のみ fallback を使う。Sanity 接続済みで fetch に失敗した場合は build を失敗させる
+- `always`: Sanity 未設定または fetch 失敗時に fallback を使う。オフラインの UI 確認用
+- `never`: fallback を使わない。本番 deploy ではこの値を使う
+
+本番 deploy で fallback を許可すると、Sanity 障害や設定ミスのままサンプル記事を公開する可能性があるため、`deploy.yml` では `SANITY_FALLBACK_MODE=never` を固定する。
+
+---
+
+## 9. S3 配置時の注意
 
 - immutable にできるアセットは長めにキャッシュする
 - HTML の Content-Type を正しく扱う
@@ -197,7 +211,7 @@ Sanity webhook を GitHub `repository_dispatch` に接続する場合は、GitHu
 
 ---
 
-## 9. CloudFront の注意
+## 10. CloudFront の注意
 
 - S3 を origin とする
 - invalidation 対象の例:
