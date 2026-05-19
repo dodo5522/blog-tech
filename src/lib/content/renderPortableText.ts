@@ -11,19 +11,100 @@ function escapeHtml(value: string): string {
     .replaceAll("'", "&#39;");
 }
 
+function safeLinkHref(value: string): string {
+  const href = value.trim();
+  const hasUnsafeCharacter = [...href].some((character) => {
+    const code = character.charCodeAt(0);
+    return code <= 0x20 || code === 0x7f;
+  });
+
+  if (!href || hasUnsafeCharacter) {
+    return "";
+  }
+
+  if (/^https?:\/\//i.test(href) || /^mailto:/i.test(href)) {
+    return href;
+  }
+
+  if (
+    href.startsWith("#") ||
+    href.startsWith("/") ||
+    href.startsWith("./") ||
+    href.startsWith("../")
+  ) {
+    return href.startsWith("//") || href.includes("\\") ? "" : href;
+  }
+
+  return /^[a-z][a-z0-9+.-]*:/i.test(href) || href.includes("\\") ? "" : href;
+}
+
+function isMarkdownTableDivider(line: string): boolean {
+  return /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(line);
+}
+
+function splitMarkdownTableRow(line: string): string[] {
+  return line
+    .trim()
+    .replace(/^\|/, "")
+    .replace(/\|$/, "")
+    .split("|")
+    .map((cell) => cell.trim());
+}
+
+function renderMarkdownTable(value: string): string {
+  const lines = value
+    .trim()
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (lines.length < 3 || !isMarkdownTableDivider(lines[1])) {
+    return "";
+  }
+
+  const headers = splitMarkdownTableRow(lines[0]);
+  const rows = lines.slice(2).map(splitMarkdownTableRow);
+  if (!headers.length || rows.some((row) => row.length !== headers.length)) {
+    return "";
+  }
+
+  const head = headers
+    .map((header) => `<th scope="col">${escapeHtml(header)}</th>`)
+    .join("");
+  const body = rows
+    .map(
+      (row) =>
+        `<tr>${row.map((cell) => `<td>${escapeHtml(cell)}</td>`).join("")}</tr>`,
+    )
+    .join("");
+
+  return `<div class="table-scroll"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+}
+
 export function renderPortableText(blocks: PortableTextBlock[]): string {
   return toHTML(blocks, {
     components: {
       types: {
         codeBlock: ({ value }: { value: PortableTextBlock }) => {
+          if (value.language === "markdown") {
+            const table = renderMarkdownTable(value.code || "");
+            if (table) {
+              return table;
+            }
+          }
+
           const filename = value.filename
             ? `<div class="code-block__filename">${escapeHtml(value.filename)}</div>`
+            : "";
+          const language = value.language || "text";
+          const languageLabel = !value.filename
+            ? `<div class="code-block__filename">${escapeHtml(language)}</div>`
             : "";
           const languageClass = value.language
             ? `language-${escapeHtml(value.language)}`
             : "language-text";
 
-          return `<div class="code-block">${filename}<pre><code class="${languageClass}">${escapeHtml(
+          return `<div class="code-block">${filename || languageLabel}<pre><code class="${languageClass}">${escapeHtml(
             value.code || "",
           )}</code></pre></div>`;
         },
@@ -34,7 +115,25 @@ export function renderPortableText(blocks: PortableTextBlock[]): string {
           }
 
           const alt = escapeHtml(value.alt || "");
-          return `<figure><img src="${escapeHtml(src)}" alt="${alt}" loading="lazy" /></figure>`;
+          const caption = value.alt
+            ? `<figcaption>${escapeHtml(value.alt)}</figcaption>`
+            : "";
+          return `<figure><img src="${escapeHtml(src)}" alt="${alt}" loading="lazy" decoding="async" />${caption}</figure>`;
+        },
+      },
+      marks: {
+        code: ({ children }) => `<code>${children}</code>`,
+        link: ({ children, value }) => {
+          const href =
+            typeof value?.href === "string" ? safeLinkHref(value.href) : "";
+          if (!href) {
+            return `${children}`;
+          }
+
+          const isExternal = /^https?:\/\//.test(href);
+          const rel = isExternal ? ' rel="noreferrer"' : "";
+          const target = isExternal ? ' target="_blank"' : "";
+          return `<a href="${escapeHtml(href)}"${target}${rel}>${children}</a>`;
         },
       },
     },

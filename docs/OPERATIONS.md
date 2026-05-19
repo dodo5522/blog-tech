@@ -24,6 +24,7 @@ pnpm sanity:import-draft -- --source tmp/<package-dir> --slug pve-gpu-passthroug
 - 生成される Post は `_id` が `drafts.*` の Draft document になる
 - `publishedAt` は validation を通しやすくするため import 時刻で仮設定される。公開前に Studio で確認する
 - Markdown の表は、専用テーブルスキーマを増やさず `markdown` の `codeBlock` として保持する
+- `tmp/` の Markdown は Astro 側から直接読まない。公開サイトで表示確認するには、Sanity Studio で対象 Draft を publish する
 
 ### サイト設定を更新する
 
@@ -45,6 +46,13 @@ pnpm sanity:import-draft -- --source tmp/<package-dir> --slug pve-gpu-passthroug
 2. GitHub Actions の build / deploy が成功していることを確認する
 3. 公開サイトで対象ページが更新されていることを確認する
 4. 必要に応じて RSS、sitemap、OGP の反映を確認する
+
+### 実記事の表示確認
+
+1. 記事詳細で見出し、本文余白、リスト、コードブロック、画像キャプションが崩れていないことを確認する
+2. 記事ページの HTML で `og:type=article`、`og:image`、`twitter:card`、canonical URL が意図通りであることを確認する
+3. OGP 画像は記事の `ogImage` を優先し、未設定なら `coverImage`、それも未設定なら Site Settings の `defaultOgImage` を使う
+4. Sanity 接続済みの状態で固定 fallback 記事の表示確認をする場合だけ、ローカルで `SANITY_FALLBACK_MODE=always` を使う
 
 ### Sanity webhook 設定確認
 

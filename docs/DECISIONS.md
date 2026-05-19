@@ -28,3 +28,17 @@
 - 標準のマージ方式は merge commit とする
 
 今後の設計判断は、日付・理由・影響範囲を添えて追記すること。
+
+## ADR-008: 本番 deploy では Sanity fallback を無効化する
+
+日付: 2026-05-19
+
+理由:
+- Sanity の fetch 失敗や設定ミスのまま fallback 記事を公開すると、実コンテンツの欠落に気づきにくい
+- fallback content はローカルの UI 確認用であり、本番の代替データではない
+
+影響:
+- `SANITY_FALLBACK_MODE=auto|always|never` を追加する
+- 本番 deploy workflow は `SANITY_FALLBACK_MODE=never` を使う
+- Sanity 未設定のローカル確認は `auto` で継続できる
+- Sanity 接続済み環境でオフライン表示確認をする場合だけ、明示的に `always` を使う
