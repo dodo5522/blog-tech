@@ -15,7 +15,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "sanity:dev": "sanity dev",
-    "sanity:deploy": "sanity deploy"
+    "sanity:deploy": "sanity deploy",
+    "sanity:import-draft": "tsx scripts/import-draft-post.ts"
   },
   "dependencies": {
     "@astrojs/rss": "4.0.12",
@@ -37,6 +38,7 @@
     "globals": "16.4.0",
     "prettier": "3.6.2",
     "prettier-plugin-astro": "0.14.1",
+    "tsx": "^4.22.2",
     "typescript": "5.9.2",
     "typescript-eslint": "8.42.0"
   }

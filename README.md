@@ -40,6 +40,15 @@ Sanity Studio のローカル起動:
 pnpm sanity:dev
 ```
 
+Markdown パッケージを Sanity Draft として取り込む:
+
+```bash
+pnpm sanity:import-draft -- --source tmp/<package-dir> --dry-run
+pnpm sanity:import-draft -- --source tmp/<package-dir> --slug pve-gpu-passthrough-linux-desktop
+```
+
+この import は `article.md` と `images/` を読み取り、Sanity の Draft document と画像 asset を作成します。書き込みには `SANITY_WRITE_TOKEN` が必要です。
+
 環境変数は `env.example` を参照してください。Sanity の接続情報が未設定でも、フォールバックコンテンツで Astro 側の画面確認はできます。
 
 ## 本番デプロイ最短手順（既存AWSリソース利用）
