@@ -46,6 +46,22 @@ export const fallbackPosts: Post[] = [
         filename: "bootstrap.sh",
         code: "pnpm install\npnpm dev",
       },
+      {
+        _type: "block",
+        style: "normal",
+        children: [
+          {
+            _type: "span",
+            text: "Markdown の表は、専用スキーマを増やさず codeBlock として表示します。",
+          },
+        ],
+      },
+      {
+        _type: "codeBlock",
+        language: "markdown",
+        filename: "sample-table.md",
+        code: "| 項目 | 内容 |\n|---|---|\n| フロントエンド | Astro |\n| CMS | Sanity |\n| 配信 | S3 + CloudFront |",
+      },
     ],
   },
 ];
