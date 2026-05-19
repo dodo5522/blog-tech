@@ -277,6 +277,7 @@ img {
 .portable-text ul,
 .portable-text ol,
 .portable-text figure,
+.portable-text .table-scroll,
 .portable-text pre {
   margin: 1.15rem 0;
 }
@@ -314,6 +315,37 @@ img {
   font-size: 0.9rem;
   line-height: 1.6;
   text-align: center;
+}
+
+.portable-text .table-scroll {
+  overflow-x: auto;
+}
+
+.portable-text table {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+  font-family: "Avenir Next", "Helvetica Neue", "Segoe UI", sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.portable-text th,
+.portable-text td {
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.portable-text th {
+  background: var(--surface-strong);
+  color: var(--text);
+}
+
+.portable-text td {
+  background: var(--surface);
+  color: var(--muted);
 }
 
 .portable-text pre {
