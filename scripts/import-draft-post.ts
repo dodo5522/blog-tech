@@ -5,8 +5,112 @@ import { readdir } from "node:fs/promises";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import { createClient } from "@sanity/client";
+import type { SanityClient } from "@sanity/client";
 
-const KNOWN_TAG_SLUGS = new Map([
+type CliArgs = {
+  source: string;
+  article: string;
+  slug: string;
+  env: string;
+  dryRun: boolean;
+  useCover: boolean;
+};
+
+type FrontmatterScalar = boolean | string | string[];
+
+type ParsedMarkdown = {
+  frontmatter: Record<string, FrontmatterScalar>;
+  body: string;
+};
+
+type SpanMark = "code" | "strong";
+
+type PortableTextSpan = {
+  _key: string;
+  _type: "span";
+  text: string;
+  marks: SpanMark[];
+};
+
+type PortableTextBlockExtra = {
+  listItem?: "bullet" | "number";
+  level?: number;
+};
+
+type PortableTextBlock = PortableTextBlockExtra & {
+  _key: string;
+  _type: "block";
+  style: string;
+  markDefs: [];
+  children: PortableTextSpan[];
+};
+
+type PortableTextCodeBlock = {
+  _key: string;
+  _type: "codeBlock";
+  language: string;
+  code: string;
+};
+
+type SanityReference = {
+  _type: "reference";
+  _ref: string;
+};
+
+type PortableTextImageBlock = {
+  _key: string;
+  _type: "image";
+  alt: string;
+  asset: SanityReference;
+};
+
+type PortableTextNode =
+  | PortableTextBlock
+  | PortableTextCodeBlock
+  | PortableTextImageBlock;
+
+type TagReference = SanityReference & {
+  _key: string;
+};
+
+type ImageAsset = {
+  alt: string;
+  absolutePath: string;
+  filename: string;
+  assetId: string;
+};
+
+type ImageAssetMap = Map<string, ImageAsset>;
+
+type CollectedTable = {
+  table: string;
+  nextIndex: number;
+};
+
+type DraftImageRef = {
+  alt: string;
+  asset: SanityReference;
+};
+
+type DraftPostDocument = {
+  _id: string;
+  _type: "post";
+  title: string;
+  slug: {
+    _type: "slug";
+    current: string;
+  };
+  excerpt: string;
+  body: PortableTextNode[];
+  publishedAt: string;
+  tags: TagReference[];
+  seoTitle: string;
+  seoDescription: string;
+  coverImage?: DraftImageRef;
+  ogImage?: DraftImageRef;
+};
+
+const KNOWN_TAG_SLUGS = new Map<string, string>([
   ["Proxmox VE", "proxmox-ve"],
   ["GPU Passthrough", "gpu-passthrough"],
   ["VFIO", "vfio"],
@@ -19,7 +123,7 @@ const KNOWN_TAG_SLUGS = new Map([
 /**
  * Print command usage and supported options.
  */
-function printUsage() {
+function printUsage(): void {
   console.log(`Usage:
   pnpm sanity:import-draft -- --source tmp/pve-environment-blog-package
 
@@ -36,8 +140,8 @@ Options:
 /**
  * Parse CLI arguments into normalized import options.
  */
-function parseArgs(argv) {
-  const args = {
+function parseArgs(argv: string[]): CliArgs {
+  const args: CliArgs = {
     source: "",
     article: "",
     slug: "",
@@ -76,7 +180,7 @@ function parseArgs(argv) {
 /**
  * Load KEY=value pairs from an env file without overriding existing process env.
  */
-function loadEnvFile(filePath) {
+function loadEnvFile(filePath: string): void {
   if (!filePath || !existsSync(filePath)) {
     return;
   }
@@ -111,7 +215,7 @@ function loadEnvFile(filePath) {
 /**
  * Return a required environment variable or fail with a clear message.
  */
-function requiredEnv(name) {
+function requiredEnv(name: string): string {
   const value = process.env[name];
   if (!value) {
     throw new Error(`${name} is required`);
@@ -122,7 +226,7 @@ function requiredEnv(name) {
 /**
  * Parse a simple frontmatter scalar value.
  */
-function parseScalar(value) {
+function parseScalar(value: string): FrontmatterScalar {
   const trimmed = value.trim();
   if (trimmed === "true") {
     return true;
@@ -131,7 +235,14 @@ function parseScalar(value) {
     return false;
   }
   if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
-    return JSON.parse(trimmed);
+    const parsed: unknown = JSON.parse(trimmed);
+    if (
+      Array.isArray(parsed) &&
+      parsed.every((item) => typeof item === "string")
+    ) {
+      return parsed;
+    }
+    throw new Error(`Unsupported frontmatter array value: ${value}`);
   }
   if (
     (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
@@ -145,7 +256,7 @@ function parseScalar(value) {
 /**
  * Split Markdown into frontmatter metadata and body content.
  */
-function parseMarkdownWithFrontmatter(markdown) {
+function parseMarkdownWithFrontmatter(markdown: string): ParsedMarkdown {
   if (!markdown.startsWith("---\n")) {
     return { frontmatter: {}, body: markdown };
   }
@@ -157,7 +268,7 @@ function parseMarkdownWithFrontmatter(markdown) {
 
   const frontmatterText = markdown.slice(4, end).trim();
   const body = markdown.slice(end + 4).replace(/^\r?\n/, "");
-  const frontmatter = {};
+  const frontmatter: Record<string, FrontmatterScalar> = {};
   const frontmatterLines = frontmatterText.split(/\r?\n/);
 
   for (let index = 0; index < frontmatterLines.length; index += 1) {
@@ -170,14 +281,18 @@ function parseMarkdownWithFrontmatter(markdown) {
     const value = line.slice(separator + 1);
 
     if (!value.trim()) {
-      const values = [];
+      const values: string[] = [];
       let nextIndex = index + 1;
       while (nextIndex < frontmatterLines.length) {
         const item = frontmatterLines[nextIndex].match(/^\s*-\s+(.+)$/);
         if (!item) {
           break;
         }
-        values.push(parseScalar(item[1]));
+        const parsedItem = parseScalar(item[1]);
+        if (typeof parsedItem !== "string") {
+          throw new Error(`Unsupported frontmatter list item: ${item[1]}`);
+        }
+        values.push(parsedItem);
         nextIndex += 1;
       }
 
@@ -199,7 +314,7 @@ function parseMarkdownWithFrontmatter(markdown) {
 /**
  * Convert a label into a stable URL-friendly slug.
  */
-function slugify(value) {
+function slugify(value: string): string {
   const normalized = value
     .normalize("NFKD")
     .toLowerCase()
@@ -216,22 +331,22 @@ function slugify(value) {
 /**
  * Create a short deterministic hash source for Sanity keys and fallback slugs.
  */
-function hash(value) {
+function hash(value: string): string {
   return createHash("sha1").update(value).digest("hex");
 }
 
 /**
  * Build a deterministic Sanity _key from local block context.
  */
-function makeKey(prefix, index, value = "") {
+function makeKey(prefix: string, index: number, value = ""): string {
   return `${prefix}${index.toString(36)}${hash(value).slice(0, 8)}`;
 }
 
 /**
  * Convert minimal inline Markdown marks into Portable Text span children.
  */
-function inlineChildren(text) {
-  const children = [];
+function inlineChildren(text: string): PortableTextSpan[] {
+  const children: PortableTextSpan[] = [];
   let cursor = 0;
   const pattern = /(`[^`]+`|\*\*[^*]+\*\*)/g;
   let match;
@@ -260,7 +375,7 @@ function inlineChildren(text) {
 /**
  * Create a Portable Text span node.
  */
-function span(text, marks) {
+function span(text: string, marks: SpanMark[]): PortableTextSpan {
   return {
     _key: makeKey("s", text.length, text),
     _type: "span",
@@ -272,7 +387,12 @@ function span(text, marks) {
 /**
  * Create a Portable Text block node with optional list metadata.
  */
-function textBlock(style, text, index, extra = {}) {
+function textBlock(
+  style: string,
+  text: string,
+  index: number,
+  extra: PortableTextBlockExtra = {},
+): PortableTextBlock {
   return {
     _key: makeKey("b", index, text),
     _type: "block",
@@ -286,7 +406,11 @@ function textBlock(style, text, index, extra = {}) {
 /**
  * Create a Portable Text codeBlock object.
  */
-function codeBlock(language, code, index) {
+function codeBlock(
+  language: string | undefined,
+  code: string,
+  index: number,
+): PortableTextCodeBlock {
   return {
     _key: makeKey("c", index, code),
     _type: "codeBlock",
@@ -298,7 +422,11 @@ function codeBlock(language, code, index) {
 /**
  * Create a Portable Text image object referencing an uploaded Sanity asset.
  */
-function imageBlock(assetRef, alt, index) {
+function imageBlock(
+  assetRef: string,
+  alt: string,
+  index: number,
+): PortableTextImageBlock {
   return {
     _key: makeKey("i", index, `${assetRef}:${alt}`),
     _type: "image",
@@ -313,22 +441,22 @@ function imageBlock(assetRef, alt, index) {
 /**
  * Detect whether a Markdown line looks like a table row.
  */
-function isTableLine(line) {
+function isTableLine(line: string): boolean {
   return line.trim().startsWith("|") && line.trim().endsWith("|");
 }
 
 /**
  * Detect a Markdown table divider row.
  */
-function isTableDivider(line) {
+function isTableDivider(line: string): boolean {
   return /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(line);
 }
 
 /**
  * Collect a contiguous Markdown table and return its end position.
  */
-function collectTable(lines, start) {
-  const tableLines = [];
+function collectTable(lines: string[], start: number): CollectedTable {
+  const tableLines: string[] = [];
   let index = start;
   while (index < lines.length && isTableLine(lines[index])) {
     tableLines.push(lines[index]);
@@ -344,9 +472,14 @@ function collectTable(lines, start) {
 /**
  * Find local Markdown image references and upload them to Sanity when needed.
  */
-async function collectImageAssets(articleDir, body, client, dryRun) {
+async function collectImageAssets(
+  articleDir: string,
+  body: string,
+  client: SanityClient | null,
+  dryRun: boolean,
+): Promise<ImageAssetMap> {
   const imagePattern = /!\[([^\]]*)\]\(([^)]+)\)/g;
-  const images = new Map();
+  const images: ImageAssetMap = new Map();
   let match;
 
   while ((match = imagePattern.exec(body)) !== null) {
@@ -374,6 +507,9 @@ async function collectImageAssets(articleDir, body, client, dryRun) {
   }
 
   for (const image of images.values()) {
+    if (!client) {
+      throw new Error("Sanity client is required when dry-run is disabled");
+    }
     const asset = await client.assets.upload(
       "image",
       createReadStream(image.absolutePath),
@@ -391,9 +527,13 @@ async function collectImageAssets(articleDir, body, client, dryRun) {
 /**
  * Convert supported Markdown blocks into the site's Portable Text schema.
  */
-function markdownToPortableText(body, imageAssets, title) {
+function markdownToPortableText(
+  body: string,
+  imageAssets: ImageAssetMap,
+  title: string,
+): PortableTextNode[] {
   const lines = body.split(/\r?\n/);
-  const blocks = [];
+  const blocks: PortableTextNode[] = [];
   let index = 0;
   let blockIndex = 0;
   let skippedTitle = false;
@@ -416,7 +556,9 @@ function markdownToPortableText(body, imageAssets, title) {
         index += 1;
       }
       index += 1;
-      blocks.push(codeBlock(fence[1] || "text", codeLines.join("\n"), blockIndex++));
+      blocks.push(
+        codeBlock(fence[1] || "text", codeLines.join("\n"), blockIndex++),
+      );
       continue;
     }
 
@@ -502,8 +644,12 @@ function markdownToPortableText(body, imageAssets, title) {
 /**
  * Create or reuse tag documents and return references for the post document.
  */
-async function createTagRefs(client, tagNames, dryRun) {
-  const refs = [];
+async function createTagRefs(
+  client: SanityClient | null,
+  tagNames: string[],
+  dryRun: boolean,
+): Promise<TagReference[]> {
+  const refs: TagReference[] = [];
 
   for (const name of tagNames) {
     const slug = KNOWN_TAG_SLUGS.get(name) || slugify(name);
@@ -515,6 +661,9 @@ async function createTagRefs(client, tagNames, dryRun) {
     });
 
     if (!dryRun) {
+      if (!client) {
+        throw new Error("Sanity client is required when dry-run is disabled");
+      }
       await client.createIfNotExists({
         _id: id,
         _type: "tag",
@@ -530,7 +679,7 @@ async function createTagRefs(client, tagNames, dryRun) {
 /**
  * Run the import flow from CLI args through draft document creation.
  */
-async function main() {
+async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   if (!args.source && !args.article) {
     printUsage();
@@ -562,7 +711,8 @@ async function main() {
     ? null
     : createClient({
         projectId:
-          process.env.SANITY_STUDIO_PROJECT_ID || requiredEnv("SANITY_PROJECT_ID"),
+          process.env.SANITY_STUDIO_PROJECT_ID ||
+          requiredEnv("SANITY_PROJECT_ID"),
         dataset:
           process.env.SANITY_STUDIO_DATASET || requiredEnv("SANITY_DATASET"),
         apiVersion: process.env.SANITY_API_VERSION || "2025-01-01",
@@ -570,13 +720,18 @@ async function main() {
         useCdn: false,
       });
 
-  const imageAssets = await collectImageAssets(articleDir, body, client, args.dryRun);
+  const imageAssets = await collectImageAssets(
+    articleDir,
+    body,
+    client,
+    args.dryRun,
+  );
   const bodyBlocks = markdownToPortableText(body, imageAssets, title);
   const tagNames = Array.isArray(frontmatter.tags) ? frontmatter.tags : [];
   const tagRefs = await createTagRefs(client, tagNames, args.dryRun);
   const firstImage = [...imageAssets.values()][0];
 
-  const imageRef =
+  const imageRef: DraftImageRef | undefined =
     args.useCover && firstImage
       ? {
           alt: firstImage.alt,
@@ -587,7 +742,7 @@ async function main() {
         }
       : undefined;
 
-  const document = {
+  const document: DraftPostDocument = {
     _id: `drafts.post.${slug}`,
     _type: "post",
     title,
@@ -602,7 +757,9 @@ async function main() {
   };
 
   if (args.dryRun) {
-    const imageFiles = await readdir(path.join(articleDir, "images")).catch(() => []);
+    const imageFiles = await readdir(path.join(articleDir, "images")).catch(
+      () => [],
+    );
     console.log(
       JSON.stringify(
         {
@@ -623,6 +780,9 @@ async function main() {
     return;
   }
 
+  if (!client) {
+    throw new Error("Sanity client is required when dry-run is disabled");
+  }
   await client.createOrReplace(document);
   console.log(`Created or replaced Sanity draft: ${document._id}`);
   console.log(`Slug: ${slug}`);
