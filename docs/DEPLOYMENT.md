@@ -192,10 +192,12 @@ Sanity webhook を GitHub `repository_dispatch` に接続する場合は、GitHu
 `SANITY_FALLBACK_MODE` は、Sanity から取得できない場合にローカルの fallback content を使うかを制御する。
 
 - `auto`: Sanity 未設定時のみ fallback を使う。Sanity 接続済みで fetch に失敗した場合は build を失敗させる
-- `always`: Sanity 未設定または fetch 失敗時に fallback を使う。オフラインの UI 確認用
+- `always`: Sanity には接続せず、常に fallback を使う。オフラインの UI 確認用
 - `never`: fallback を使わない。本番 deploy ではこの値を使う
 
 本番 deploy で fallback を許可すると、Sanity 障害や設定ミスのままサンプル記事を公開する可能性があるため、`deploy.yml` では `SANITY_FALLBACK_MODE=never` を固定する。
+
+fallback content は `src/lib/content/fallback.ts` にある固定データであり、`tmp/` 配下の記事パッケージを自動的に読むものではない。`tmp/<package-dir>` の記事をフロントエンドで確認するには、import スクリプトで Sanity Draft を作成し、Sanity Studio で内容確認後に publish する。
 
 ---
 

@@ -47,6 +47,10 @@ async function fetchSanity<T>(
   query: string,
   params: Record<string, unknown> = {},
 ): Promise<SanityFetchResult<T>> {
+  if (normalizedFallbackMode() === "always") {
+    return { ok: false };
+  }
+
   if (!sanityClient) {
     if (canUseFallback("not-configured")) {
       return { ok: false };
