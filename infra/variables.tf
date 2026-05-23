@@ -3,16 +3,6 @@ variable "aws_region" {
   description = "AWS region for S3, IAM, and other regional resources."
 }
 
-variable "site_name" {
-  type        = string
-  description = "Short site name used in resource names."
-}
-
-variable "site_bucket_name" {
-  type        = string
-  description = "S3 bucket name for the public Astro site."
-}
-
 variable "studio_bucket_name" {
   type        = string
   description = "S3 bucket name for the static Sanity Studio."

@@ -1,20 +1,17 @@
 data "aws_caller_identity" "current" {}
 
 locals {
+  site_name = "tech-blog"
+  
   default_tags = merge(
     {
-      Project   = var.site_name
+      Project   = local.site_name
       ManagedBy = "terraform"
     },
     var.tags,
   )
 
   origins = {
-    site = {
-      bucket_name         = var.site_bucket_name
-      distribution_label  = "site"
-      default_root_object = "index.html"
-    }
     studio = {
       bucket_name         = var.studio_bucket_name
       distribution_label  = "studio"
@@ -51,7 +48,7 @@ data "aws_iam_policy_document" "github_assume_role" {
 }
 
 resource "aws_iam_role" "github_actions_deploy" {
-  name               = "${var.site_name}-github-actions-deploy"
+  name               = "${local.site_name}-github-actions-deploy"
   assume_role_policy = data.aws_iam_policy_document.github_assume_role.json
   tags               = local.default_tags
 }
@@ -83,7 +80,7 @@ data "aws_iam_policy_document" "github_actions_deploy" {
 }
 
 resource "aws_iam_role_policy" "github_actions_deploy" {
-  name   = "${var.site_name}-github-actions-deploy"
+  name   = "${local.site_name}-github-actions-deploy"
   role   = aws_iam_role.github_actions_deploy.id
   policy = data.aws_iam_policy_document.github_actions_deploy.json
 }
@@ -131,8 +128,8 @@ resource "aws_s3_bucket_public_access_block" "static" {
 resource "aws_cloudfront_origin_access_control" "static" {
   for_each = local.origins
 
-  name                              = "${var.site_name}-${each.value.distribution_label}-oac"
-  description                       = "Origin access control for ${var.site_name} ${each.value.distribution_label}"
+  name                              = "${local.site_name}-${each.value.distribution_label}-oac"
+  description                       = "Origin access control for ${local.site_name} ${each.value.distribution_label}"
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"
@@ -141,7 +138,7 @@ resource "aws_cloudfront_origin_access_control" "static" {
 resource "aws_cloudfront_function" "directory_index" {
   for_each = local.origins
 
-  name    = "${var.site_name}-${each.value.distribution_label}-directory-index"
+  name    = "${local.site_name}-${each.value.distribution_label}-directory-index"
   runtime = "cloudfront-js-2.0"
   comment = "Rewrite extensionless static paths to index.html."
   publish = true
@@ -166,7 +163,7 @@ resource "aws_cloudfront_distribution" "static" {
 
   enabled             = true
   default_root_object = each.value.default_root_object
-  comment             = "${var.site_name} ${each.value.distribution_label}"
+  comment             = "${local.site_name} ${each.value.distribution_label}"
   price_class         = var.cloudfront_price_class
   tags                = local.default_tags
 
