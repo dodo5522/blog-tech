@@ -13,27 +13,27 @@
 
 - GitHub Actions
 
-### ビルド手順
+このリポジトリは deploy を 2 本に分離する。
 
-1. リポジトリを checkout
-2. Node とパッケージマネージャをセットアップ
-3. 依存関係をインストール
-4. lint / format check を実行
-5. 環境変数を注入
-6. Astro build を実行
-7. 静的ファイルを S3 にアップロード
-8. CloudFront キャッシュを invalidation
+- `deploy-site.yml`: 公開サイト（Astro）デプロイ
+- `deploy-studio.yml`: Sanity Studio（静的ビルド）デプロイ
 
 ---
 
 ## 3. トリガー戦略
 
-可能なら両方使う。
+`deploy-site.yml`:
 
-- `main` への push
-- Sanity の publish / unpublish webhook
+- `main` への push（site 関連ファイル変更時）
+- Sanity の publish / unpublish webhook（`repository_dispatch`）
+- `workflow_dispatch`
 
-これで、コード変更でもコンテンツ変更でも自動リリースできる。
+`deploy-studio.yml`:
+
+- `main` への push（studio 関連ファイル変更時）
+- `workflow_dispatch`
+
+これで、コンテンツ更新時は site のみ自動再デプロイし、Studio はコード変更時だけデプロイする。
 
 運用上の標準:
 
@@ -46,8 +46,7 @@
 
 ## 4. GitHub Actions の設定値
 
-このリポジトリは `deploy.yml` 内で `vars.*` / `secrets.*` を参照する。  
-`workflow_dispatch` と `repository_dispatch` のどちらでも同じ設定値を使う。
+このリポジトリは `deploy-site.yml` / `deploy-studio.yml` で `vars.*` / `secrets.*` を参照する。
 
 Repository Variables:
 
@@ -55,6 +54,9 @@ Repository Variables:
 - `AWS_REGION`
 - `S3_BUCKET_NAME`
 - `CLOUDFRONT_DISTRIBUTION_ID`
+- `TF_STATE_BUCKET_NAME`
+- `TF_STATE_KEY`
+- `TF_STATE_REGION`
 - `SANITY_DATASET`
 - `SANITY_API_VERSION`
 - `SANITY_FALLBACK_MODE`（本番 deploy は `never`）
@@ -68,6 +70,7 @@ Repository Secrets:
 備考:
 
 - 将来 Environment secrets/variables に移行する場合でも、同じキー名を使えば workflow 側の参照コード変更は不要
+- `deploy-studio.yml` は `terraform -chdir=infra output -raw` で `studio_bucket_name` / `studio_cloudfront_distribution_id` を取得する
 
 ---
 
@@ -87,17 +90,36 @@ Repository Secrets:
 
 ---
 
+## 5.1 Infra（Terraform）適用の責務
+
+`deploy-studio.yml` は Terraform state から `studio_bucket_name` / `studio_cloudfront_distribution_id` を読むだけで、`terraform apply` は実行しない。
+
+そのため、Studio 配信基盤の作成・変更は別途 `terraform apply` で確定させる必要がある。
+
+実行主体（どちらかを採用）:
+
+- 手動運用: インフラ管理者がローカル環境で実行
+- 自動運用: 専用の infra workflow（例: `infra-apply.yml`）で実行
+
+最低限の運用ルール:
+
+1. 初回セットアップ時に `terraform -chdir=infra apply` を実行して state を作成する
+2. `infra/` 変更時は、先に `terraform apply` を実行して state を更新する
+3. その後に `Deploy Studio` を実行する（または `main` push で自動起動を待つ）
+
+---
+
 ## 6. Sanity webhook 連携（repository_dispatch）
 
-Sanity 側の publish / unpublish を契機に GitHub Deploy workflow を起動する場合、Sanity webhook の HTTP request を GitHub API に向ける。
+Sanity 側の publish / unpublish を契機に GitHub `Deploy Site` workflow を起動する場合、Sanity webhook の HTTP request を GitHub API に向ける。
 
 この連携は以下の対応関係で動く。
 
 1. Sanity webhook が GitHub REST API の `POST /repos/<owner>/<repo>/dispatches` を呼び出す
 2. GitHub API が `repository_dispatch` イベントを対象 repository に作成する
-3. `.github/workflows/deploy.yml` の `on.repository_dispatch.types` が `event_type` と一致すると `Deploy` workflow が起動する
+3. `.github/workflows/deploy-site.yml` の `on.repository_dispatch.types` が `event_type` と一致すると site deploy workflow が起動する
 
-このため、Sanity webhook の `Projection` で送信 body に設定する `event_type` は、`deploy.yml` の `repository_dispatch.types` と一致させる必要がある。
+このため、Sanity webhook の `Projection` で送信 body に設定する `event_type` は、`deploy-site.yml` の `repository_dispatch.types` と一致させる必要がある。
 
 ```yaml
 on:
@@ -112,7 +134,7 @@ on:
 }
 ```
 
-GitHub PAT の権限は `Deploy` workflow を直接操作する権限ではなく、`repository_dispatch` イベントを repository に作成するための権限として判定される。  
+GitHub PAT の権限は `Deploy Site` workflow を直接操作する権限ではなく、`repository_dispatch` イベントを repository に作成するための権限として判定される。  
 そのため Fine-grained PAT では `Actions: Read and write` ではなく、GitHub API の `Create a repository dispatch event` 要件に従って `Contents: Read and write` を付与する。
 
 Sanity 管理画面（Project > API > Webhooks）で以下を設定する。
@@ -195,7 +217,7 @@ Sanity webhook を GitHub `repository_dispatch` に接続する場合は、GitHu
 - `always`: Sanity には接続せず、常に fallback を使う。オフラインの UI 確認用
 - `never`: fallback を使わない。本番 deploy ではこの値を使う
 
-本番 deploy で fallback を許可すると、Sanity 障害や設定ミスのままサンプル記事を公開する可能性があるため、`deploy.yml` では `SANITY_FALLBACK_MODE=never` を固定する。
+本番 deploy で fallback を許可すると、Sanity 障害や設定ミスのままサンプル記事を公開する可能性があるため、`deploy-site.yml` では `SANITY_FALLBACK_MODE=never` を固定する。
 
 fallback content は `src/lib/content/fallback.ts` にある固定データであり、`tmp/` 配下の記事パッケージを自動的に読むものではない。`tmp/<package-dir>` の記事をフロントエンドで確認するには、import スクリプトで Sanity Draft を作成し、Sanity Studio で内容確認後に publish する。
 
@@ -257,7 +279,7 @@ MVP では更新頻度が低い前提で、必要なら `/*` の全体 invalidat
 
 1. 直近の正常コミットを特定する
 2. `main` へ revert PR を作成しマージする
-3. `Deploy` workflow を実行する
+3. `Deploy Site` workflow を実行する
 4. `s3 sync` と CloudFront invalidation の成功を確認する
 5. 公開サイトで主要ページと問題ページを再確認する
 
@@ -266,5 +288,35 @@ MVP では更新頻度が低い前提で、必要なら `/*` の全体 invalidat
 ## 12. リポジトリ実装との対応
 
 - CI workflow: `.github/workflows/ci.yml`
-- Deploy workflow: `.github/workflows/deploy.yml`
+- Site deploy workflow: `.github/workflows/deploy-site.yml`
+- Studio deploy workflow: `.github/workflows/deploy-studio.yml`
 - Terraform: `infra/`（任意。既存 AWS リソース利用時は適用不要）
+
+---
+
+## 13. Terraform 運用手順（Studio）
+
+前提:
+
+- `infra/` の backend は S3 を使用する
+- `deploy-studio.yml` の `TF_STATE_BUCKET_NAME` / `TF_STATE_KEY` / `TF_STATE_REGION` が、`terraform apply` 時と同一である
+
+初回または `infra/` 変更時:
+
+```bash
+terraform -chdir=infra init \
+  -backend-config="bucket=<tf-state-bucket>" \
+  -backend-config="key=<tf-state-key>" \
+  -backend-config="region=<tf-state-region>"
+terraform -chdir=infra plan
+terraform -chdir=infra apply
+```
+
+確認:
+
+```bash
+terraform -chdir=infra output -raw studio_bucket_name
+terraform -chdir=infra output -raw studio_cloudfront_distribution_id
+```
+
+この output が取得できる状態になってから `Deploy Studio` を実行する。

@@ -43,9 +43,25 @@ pnpm sanity:import-draft -- --source tmp/<package-dir> --slug pve-gpu-passthroug
 ### コンテンツ publish 後の確認
 
 1. Sanity webhook が成功していることを確認する
-2. GitHub Actions の build / deploy が成功していることを確認する
+2. GitHub Actions の `Deploy Site` が成功していることを確認する
 3. 公開サイトで対象ページが更新されていることを確認する
 4. 必要に応じて RSS、sitemap、OGP の反映を確認する
+
+### Studio コード変更後の確認
+
+1. `main` へマージ後、GitHub Actions の `Deploy Studio` が起動していることを確認する
+2. `Load Studio deploy targets from Terraform outputs` が成功していることを確認する
+3. `Build` / `s3 sync dist-studio/` / CloudFront invalidation が成功していることを確認する
+4. Studio の CloudFront URL で更新が反映されていることを確認する
+
+### Studio インフラ変更時の運用
+
+`deploy-studio.yml` は `terraform apply` を実行しないため、`infra/` を変更した場合は先にインフラを反映する。
+
+1. インフラ管理者が `terraform -chdir=infra init/plan/apply` を実行する
+2. `terraform -chdir=infra output -raw studio_bucket_name` と `studio_cloudfront_distribution_id` が取得できることを確認する
+3. `Deploy Studio` を `workflow_dispatch` で実行する（または `main` push の自動起動を待つ）
+4. `Load Studio deploy targets from Terraform outputs` の成功を確認する
 
 ### 実記事の表示確認
 
@@ -60,7 +76,8 @@ pnpm sanity:import-draft -- --source tmp/<package-dir> --slug pve-gpu-passthroug
 2. `Projection` が `{ "event_type": "sanity-content-changed" }` で、送信 body に `event_type` が含まれることを確認する
 3. webhook 用トークンが HTTP Header の `Authorization: Bearer <token>` に設定され、失効期限やローテーション方針があることを確認する
 4. webhook 用トークンに repository dispatch 実行権限（Fine-grained PAT なら `Contents: Read and write`）があることを確認する
-5. GitHub Actions 側で `Deploy` workflow が `repository_dispatch` を受けることを確認する
+5. GitHub Actions 側で `Deploy Site` workflow が `repository_dispatch` を受けることを確認する
+6. `Deploy Studio` workflow は webhook では起動しない（`main` push または手動実行）
 
 ### コード変更を含む release 後の確認
 
@@ -127,7 +144,7 @@ pnpm sanity:import-draft -- --source tmp/<package-dir> --slug pve-gpu-passthroug
 4. 422 の場合は Sanity webhook の `Projection` が `{ "event_type": "sanity-content-changed" }` になっていることを確認する
 5. Secret や endpoint を修正する
 6. Sanity 管理画面から対象 webhook を再送する
-7. GitHub Actions の `Deploy` 実行を確認する
+7. GitHub Actions の `Deploy Site` 実行を確認する
 
 ---
 
