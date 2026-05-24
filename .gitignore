@@ -13,3 +13,4 @@ tmp__
 .env.local
 .sanity
 mise.toml
+*.tfvars

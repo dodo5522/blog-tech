@@ -22,13 +22,11 @@ locals {
   deploy_bucket_arns = concat(
     [for bucket in aws_s3_bucket.static : bucket.arn],
     ["arn:aws:s3:::${var.site_bucket_name}"],
-    ["arn:aws:s3:::${var.tf_state_bucket_name}"],
   )
 
   deploy_object_arns = concat(
     [for bucket in aws_s3_bucket.static : "${bucket.arn}/*"],
     ["arn:aws:s3:::${var.site_bucket_name}/*"],
-    ["arn:aws:s3:::${var.tf_state_bucket_name}/*"],
   )
 
   deploy_distribution_arns = concat(
@@ -80,6 +78,36 @@ data "aws_iam_policy_document" "github_actions_deploy" {
       "s3:PutObject",
     ]
     resources = concat(local.deploy_bucket_arns, local.deploy_object_arns)
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:ListBucket",
+    ]
+    resources = [
+      "arn:aws:s3:::${var.tf_state_bucket_name}",
+    ]
+
+    condition {
+      test     = "StringLike"
+      variable = "s3:prefix"
+      values = [
+        var.tf_state_key,
+        "${var.tf_state_key}.tflock",
+      ]
+    }
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:GetObject",
+    ]
+    resources = [
+      "arn:aws:s3:::${var.tf_state_bucket_name}/${var.tf_state_key}",
+      "arn:aws:s3:::${var.tf_state_bucket_name}/${var.tf_state_key}.tflock",
+    ]
   }
 
   statement {

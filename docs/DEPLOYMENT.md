@@ -112,6 +112,7 @@ Repository Secrets:
 - `site_bucket_name`
 - `site_cloudfront_distribution_arn`
 - `tf_state_bucket_name`
+- `tf_state_key`
 
 ---
 
