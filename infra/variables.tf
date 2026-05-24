@@ -8,6 +8,26 @@ variable "studio_bucket_name" {
   description = "S3 bucket name for the static Sanity Studio."
 }
 
+variable "site_bucket_name" {
+  type        = string
+  description = "S3 bucket name for the public site managed outside this Terraform stack."
+}
+
+variable "site_cloudfront_distribution_arn" {
+  type        = string
+  description = "CloudFront distribution ARN for the public site managed outside this Terraform stack."
+}
+
+variable "tf_state_bucket_name" {
+  type        = string
+  description = "S3 bucket name used by Terraform backend state."
+}
+
+variable "tf_state_key" {
+  type        = string
+  description = "S3 object key used by Terraform backend state."
+}
+
 variable "github_repository" {
   type        = string
   description = "GitHub repository in owner/name format."

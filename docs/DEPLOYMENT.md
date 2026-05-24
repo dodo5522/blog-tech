@@ -107,6 +107,13 @@ Repository Secrets:
 2. `infra/` 変更時は、先に `terraform apply` を実行して state を更新する
 3. その後に `Deploy Studio` を実行する（または `main` push で自動起動を待つ）
 
+`infra` で IAM deploy ロールを管理する場合、以下を `tfvars` に設定しておく。
+
+- `site_bucket_name`
+- `site_cloudfront_distribution_arn`
+- `tf_state_bucket_name`
+- `tf_state_key`
+
 ---
 
 ## 6. Sanity webhook 連携（repository_dispatch）
