@@ -1,5 +1,25 @@
 data "aws_caller_identity" "current" {}
 
+locals {
+  site_name = "tech-blog"
+  
+  default_tags = merge(
+    {
+      Project   = local.site_name
+      ManagedBy = "terraform"
+    },
+    var.tags,
+  )
+
+  origins = {
+    studio = {
+      bucket_name         = var.studio_bucket_name
+      distribution_label  = "studio"
+      default_root_object = "index.html"
+    }
+  }
+}
+
 data "aws_iam_policy_document" "github_assume_role" {
   statement {
     effect = "Allow"
@@ -28,8 +48,9 @@ data "aws_iam_policy_document" "github_assume_role" {
 }
 
 resource "aws_iam_role" "github_actions_deploy" {
-  name               = "${var.site_name}-github-actions-deploy"
+  name               = "${local.site_name}-github-actions-deploy"
   assume_role_policy = data.aws_iam_policy_document.github_assume_role.json
+  tags               = local.default_tags
 }
 
 data "aws_iam_policy_document" "github_actions_deploy" {
@@ -41,10 +62,10 @@ data "aws_iam_policy_document" "github_actions_deploy" {
       "s3:ListBucket",
       "s3:PutObject",
     ]
-    resources = [
-      aws_s3_bucket.site.arn,
-      "${aws_s3_bucket.site.arn}/*",
-    ]
+    resources = concat(
+      [for bucket in aws_s3_bucket.static : bucket.arn],
+      [for bucket in aws_s3_bucket.static : "${bucket.arn}/*"],
+    )
   }
 
   statement {
@@ -54,30 +75,37 @@ data "aws_iam_policy_document" "github_actions_deploy" {
       "cloudfront:GetDistribution",
       "cloudfront:GetInvalidation",
     ]
-    resources = [aws_cloudfront_distribution.site.arn]
+    resources = [for distribution in aws_cloudfront_distribution.static : distribution.arn]
   }
 }
 
 resource "aws_iam_role_policy" "github_actions_deploy" {
-  name   = "${var.site_name}-github-actions-deploy"
+  name   = "${local.site_name}-github-actions-deploy"
   role   = aws_iam_role.github_actions_deploy.id
   policy = data.aws_iam_policy_document.github_actions_deploy.json
 }
 
-resource "aws_s3_bucket" "site" {
-  bucket = var.bucket_name
+resource "aws_s3_bucket" "static" {
+  for_each = local.origins
+
+  bucket = each.value.bucket_name
+  tags   = local.default_tags
 }
 
-resource "aws_s3_bucket_versioning" "site" {
-  bucket = aws_s3_bucket.site.id
+resource "aws_s3_bucket_versioning" "static" {
+  for_each = aws_s3_bucket.static
+
+  bucket = each.value.id
 
   versioning_configuration {
     status = "Enabled"
   }
 }
 
-resource "aws_s3_bucket_server_side_encryption_configuration" "site" {
-  bucket = aws_s3_bucket.site.bucket
+resource "aws_s3_bucket_server_side_encryption_configuration" "static" {
+  for_each = aws_s3_bucket.static
+
+  bucket = each.value.bucket
 
   rule {
     apply_server_side_encryption_by_default {
@@ -86,8 +114,10 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "site" {
   }
 }
 
-resource "aws_s3_bucket_public_access_block" "site" {
-  bucket = aws_s3_bucket.site.id
+resource "aws_s3_bucket_public_access_block" "static" {
+  for_each = aws_s3_bucket.static
+
+  bucket = each.value.id
 
   block_public_acls       = true
   block_public_policy     = true
@@ -95,28 +125,58 @@ resource "aws_s3_bucket_public_access_block" "site" {
   restrict_public_buckets = true
 }
 
-resource "aws_cloudfront_origin_access_control" "site" {
-  name                              = "${var.site_name}-oac"
-  description                       = "Origin access control for ${var.site_name}"
+resource "aws_cloudfront_origin_access_control" "static" {
+  for_each = local.origins
+
+  name                              = "${local.site_name}-${each.value.distribution_label}-oac"
+  description                       = "Origin access control for ${local.site_name} ${each.value.distribution_label}"
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"
 }
 
-resource "aws_cloudfront_distribution" "site" {
+resource "aws_cloudfront_function" "directory_index" {
+  for_each = local.origins
+
+  name    = "${local.site_name}-${each.value.distribution_label}-directory-index"
+  runtime = "cloudfront-js-2.0"
+  comment = "Rewrite extensionless static paths to index.html."
+  publish = true
+  code    = <<-EOT
+    function handler(event) {
+      var request = event.request;
+      var uri = request.uri;
+
+      if (uri.endsWith("/")) {
+        request.uri = uri + "index.html";
+      } else if (!uri.includes(".")) {
+        request.uri = uri + "/index.html";
+      }
+
+      return request;
+    }
+  EOT
+}
+
+resource "aws_cloudfront_distribution" "static" {
+  for_each = local.origins
+
   enabled             = true
-  default_root_object = "index.html"
+  default_root_object = each.value.default_root_object
+  comment             = "${local.site_name} ${each.value.distribution_label}"
+  price_class         = var.cloudfront_price_class
+  tags                = local.default_tags
 
   origin {
-    domain_name              = aws_s3_bucket.site.bucket_regional_domain_name
-    origin_access_control_id = aws_cloudfront_origin_access_control.site.id
-    origin_id                = "siteBucket"
+    domain_name              = aws_s3_bucket.static[each.key].bucket_regional_domain_name
+    origin_access_control_id = aws_cloudfront_origin_access_control.static[each.key].id
+    origin_id                = "${each.key}Bucket"
   }
 
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "siteBucket"
+    target_origin_id = "${each.key}Bucket"
 
     viewer_protocol_policy = "redirect-to-https"
     compress               = true
@@ -127,6 +187,11 @@ resource "aws_cloudfront_distribution" "site" {
       cookies {
         forward = "none"
       }
+    }
+
+    function_association {
+      event_type   = "viewer-request"
+      function_arn = aws_cloudfront_function.directory_index[each.key].arn
     }
   }
 
@@ -156,6 +221,8 @@ resource "aws_cloudfront_distribution" "site" {
 }
 
 data "aws_iam_policy_document" "bucket_policy" {
+  for_each = aws_s3_bucket.static
+
   statement {
     effect = "Allow"
 
@@ -165,17 +232,19 @@ data "aws_iam_policy_document" "bucket_policy" {
     }
 
     actions   = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.site.arn}/*"]
+    resources = ["${each.value.arn}/*"]
 
     condition {
       test     = "StringEquals"
       variable = "AWS:SourceArn"
-      values   = [aws_cloudfront_distribution.site.arn]
+      values   = [aws_cloudfront_distribution.static[each.key].arn]
     }
   }
 }
 
-resource "aws_s3_bucket_policy" "site" {
-  bucket = aws_s3_bucket.site.id
-  policy = data.aws_iam_policy_document.bucket_policy.json
+resource "aws_s3_bucket_policy" "static" {
+  for_each = aws_s3_bucket.static
+
+  bucket = each.value.id
+  policy = data.aws_iam_policy_document.bucket_policy[each.key].json
 }

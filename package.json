@@ -14,6 +14,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "sanity:build": "sanity build dist-studio --yes",
     "sanity:dev": "sanity dev",
     "sanity:deploy": "sanity deploy",
     "sanity:import-draft": "tsx scripts/import-draft-post.ts"
@@ -26,6 +27,8 @@
     "@sanity/client": "7.10.0",
     "@sanity/vision": "4.6.1",
     "astro": "5.13.5",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
     "sanity": "4.6.1",
     "styled-components": "^6.4.0"
   },

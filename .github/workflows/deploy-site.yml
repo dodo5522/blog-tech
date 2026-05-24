@@ -1,9 +1,16 @@
-name: Deploy
+name: Deploy Site
 
 on:
   push:
     branches:
       - main
+    paths:
+      - "src/**"
+      - "public/**"
+      - "astro.config.mjs"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/deploy-site.yml"
   repository_dispatch:
     types:
       - sanity-content-changed
@@ -14,7 +21,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: production-deploy
+  group: site-deploy
   cancel-in-progress: true
 
 jobs:

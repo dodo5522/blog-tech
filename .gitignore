@@ -3,6 +3,7 @@
 node_modules
 .astro
 dist
+dist-studio
 tmp
 tmp__
 .terraform

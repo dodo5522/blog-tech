@@ -68,8 +68,14 @@ pnpm sanity:import-draft -- --source tmp/<package-dir> --slug pve-gpu-passthroug
    - `SANITY_READ_TOKEN`
    - `AWS_DEPLOY_ROLE_ARN`
 3. `AWS_DEPLOY_ROLE_ARN` の IAM Role は GitHub OIDC を trust し、`main` ブランチの `repo` クレームだけを許可する
-4. GitHub Actions の `Deploy` workflow を `workflow_dispatch` で手動実行し、`Configure AWS credentials` / `s3 sync` / `create-invalidation` の成功を確認する
+4. GitHub Actions の `Deploy Site` workflow を `workflow_dispatch` で手動実行し、`Configure AWS credentials` / `s3 sync` / `create-invalidation` の成功を確認する
 5. CloudFront 経由で公開サイト表示を確認する
+
+Studio 配信に必要な Repository Variables:
+
+- `TF_STATE_BUCKET_NAME`
+- `TF_STATE_KEY`
+- `TF_STATE_REGION`
 
 開発を進める際は、まず `AGENTS.md`、関連する `docs/*`、`CONTRIBUTING.md` を確認してください。
 実装は短命ブランチで行い、Pull Request 経由で `main` に統合します。

@@ -1,0 +1,79 @@
+name: Deploy Studio
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "sanity/**"
+      - "sanity.config.ts"
+      - "sanity.cli.ts"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/deploy-studio.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: studio-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.13.1
+          cache: pnpm
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm sanity:build
+        env:
+          SANITY_STUDIO_PROJECT_ID: ${{ secrets.SANITY_PROJECT_ID }}
+          SANITY_STUDIO_DATASET: ${{ vars.SANITY_DATASET || 'production' }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Load Studio deploy targets from Terraform outputs
+        run: |
+          terraform -chdir=infra init -input=false \
+            -backend-config="bucket=${TF_STATE_BUCKET_NAME}" \
+            -backend-config="key=${TF_STATE_KEY}" \
+            -backend-config="region=${TF_STATE_REGION}"
+          echo "STUDIO_S3_BUCKET_NAME=$(terraform -chdir=infra output -raw studio_bucket_name)" >> "$GITHUB_ENV"
+          echo "STUDIO_CLOUDFRONT_DISTRIBUTION_ID=$(terraform -chdir=infra output -raw studio_cloudfront_distribution_id)" >> "$GITHUB_ENV"
+        env:
+          TF_STATE_BUCKET_NAME: ${{ vars.TF_STATE_BUCKET_NAME }}
+          TF_STATE_KEY: ${{ vars.TF_STATE_KEY }}
+          TF_STATE_REGION: ${{ vars.AWS_REGION }}
+
+      - name: Sync static files to S3
+        run: aws s3 sync dist-studio/ "s3://${STUDIO_S3_BUCKET_NAME}" --delete
+
+      - name: Invalidate CloudFront cache
+        run: aws cloudfront create-invalidation --distribution-id "${STUDIO_CLOUDFRONT_DISTRIBUTION_ID}" --paths "/*"
