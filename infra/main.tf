@@ -2,7 +2,7 @@ data "aws_caller_identity" "current" {}
 
 locals {
   site_name = "tech-blog"
-  
+
   default_tags = merge(
     {
       Project   = local.site_name
@@ -18,6 +18,23 @@ locals {
       default_root_object = "index.html"
     }
   }
+
+  deploy_bucket_arns = concat(
+    [for bucket in aws_s3_bucket.static : bucket.arn],
+    ["arn:aws:s3:::${var.site_bucket_name}"],
+    ["arn:aws:s3:::${var.tf_state_bucket_name}"],
+  )
+
+  deploy_object_arns = concat(
+    [for bucket in aws_s3_bucket.static : "${bucket.arn}/*"],
+    ["arn:aws:s3:::${var.site_bucket_name}/*"],
+    ["arn:aws:s3:::${var.tf_state_bucket_name}/*"],
+  )
+
+  deploy_distribution_arns = concat(
+    [for distribution in aws_cloudfront_distribution.static : distribution.arn],
+    [var.site_cloudfront_distribution_arn],
+  )
 }
 
 data "aws_iam_policy_document" "github_assume_role" {
@@ -62,10 +79,7 @@ data "aws_iam_policy_document" "github_actions_deploy" {
       "s3:ListBucket",
       "s3:PutObject",
     ]
-    resources = concat(
-      [for bucket in aws_s3_bucket.static : bucket.arn],
-      [for bucket in aws_s3_bucket.static : "${bucket.arn}/*"],
-    )
+    resources = concat(local.deploy_bucket_arns, local.deploy_object_arns)
   }
 
   statement {
@@ -75,7 +89,7 @@ data "aws_iam_policy_document" "github_actions_deploy" {
       "cloudfront:GetDistribution",
       "cloudfront:GetInvalidation",
     ]
-    resources = [for distribution in aws_cloudfront_distribution.static : distribution.arn]
+    resources = local.deploy_distribution_arns
   }
 }
 
