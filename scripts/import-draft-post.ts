@@ -23,13 +23,19 @@ type ParsedMarkdown = {
   body: string;
 };
 
-type SpanMark = "code" | "strong";
+type SpanMark = string;
 
 type PortableTextSpan = {
   _key: string;
   _type: "span";
   text: string;
   marks: SpanMark[];
+};
+
+type PortableTextLinkMarkDef = {
+  _key: string;
+  _type: "link";
+  href: string;
 };
 
 type PortableTextBlockExtra = {
@@ -41,7 +47,7 @@ type PortableTextBlock = PortableTextBlockExtra & {
   _key: string;
   _type: "block";
   style: string;
-  markDefs: [];
+  markDefs: PortableTextLinkMarkDef[];
   children: PortableTextSpan[];
 };
 
@@ -345,10 +351,14 @@ function makeKey(prefix: string, index: number, value = ""): string {
 /**
  * Convert minimal inline Markdown marks into Portable Text span children.
  */
-function inlineChildren(text: string): PortableTextSpan[] {
+function inlineContent(text: string): {
+  children: PortableTextSpan[];
+  markDefs: PortableTextLinkMarkDef[];
+} {
   const children: PortableTextSpan[] = [];
+  const markDefs: PortableTextLinkMarkDef[] = [];
   let cursor = 0;
-  const pattern = /(`[^`]+`|\*\*[^*]+\*\*)/g;
+  const pattern = /(`[^`]+`|\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/g;
   let match;
 
   while ((match = pattern.exec(text)) !== null) {
@@ -359,6 +369,19 @@ function inlineChildren(text: string): PortableTextSpan[] {
     const token = match[0];
     if (token.startsWith("`")) {
       children.push(span(token.slice(1, -1), ["code"]));
+    } else if (token.startsWith("[")) {
+      const link = parseInlineMarkdownLink(token);
+      if (link) {
+        const markKey = makeKey("l", markDefs.length, link.href);
+        markDefs.push({
+          _key: markKey,
+          _type: "link",
+          href: link.href,
+        });
+        children.push(span(link.label, [markKey]));
+      } else {
+        children.push(span(token, []));
+      }
     } else {
       children.push(span(token.slice(2, -2), ["strong"]));
     }
@@ -369,7 +392,30 @@ function inlineChildren(text: string): PortableTextSpan[] {
     children.push(span(text.slice(cursor), []));
   }
 
-  return children.length ? children : [span("", [])];
+  return {
+    children: children.length ? children : [span("", [])],
+    markDefs,
+  };
+}
+
+/**
+ * Parse a single Markdown inline link token: [label](href)
+ */
+function parseInlineMarkdownLink(
+  token: string,
+): { label: string; href: string } | null {
+  const match = token.match(/^\[([^\]]+)\]\(([^)\s]+)\)$/);
+  if (!match) {
+    return null;
+  }
+
+  const label = match[1].trim();
+  const href = match[2].trim();
+  if (!label || !href) {
+    return null;
+  }
+
+  return { label, href };
 }
 
 /**
@@ -393,12 +439,13 @@ function textBlock(
   index: number,
   extra: PortableTextBlockExtra = {},
 ): PortableTextBlock {
+  const inline = inlineContent(text);
   return {
     _key: makeKey("b", index, text),
     _type: "block",
     style,
-    markDefs: [],
-    children: inlineChildren(text),
+    markDefs: inline.markDefs,
+    children: inline.children,
     ...extra,
   };
 }
