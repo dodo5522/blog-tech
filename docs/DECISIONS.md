@@ -1,5 +1,22 @@
 # DECISIONS.md
 
+## 2026-08-09: ChatGPT共有会話の記事化はリポジトリローカルSkillで行う
+
+- `gonta223/humanizer-ja` はリポジトリ内の `.agents/skills/humanizer-ja` へ導入し、生成記事の日本語推敲に使う
+- 共有リンクの記事化手順は `.agents/skills/chatgpt-share-to-sanity-draft` としてリポジトリ管理する
+- ChatGPT共有リンクの取得にOpenAI APIキーやログインCookieを要求しない。取得できないリンクは本文またはエクスポートの提供を依頼する
+- Sanity Draft作成は既存の `scripts/import-draft-post.ts` を再利用し、独自の投稿API実装を増やさない
+- humanizer-ja適用時も、元会話にない体験・数値・意見を追加しない
+- 入力会話と一時記事は `tmp/` に置き、Gitへコミットしない
+
+理由: 認証情報と会話データの露出を避けつつ、既存のDraft import経路を再利用して保守箇所を増やさないため。
+
+補足:
+
+- 共有ページの埋め込み会話データ抽出はSkill同梱のNode.jsスクリプトへ分離する
+- 記事化ではユーザーの実測、ChatGPTの回答、外部一次資料を区別する
+- 同一slugのimportはDraftを `createOrReplace` するため、投稿前にDraftと公開済み文書を問い合わせて人の編集を保護する
+
 ## ADR-001: フロントエンドに Astro を採用
 コンテンツ中心で静的配信するサイトに向いているため採用。
 

@@ -11,6 +11,7 @@ tmp__
 *.tfstate.*
 .env
 .env.local
+.env.*
 .sanity
 mise.toml
 *.tfvars

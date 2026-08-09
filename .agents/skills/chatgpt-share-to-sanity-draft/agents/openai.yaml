@@ -1,0 +1,4 @@
+interface:
+  display_name: "ChatGPT共有からSanity Draft"
+  short_description: "共有チャットを技術記事に整えSanity Draftへ投入"
+  default_prompt: "Use $chatgpt-share-to-sanity-draft to turn this public ChatGPT share link into a Japanese blog article and create a Sanity draft."

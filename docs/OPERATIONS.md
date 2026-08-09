@@ -26,6 +26,20 @@ pnpm sanity:import-draft -- --source tmp/<package-dir> --slug pve-gpu-passthroug
 - Markdown の表は、専用テーブルスキーマを増やさず `markdown` の `codeBlock` として保持する
 - `tmp/` の Markdown は Astro 側から直接読まない。公開サイトで表示確認するには、Sanity Studio で対象 Draft を publish する
 
+### ChatGPT共有リンクからDraftを作る
+
+リポジトリローカルの `.agents/skills/chatgpt-share-to-sanity-draft` を使う。公開共有リンクを取得し、会話の内容を技術記事へ再構成した後、同じリポジトリの `.agents/skills/humanizer-ja` で推敲して既存の `sanity:import-draft` へ渡す。
+
+- 通常の `https://chatgpt.com/share/...` 公開リンクの閲覧にOpenAI APIキーは使わない
+- アクセス制限付きリンクを認証回避して取得しない。取得できない場合は会話本文またはエクスポートを入力にする
+- Sanityへの書き込みには `SANITY_WRITE_TOKEN` と対象project/datasetへのdocument・asset作成更新権限が必要
+- トークンはプロセス環境、またはGit管理外の `.env` / `.env.local` にだけ置く
+- 共有会話と生成途中の記事はGit管理外の `tmp/` に置く
+- 共有HTMLの抽出にはSkill同梱の `scripts/extract-chatgpt-share.mjs` を使い、作業後に抽出データを削除する
+- 投稿前に `scripts/check-sanity-draft.mjs` で同じslugのDraftと公開済み文書がないことを確認する
+- importは同じDraft IDを `createOrReplace` するため、Studioで手直し済みのDraftがある場合は上書きしない
+- importはDraft作成まで。publishはSanity Studioで内容を確認した後に別途行う
+
 ### サイト設定を更新する
 
 1. Site Settings ドキュメントを開く
