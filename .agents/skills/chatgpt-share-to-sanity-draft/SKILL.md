@@ -36,7 +36,7 @@ description: ChatGPTの公開共有リンク（https://chatgpt.com/share/...）�
 
 ## 4. humanizer-jaで推敲する
 
-インストール済みの `$humanizer-ja` を使い、本文と見出しを推敲する。次を優先する。
+リポジトリ内の `.agents/skills/humanizer-ja` にインストール済みの `$humanizer-ja` を使い、本文と見出しを推敲する。次を優先する。
 
 - AI特有の定型句、過剰な見出し、全角ダッシュ、均一な語尾を減らす。
 - 技術用語、コード、固有名詞、数値、因果関係を変えない。

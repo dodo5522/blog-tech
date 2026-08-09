@@ -2,7 +2,7 @@
 
 ## 2026-08-09: ChatGPT共有会話の記事化はリポジトリローカルSkillで行う
 
-- `gonta223/humanizer-ja` はCodexのローカルスキル領域へ導入し、生成記事の日本語推敲に使う
+- `gonta223/humanizer-ja` はリポジトリ内の `.agents/skills/humanizer-ja` へ導入し、生成記事の日本語推敲に使う
 - 共有リンクの記事化手順は `.agents/skills/chatgpt-share-to-sanity-draft` としてリポジトリ管理する
 - ChatGPT共有リンクの取得にOpenAI APIキーやログインCookieを要求しない。取得できないリンクは本文またはエクスポートの提供を依頼する
 - Sanity Draft作成は既存の `scripts/import-draft-post.ts` を再利用し、独自の投稿API実装を増やさない

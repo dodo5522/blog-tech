@@ -28,7 +28,7 @@ pnpm sanity:import-draft -- --source tmp/<package-dir> --slug pve-gpu-passthroug
 
 ### ChatGPT共有リンクからDraftを作る
 
-リポジトリローカルの `.agents/skills/chatgpt-share-to-sanity-draft` を使う。公開共有リンクを取得し、会話の内容を技術記事へ再構成した後、`humanizer-ja` で推敲して既存の `sanity:import-draft` へ渡す。
+リポジトリローカルの `.agents/skills/chatgpt-share-to-sanity-draft` を使う。公開共有リンクを取得し、会話の内容を技術記事へ再構成した後、同じリポジトリの `.agents/skills/humanizer-ja` で推敲して既存の `sanity:import-draft` へ渡す。
 
 - 通常の `https://chatgpt.com/share/...` 公開リンクの閲覧にOpenAI APIキーは使わない
 - アクセス制限付きリンクを認証回避して取得しない。取得できない場合は会話本文またはエクスポートを入力にする
