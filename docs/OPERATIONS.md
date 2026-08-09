@@ -35,6 +35,9 @@ pnpm sanity:import-draft -- --source tmp/<package-dir> --slug pve-gpu-passthroug
 - Sanityへの書き込みには `SANITY_WRITE_TOKEN` と対象project/datasetへのdocument・asset作成更新権限が必要
 - トークンはプロセス環境、またはGit管理外の `.env` / `.env.local` にだけ置く
 - 共有会話と生成途中の記事はGit管理外の `tmp/` に置く
+- 共有HTMLの抽出にはSkill同梱の `scripts/extract-chatgpt-share.mjs` を使い、作業後に抽出データを削除する
+- 投稿前に `scripts/check-sanity-draft.mjs` で同じslugのDraftと公開済み文書がないことを確認する
+- importは同じDraft IDを `createOrReplace` するため、Studioで手直し済みのDraftがある場合は上書きしない
 - importはDraft作成まで。publishはSanity Studioで内容を確認した後に別途行う
 
 ### サイト設定を更新する
