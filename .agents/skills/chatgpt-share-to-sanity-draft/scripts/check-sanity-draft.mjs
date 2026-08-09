@@ -87,11 +87,9 @@ async function main() {
     useCdn: false,
   });
 
-  const draftId = `drafts.post.${args.slug}`;
-  const publishedId = `post.${args.slug}`;
   const documents = await client.fetch(
-    "*[_id in [$draftId, $publishedId]]|order(_id asc){_id, title, _updatedAt}",
-    { draftId, publishedId },
+    '*[_type == "post" && slug.current == $slug]|order(_id asc){_id, title, _updatedAt}',
+    { slug: args.slug },
     { perspective: "raw" },
   );
 
@@ -116,8 +114,8 @@ async function main() {
     JSON.stringify({
       exists: false,
       slug: args.slug,
-      draftId,
-      publishedId,
+      draftId: `drafts.post.${args.slug}`,
+      publishedId: `post.${args.slug}`,
     }),
   );
 }
