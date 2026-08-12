@@ -1,7 +1,6 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getSiteSettings, getTags } from "@/lib/content/api";
-
 const [siteSettings, tags] = await Promise.all([getSiteSettings(), getTags()]);
 ---
 
@@ -12,21 +11,27 @@ const [siteSettings, tags] = await Promise.all([getSiteSettings(), getTags()]);
   canonicalPath="/tags/"
 >
   <section class="page-header">
-    <p class="eyebrow">Tags</p>
+    <p class="eyebrow">Index / topics</p>
     <h1>タグ一覧</h1>
-    <p>記事をトピックごとに辿れます。</p>
+    <p>技術領域やツールから、関連する実装メモを辿れます。</p>
   </section>
-
-  <ul class="tag-list">
-    {
-      tags.map((tag) => (
-        <li class="tag-list__item">
-          <a href={`/tags/${tag.slug}/`}>
-            <strong>{tag.name}</strong>
-            {tag.description && <span>{tag.description}</span>}
-          </a>
-        </li>
-      ))
-    }
-  </ul>
+  {
+    tags.length > 0 ? (
+      <ul class="tag-list">
+        {tags.map((tag) => (
+          <li class="tag-list__item">
+            <a href={`/tags/${tag.slug}/`}>
+              <span class="tag-list__arrow" aria-hidden="true">
+                →
+              </span>
+              <strong>{tag.name}</strong>
+              {tag.description && <span>{tag.description}</span>}
+            </a>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p class="empty-state">利用できるタグはまだありません。</p>
+    )
+  }
 </BaseLayout>

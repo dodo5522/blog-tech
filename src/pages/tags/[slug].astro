@@ -5,25 +5,16 @@ import { getPostsByTagSlug, getSiteSettings, getTags } from "@/lib/content/api";
 
 export async function getStaticPaths() {
   const tags = await getTags();
-  return tags.map((tag) => ({
-    params: {
-      slug: tag.slug,
-    },
-  }));
+  return tags.map((tag) => ({ params: { slug: tag.slug } }));
 }
-
 const { slug } = Astro.params;
 const [siteSettings, tags, posts] = await Promise.all([
   getSiteSettings(),
   getTags(),
   getPostsByTagSlug(slug || ""),
 ]);
-
 const tag = tags.find((entry) => entry.slug === slug);
-
-if (!tag) {
-  return Astro.redirect("/404/");
-}
+if (!tag) return Astro.redirect("/404/");
 ---
 
 <BaseLayout
@@ -33,18 +24,19 @@ if (!tag) {
   canonicalPath={`/tags/${tag.slug}/`}
 >
   <section class="page-header">
-    <p class="eyebrow">Tag archive</p>
+    <p class="eyebrow">Topic / {tag.slug}</p>
     <h1>{tag.name}</h1>
-    {tag.description && <p>{tag.description}</p>}
+    <p>{tag.description || `${tag.name} に関連する公開済みの記事です。`}</p>
   </section>
-
-  <div class="stack">
-    {
-      posts.length > 0 ? (
-        posts.map((post) => <PostCard post={post} />)
-      ) : (
-        <p>このタグに紐づく公開記事はまだありません。</p>
-      )
-    }
-  </div>
+  {
+    posts.length > 0 ? (
+      <div class="stack">
+        {posts.map((post) => (
+          <PostCard post={post} />
+        ))}
+      </div>
+    ) : (
+      <p class="empty-state">このタグに紐づく公開記事はまだありません。</p>
+    )
+  }
 </BaseLayout>

@@ -1,7 +1,6 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getSiteSettings } from "@/lib/content/api";
-
 const siteSettings = await getSiteSettings();
 ---
 
@@ -11,10 +10,14 @@ const siteSettings = await getSiteSettings();
   description="ページが見つかりません。"
   canonicalPath="/404/"
 >
-  <section class="page-header">
-    <p class="eyebrow">404</p>
+  <section class="page-header error-page">
+    <p class="eyebrow">Error / 404</p>
     <h1>ページが見つかりません</h1>
-    <p>URL を確認するか、記事一覧から目的のページを探してください。</p>
-    <a class="button" href="/blog/">記事一覧へ戻る</a>
+    <p>URLが変更されたか、入力したアドレスが正しくない可能性があります。</p>
+    <div class="hero__actions">
+      <a class="button" href="/blog/"
+        >記事一覧へ <span aria-hidden="true">→</span></a
+      ><a class="button button--ghost" href="/">ホームへ戻る</a>
+    </div>
   </section>
 </BaseLayout>

@@ -23,6 +23,10 @@ const POST_PROJECTION = `
   excerpt,
   publishedAt,
   updatedAt,
+  body[]{
+    ...,
+    asset->{url}
+  },
   coverImage{
     alt,
     asset->{url}

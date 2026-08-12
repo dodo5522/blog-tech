@@ -61,6 +61,7 @@ export interface PostSummary {
   seoTitle?: string;
   seoDescription?: string;
   ogImage?: SanityImage;
+  body?: PortableTextBlock[];
 }
 
 export interface Post extends PostSummary {

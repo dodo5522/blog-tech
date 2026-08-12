@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import PostCard from "@/components/PostCard.astro";
+import TagPill from "@/components/TagPill.astro";
 import { getPublishedPosts, getSiteSettings, getTags } from "@/lib/content/api";
 
 const [siteSettings, posts, tags] = await Promise.all([
@@ -8,43 +9,56 @@ const [siteSettings, posts, tags] = await Promise.all([
   getPublishedPosts(),
   getTags(),
 ]);
-
 const recentPosts = posts.slice(0, 5);
 ---
 
 <BaseLayout siteSettings={siteSettings}>
   <section class="hero">
-    <p class="eyebrow">Minimal Astro + Sanity blog</p>
-    <h1>{siteSettings.siteTitle}</h1>
-    <p>{siteSettings.defaultSeoDescription}</p>
+    <p class="eyebrow">Build log / reproducible notes</p>
+    <h1>作って、確かめて、<br />次に使える形で残す。</h1>
+    <p>
+      {siteSettings.defaultSeoDescription} コマンド、判断、確認結果まで、未来の自分が再現できる技術ノートです。
+    </p>
     <div class="hero__actions">
-      <a class="button" href="/blog/">記事一覧を見る</a>
-      <a class="button button--ghost" href="/about/">About</a>
+      <a class="button" href="/blog/"
+        >記事を読む <span aria-hidden="true">→</span></a
+      >
+      <a class="button button--ghost" href="/about/">このブログについて</a>
     </div>
   </section>
 
-  <section class="section-grid">
-    <div>
-      <div class="section-heading">
-        <h2>Recent posts</h2>
-        <a href="/blog/">すべて見る</a>
-      </div>
-      <div class="stack">
-        {recentPosts.map((post) => <PostCard post={post} />)}
-      </div>
-    </div>
+  {
+    tags.length > 0 && (
+      <nav class="tag-index" aria-label="トピックから記事を探す">
+        <span class="tag-index__label">INDEX / TOPICS</span>
+        <div class="tag-index__items">
+          {tags.map((tag) => (
+            <TagPill href={`/tags/${tag.slug}/`} label={tag.name} />
+          ))}
+        </div>
+      </nav>
+    )
+  }
 
-    <aside class="sidebar-card">
-      <h2>Tags</h2>
-      <ul class="sidebar-list">
-        {
-          tags.map((tag) => (
-            <li>
-              <a href={`/tags/${tag.slug}/`}>{tag.name}</a>
-            </li>
-          ))
-        }
-      </ul>
-    </aside>
+  <section class="entries-section" aria-labelledby="recent-entries">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Latest log</p><h2 id="recent-entries">
+          Recent entries
+        </h2>
+      </div>
+      <a href="/blog/">すべて見る <span aria-hidden="true">→</span></a>
+    </div>
+    {
+      recentPosts.length > 0 ? (
+        <div class="stack">
+          {recentPosts.map((post) => (
+            <PostCard post={post} />
+          ))}
+        </div>
+      ) : (
+        <p class="empty-state">公開済みの記事はまだありません。</p>
+      )
+    }
   </section>
 </BaseLayout>

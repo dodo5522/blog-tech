@@ -2,7 +2,6 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import PostCard from "@/components/PostCard.astro";
 import { getPublishedPosts, getSiteSettings } from "@/lib/content/api";
-
 const [siteSettings, posts] = await Promise.all([
   getSiteSettings(),
   getPublishedPosts(),
@@ -16,12 +15,21 @@ const [siteSettings, posts] = await Promise.all([
   canonicalPath="/blog/"
 >
   <section class="page-header">
-    <p class="eyebrow">Blog</p>
+    <p class="eyebrow">Entries / all</p>
     <h1>記事一覧</h1>
-    <p>Sanity で公開された記事を静的生成して配信します。</p>
+    <p>
+      実装手順、判断、失敗から得た知見を、あとから再現できる形でまとめています。
+    </p>
   </section>
-
-  <div class="stack">
-    {posts.map((post) => <PostCard post={post} />)}
-  </div>
+  {
+    posts.length > 0 ? (
+      <div class="stack">
+        {posts.map((post) => (
+          <PostCard post={post} />
+        ))}
+      </div>
+    ) : (
+      <p class="empty-state">公開済みの記事はまだありません。</p>
+    )
+  }
 </BaseLayout>

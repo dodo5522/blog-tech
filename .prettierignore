@@ -4,3 +4,6 @@ node_modules
 .idea
 docs
 pnpm-lock.yaml
+
+.superpowers
+dist-studio

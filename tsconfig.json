@@ -5,5 +5,13 @@
     "paths": {
       "@/*": ["src/*"]
     }
-  }
+  },
+  "exclude": [
+    "dist",
+    "dist-studio",
+    ".astro",
+    ".sanity",
+    ".superpowers",
+    "node_modules"
+  ]
 }
