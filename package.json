@@ -25,11 +25,11 @@
     "@portabletext/to-html": "3.0.0",
     "@portabletext/toolkit": "3.0.1",
     "@sanity/client": "7.10.0",
-    "@sanity/vision": "4.6.1",
+    "@sanity/vision": "5.31.2",
     "astro": "5.13.5",
     "react": "19.2.6",
     "react-dom": "19.2.6",
-    "sanity": "4.6.1",
+    "sanity": "5.31.2",
     "styled-components": "^6.4.0"
   },
   "devDependencies": {

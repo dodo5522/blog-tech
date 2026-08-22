@@ -1,5 +1,23 @@
 # DECISIONS.md
 
+## 2026-08-23: Sanity Studio v5 系で Content Agent 対応を行う
+
+- `sanity` と `@sanity/vision` を `5.31.2` に揃える
+- Content Agent の最低要件である Studio `5.1.0` 以上を満たしつつ、今回の更新では v6 への追加メジャーアップグレードを行わない
+- Studio 更新を本番へ反映した後、認証済みブラウザでデプロイ済み Studio を一度開き、Sanity 側へスキーマを登録する
+- Content Agent 自体を公開サイトへ組み込まず、Sanity Dashboard の編集支援機能として利用する
+
+理由:
+
+- v4 から v5 の主な互換要件は React 19.2 であり、このリポジトリの React 19.2.6、Node.js 24.13.1、styled-components 6.4.0 は要件を満たしている
+- Content Agent 対応と無関係な v6 の変更を同時に取り込まず、障害時の切り分けとロールバックを単純に保つため
+
+影響:
+
+- Studio と Vision の依存ツリーおよび lockfile が更新される
+- Astro の公開サイト、Sanity スキーマ、GROQ クエリ、データモデルには変更しない
+- `main` マージ後の `Deploy Studio` 完了だけでは Content Agent 接続確認は完了せず、Studio を一度開く手順が必要になる
+
 ## 2026-08-09: ChatGPT共有会話の記事化はリポジトリローカルSkillで行う
 
 - `gonta223/humanizer-ja` はリポジトリ内の `.agents/skills/humanizer-ja` へ導入し、生成記事の日本語推敲に使う

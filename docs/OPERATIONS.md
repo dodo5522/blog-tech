@@ -68,6 +68,17 @@ pnpm sanity:import-draft -- --source tmp/<package-dir> --slug pve-gpu-passthroug
 3. `Build` / `s3 sync dist-studio/` / CloudFront invalidation が成功していることを確認する
 4. Studio の CloudFront URL で更新が反映されていることを確認する
 
+### Content Agent 接続の確認
+
+Sanity Studio の依存関係やスキーマを更新した場合は、デプロイ後に次を行う。
+
+1. `Deploy Studio` と CloudFront invalidation の完了を確認する
+2. Sanity にログインしたブラウザで、CloudFront 経由のデプロイ済み Studio を一度開く
+3. Post、Tag、Author、Site settings が通常どおり表示されることを確認する
+4. Sanity Dashboard の Content Agent を開き、対象 project/dataset のスキーマを認識できることを確認する
+
+Content Agent は Studio 5.1.0 以上を必要とする。このリポジトリは `sanity` と `@sanity/vision` を 5.31.2 に固定している。Studio を開く操作は、デプロイ済みスキーマを Sanity 側へ登録するために必要であり、CI だけでは代替しない。
+
 ### Studio インフラ変更時の運用
 
 `deploy-studio.yml` は `terraform apply` を実行しないため、`infra/` を変更した場合は先にインフラを反映する。
