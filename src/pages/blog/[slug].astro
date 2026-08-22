@@ -97,8 +97,6 @@ const description =
         </dl>
       </aside>
 
-      <PortableText value={post.body} />
-
       {
         showTableOfContents && (
           <aside class="post__toc" aria-label="目次">
@@ -116,6 +114,8 @@ const description =
           </aside>
         )
       }
+
+      <PortableText value={post.body} />
     </div>
   </article>
 </BaseLayout>
