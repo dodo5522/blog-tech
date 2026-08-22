@@ -12,6 +12,14 @@ export const siteSettingsType = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
+      name: "siteTagline",
+      title: "Site tagline",
+      type: "string",
+      description:
+        "Shown as the home page heading. When empty, the site uses its default tagline.",
+      validation: (rule) => rule.max(80),
+    }),
+    defineField({
       name: "siteUrl",
       title: "Site URL",
       type: "url",

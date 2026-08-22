@@ -67,12 +67,12 @@ MVP では著者モデルを過剰に複雑化しない。
 単一ドキュメントで管理する。
 
 - `siteTitle`
+- `siteTagline`（任意、最大80文字。未設定時は既定文言を表示）
 - `siteUrl`
 - `defaultSeoTitle`
 - `defaultSeoDescription`
 - `defaultOgImage`
 - `socialLinks`
-- `navigation`（必要なら）
 
 ---
 

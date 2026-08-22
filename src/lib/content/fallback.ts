@@ -1,8 +1,10 @@
+import { DEFAULT_SITE_TAGLINE } from "@/lib/content/siteSettings";
 import type { Post, SiteSettings, Tag } from "@/lib/content/types";
 import { publicSiteUrl } from "@/lib/env";
 
 export const fallbackSiteSettings: SiteSettings = {
   siteTitle: "Tech Notes",
+  siteTagline: DEFAULT_SITE_TAGLINE,
   siteUrl: publicSiteUrl,
   defaultSeoTitle: "Tech Notes",
   defaultSeoDescription: "Astro と Sanity で構築する個人技術ブログ。",
