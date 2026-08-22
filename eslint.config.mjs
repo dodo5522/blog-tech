@@ -16,6 +16,6 @@ export default [
     },
   },
   {
-    ignores: ["dist/", ".astro/", ".sanity/", "node_modules/"],
+    ignores: ["dist/", "dist-studio/", ".astro/", ".sanity/", "node_modules/"],
   },
 ];

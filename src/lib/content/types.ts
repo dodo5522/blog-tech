@@ -61,6 +61,7 @@ export interface PostSummary {
   seoTitle?: string;
   seoDescription?: string;
   ogImage?: SanityImage;
+  body?: PortableTextBlock[];
 }
 
 export interface Post extends PostSummary {
@@ -69,6 +70,7 @@ export interface Post extends PostSummary {
 
 export interface SiteSettings {
   siteTitle: string;
+  siteTagline: string;
   siteUrl: string;
   defaultSeoTitle: string;
   defaultSeoDescription: string;

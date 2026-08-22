@@ -15,3 +15,5 @@ tmp__
 .sanity
 mise.toml
 *.tfvars
+
+.superpowers

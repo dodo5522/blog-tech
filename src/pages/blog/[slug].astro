@@ -7,16 +7,14 @@ import {
   getPublishedPosts,
   getSiteSettings,
 } from "@/lib/content/api";
-import { getReadingTimeMinutes } from "@/lib/content/renderPortableText";
+import {
+  getReadingTimeMinutes,
+  getTableOfContents,
+} from "@/lib/content/renderPortableText";
 
 export async function getStaticPaths() {
   const posts = await getPublishedPosts();
-
-  return posts.map((post) => ({
-    params: {
-      slug: post.slug,
-    },
-  }));
+  return posts.map((post) => ({ params: { slug: post.slug } }));
 }
 
 const { slug } = Astro.params;
@@ -25,11 +23,11 @@ const [siteSettings, post] = await Promise.all([
   getPostBySlug(slug || ""),
 ]);
 
-if (!post) {
-  return Astro.redirect("/404/");
-}
+if (!post) return Astro.redirect("/404/");
 
 const readingTime = getReadingTimeMinutes(post.body);
+const tableOfContents = getTableOfContents(post.body);
+const showTableOfContents = tableOfContents.length >= 2;
 const description =
   post.seoDescription || post.excerpt || siteSettings.defaultSeoDescription;
 ---
@@ -44,14 +42,14 @@ const description =
 >
   <article class="post">
     <header class="post__header">
-      <p class="eyebrow">Article</p>
+      <p class="eyebrow">Entry / Article</p>
       <h1>{post.title}</h1>
       <div class="post__meta">
-        <time datetime={post.publishedAt}
-          >{new Date(post.publishedAt).toLocaleDateString("ja-JP")}</time
-        >
+        <time datetime={post.publishedAt}>
+          {new Date(post.publishedAt).toLocaleDateString("ja-JP")}
+        </time>
         <span>{readingTime} min read</span>
-        {post.author?.name && <span>{post.author.name}</span>}
+        {post.author?.name && <span>by {post.author.name}</span>}
       </div>
       <p class="post__excerpt">{post.excerpt}</p>
       {
@@ -76,6 +74,48 @@ const description =
       )
     }
 
-    <PortableText value={post.body} />
+    <div class="post__layout">
+      <aside class="post__aside" aria-label="記事情報">
+        <p class="post__aside-label">ENTRY INFO</p>
+        <dl class="post__facts">
+          <div>
+            <dt>Published</dt><dd>
+              {new Date(post.publishedAt).toLocaleDateString("ja-JP")}
+            </dd>
+          </div>
+          <div><dt>Reading time</dt><dd>{readingTime} min</dd></div>
+          {
+            post.author?.name && (
+              <div>
+                <>
+                  <dt>Author</dt>
+                  <dd>{post.author.name}</dd>
+                </>
+              </div>
+            )
+          }
+        </dl>
+      </aside>
+
+      <PortableText value={post.body} />
+
+      {
+        showTableOfContents && (
+          <aside class="post__toc" aria-label="目次">
+            <p class="post__aside-label">ON THIS PAGE</p>
+            <details open>
+              <summary>目次</summary>
+              <ol>
+                {tableOfContents.map((item) => (
+                  <li class:list={{ "post__toc-subitem": item.level === 3 }}>
+                    <a href={`#${item.id}`}>{item.text}</a>
+                  </li>
+                ))}
+              </ol>
+            </details>
+          </aside>
+        )
+      }
+    </div>
   </article>
 </BaseLayout>

@@ -1,6 +1,7 @@
 export const SITE_SETTINGS_QUERY = `
 *[_type == "siteSettings"][0]{
   siteTitle,
+  siteTagline,
   siteUrl,
   defaultSeoTitle,
   defaultSeoDescription,
@@ -23,6 +24,10 @@ const POST_PROJECTION = `
   excerpt,
   publishedAt,
   updatedAt,
+  body[]{
+    ...,
+    asset->{url}
+  },
   coverImage{
     alt,
     asset->{url}

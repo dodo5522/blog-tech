@@ -9,6 +9,10 @@ import {
   SITE_SETTINGS_QUERY,
   TAGS_QUERY,
 } from "@/lib/content/queries";
+import {
+  normalizeSiteSettings,
+  type SanitySiteSettings,
+} from "@/lib/content/siteSettings";
 import type { Post, PostSummary, SiteSettings, Tag } from "@/lib/content/types";
 import { sanityFallbackMode } from "@/lib/env";
 import { sanityClient } from "@/lib/sanity/client";
@@ -102,8 +106,12 @@ function normalizePostSummary<T extends PostSummary>(post: T): T {
 }
 
 export async function getSiteSettings(): Promise<SiteSettings> {
-  const result = await fetchSanity<SiteSettings | null>(SITE_SETTINGS_QUERY);
-  return result.ok ? result.data || fallbackSiteSettings : fallbackSiteSettings;
+  const result = await fetchSanity<SanitySiteSettings | null>(
+    SITE_SETTINGS_QUERY,
+  );
+  return result.ok && result.data
+    ? normalizeSiteSettings(result.data)
+    : fallbackSiteSettings;
 }
 
 export async function getPublishedPosts(): Promise<PostSummary[]> {

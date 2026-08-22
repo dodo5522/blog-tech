@@ -2,20 +2,19 @@
 interface Props {
   title: string;
 }
-
 const { title } = Astro.props;
 ---
 
 <header class="site-header">
   <div class="site-header__inner">
-    <a class="site-header__brand" href="/">
-      {title}
+    <a class="site-header__brand" href="/" aria-label={`${title} ホーム`}>
+      <span aria-hidden="true">~/</span>{title}
     </a>
     <nav aria-label="Primary">
       <ul class="site-header__nav">
-        <li><a href="/blog/">Blog</a></li>
-        <li><a href="/tags/">Tags</a></li>
-        <li><a href="/about/">About</a></li>
+        <li><a href="/blog/">entries</a></li>
+        <li><a href="/tags/">tags</a></li>
+        <li><a href="/about/">about</a></li>
       </ul>
     </nav>
   </div>

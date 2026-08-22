@@ -1,7 +1,6 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getSiteSettings } from "@/lib/content/api";
-
 const siteSettings = await getSiteSettings();
 ---
 
@@ -12,20 +11,18 @@ const siteSettings = await getSiteSettings();
   canonicalPath="/about/"
 >
   <section class="page-header">
-    <p class="eyebrow">About</p>
-    <h1>About this blog</h1>
-    <p>低コスト、低運用負荷、静的配信を重視した個人向け技術ブログです。</p>
+    <p class="eyebrow">About / this log</p>
+    <h1>このブログについて</h1>
+    <p>試したことを、次にもう一度使える知識へ。</p>
   </section>
-
-  <div class="content-card">
+  <div class="content-card prose-card">
+    <h2>静的で、小さく、保守しやすく</h2>
     <p>
-      このサイトは Astro で静的生成し、コンテンツ管理には Sanity
-      を使います。公開済みコンテンツのみを build 時に取得し、S3 + CloudFront
-      で配信する構成です。
+      このサイトはAstroで静的生成し、コンテンツ管理にはSanityを使います。公開済みコンテンツだけをビルド時に取得し、S3とCloudFrontで配信します。
     </p>
+    <h2>未来の自分が再現できる記録</h2>
     <p>
-      MVP
-      では、記事公開と保守のしやすさを優先し、コメントや検索バックエンドのような追加機能は持ちません。
+      完成形だけでなく、使ったコマンド、選んだ理由、確認した結果まで残します。コメントや検索バックエンドなどを増やさず、記事公開と保守のしやすさを優先しています。
     </p>
   </div>
 </BaseLayout>
