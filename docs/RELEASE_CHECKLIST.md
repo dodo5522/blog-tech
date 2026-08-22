@@ -16,6 +16,7 @@
 - [ ] 環境変数の説明がある
 - [ ] deploy workflow が正しい AWS リソースを参照している
 - [ ] `pnpm sanity:dev` で Studio が起動する
+- [ ] `pnpm sanity:build` で Studio の本番ビルドが成功する
 
 ## CMS チェック
 
@@ -45,3 +46,5 @@
 - [ ] sitemap が参照できる
 - [ ] 目立つリンク切れがない
 - [ ] デプロイ手順が文書に反映されている
+- [ ] Studio 更新時はデプロイ済み Studio を認証済みブラウザで一度開く
+- [ ] Content Agent が対象 project/dataset のスキーマを認識する
