@@ -1,6 +1,6 @@
 ---
 name: chatgpt-share-to-sanity-draft
-description: ChatGPTの公開共有リンク（https://chatgpt.com/share/...）または会話エクスポートを読み、実測・AI回答・一次資料を区別して日本語の技術ブログ記事へ再構成し、humanizer-jaで推敲してSanity Draftを安全に作成する。共有会話の記事化、記事Markdownの生成・検証、Sanityへのdraft post、既存Draftの上書き回避が必要な依頼で使う。
+description: ChatGPTの公開共有リンク（https://chatgpt.com/share/...）または会話エクスポートを読み、実測・AI回答・一次資料を区別して日本語の技術ブログ記事へ再構成し、Sanity Draftを安全に作成する。共有会話の記事化、記事Markdownの生成・検証、Sanityへのdraft post、既存Draftの上書き回避が必要な依頼で使う。
 ---
 
 # ChatGPT共有リンクからSanity Draftを作る
@@ -49,15 +49,24 @@ node .agents/skills/chatgpt-share-to-sanity-draft/scripts/extract-chatgpt-share.
 - 共有ページの添付画像を自動転載しない。必要なら原本、利用許可、機密性を確認する。
 - frontmatterとMarkdownは [article-package.md](references/article-package.md) に合わせる。
 
-## 5. humanizer-jaで推敲する
+## 5. blog-tech向けに推敲する
 
-リポジトリ内の `.agents/skills/humanizer-ja` にある `$humanizer-ja` を使う。
+`writing-blog-tech-articles` の編集基準に従い、リポジトリ内の `natural-japanese` を `tech` ジャンルで使う。
 
 - 定型句、過剰な見出し、全角ダッシュ、均一な語尾を減らす。
 - 元会話にある本人の判断や所感を文章の声として活かす。
 - 会話にない体験、数値、成功結果、感想を創作しない。
 - 技術用語、コード、固有名詞、否定、因果関係を変えない。
 - 推敲後、整理した根拠と一文ずつ照合する。
+
+記事パッケージに対して文章とMarkdownの静的検査も実行する。
+
+```bash
+pnpm lint:content -- tmp/<slug>/article.md
+pnpm lint:markdown -- tmp/<slug>/article.md
+uv run .agents/skills/natural-japanese/scripts/lint.py --genre tech --reading-load tmp/<slug>/article.md
+uv run .agents/skills/natural-japanese/scripts/terms.py tmp/<slug>/article.md
+```
 
 ## 6. ローカルで検証する
 
