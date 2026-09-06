@@ -13,7 +13,6 @@ tmp__
 .env.local
 .env.*
 .sanity
-mise.toml
 *.tfvars
 
 .superpowers
