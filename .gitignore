@@ -6,6 +6,8 @@ dist
 dist-studio
 tmp
 tmp__
+__pycache__/
+*.py[cod]
 .terraform
 *.tfstate
 *.tfstate.*
