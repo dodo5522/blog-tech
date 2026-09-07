@@ -1,5 +1,26 @@
 # DECISIONS.md
 
+## 2026-09-06: 日本語記事の推敲と静的検査を分離する
+
+- `humanizer-ja` を `natural-japanese` に置き換え、技術記事の設計と文脈を踏まえた推敲に使う。導入元は `coji/natural-japanese` のcommit `9a78a42964096da509b8f3e011f0085a5f080151`
+- textlintと `textlint-rule-preset-ja-technical-writing` で、日本語技術文書の再現可能な検査を行う
+- `textlint-rule-prh` と `prh.yml` で、blog-tech固有の製品名や技術用語の表記を統一する
+- markdownlint-cli2でMarkdown構造を検査する
+- `natural-japanese` のPython検査スクリプトはmiseで固定したuvから実行する
+- CIでは正常fixtureと異常fixtureを使い、各検査が成功と違反を識別できることを確認する
+- 記事はGit管理外の `tmp/<slug>/article.md` に置くため、公開前に対象ファイルを指定して検査する
+
+理由:
+
+- Agent Skillの文脈判断と静的解析の決定的な検査を分け、技術的な意味を保ちながら読みやすさを改善するため
+- 既存文書の違反を今回の変更で一括修正せず、新しい記事の執筆フローから段階的に適用するため
+
+影響:
+
+- 記事作成時は `natural-japanese` と `writing-blog-tech-articles` の編集基準を使う
+- Sanity Draftへの取り込み前にtextlint、markdownlint、natural-japaneseの検査を実行する
+- textlint、技術文書プリセット、prh、markdownlint-cli2が開発依存に加わり、mise管理ツールにuvが加わる
+
 ## 2026-08-23: Sanity Studio v5 系で Content Agent 対応を行う
 
 - `sanity` と `@sanity/vision` を `5.31.2` に揃える
@@ -20,11 +41,11 @@
 
 ## 2026-08-09: ChatGPT共有会話の記事化はリポジトリローカルSkillで行う
 
-- `gonta223/humanizer-ja` はリポジトリ内の `.agents/skills/humanizer-ja` へ導入し、生成記事の日本語推敲に使う
+- 当初は `gonta223/humanizer-ja` を生成記事の日本語推敲に採用した。2026-09-06の判断により `natural-japanese` へ置き換えた
 - 共有リンクの記事化手順は `.agents/skills/chatgpt-share-to-sanity-draft` としてリポジトリ管理する
 - ChatGPT共有リンクの取得にOpenAI APIキーやログインCookieを要求しない。取得できないリンクは本文またはエクスポートの提供を依頼する
 - Sanity Draft作成は既存の `scripts/import-draft-post.ts` を再利用し、独自の投稿API実装を増やさない
-- humanizer-ja適用時も、元会話にない体験・数値・意見を追加しない
+- 推敲時も、元会話にない体験・数値・意見を追加しない
 - 入力会話と一時記事は `tmp/` に置き、Gitへコミットしない
 
 理由: 認証情報と会話データの露出を避けつつ、既存のDraft import経路を再利用して保守箇所を増やさないため。

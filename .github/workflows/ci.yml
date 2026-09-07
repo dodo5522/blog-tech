@@ -30,6 +30,9 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      - name: Check writing
+        run: pnpm test:writing-tools
+
       - name: Format check
         run: pnpm format:check
 

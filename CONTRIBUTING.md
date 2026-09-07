@@ -114,6 +114,24 @@
 
 `README.md` は入口文書として保ち、詳細手順は個別文書へ寄せる。
 
+## 技術記事の執筆と校正
+
+日本語記事の設計と推敲には `.agents/skills/natural-japanese` を `tech` ジャンルで使う。blog-tech固有の編集基準とSanityへの受け渡し条件は `.agents/skills/writing-blog-tech-articles` に従う。ChatGPT共有会話を素材にする場合は `.agents/skills/chatgpt-share-to-sanity-draft` も使う。
+
+`natural-japanese` の検査スクリプトにはuvを使う。mise利用時はリポジトリルートで `mise install` を実行する。
+
+記事パッケージをSanityへ取り込む前に、Markdown本文を検査する。
+
+```bash
+pnpm lint:content -- tmp/<slug>/article.md
+pnpm lint:markdown -- tmp/<slug>/article.md
+uv run .agents/skills/natural-japanese/scripts/lint.py --genre tech --reading-load tmp/<slug>/article.md
+uv run .agents/skills/natural-japanese/scripts/terms.py tmp/<slug>/article.md
+pnpm sanity:import-draft -- --source tmp/<slug> --dry-run
+```
+
+textlintは技術文書の読みやすさと `prh.yml` の表記統一を検査する。markdownlintはMarkdown構造を検査する。`natural-japanese` の指摘は文脈判断の材料であり、技術的な意味を変えてまで機械的に直さない。
+
 ---
 
 ## 実装開始前チェック

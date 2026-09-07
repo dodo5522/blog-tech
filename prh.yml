@@ -1,0 +1,22 @@
+version: 1
+rules:
+  - expected: JavaScript
+    patterns:
+      - javascript
+      - Javascript
+  - expected: TypeScript
+    patterns:
+      - typescript
+      - Typescript
+  - expected: GitHub
+    patterns:
+      - github
+      - Github
+  - expected: CloudFront
+    patterns:
+      - cloudfront
+      - Cloudfront
+  - expected: Sanity Studio
+    patterns:
+      - sanity studio
+      - Sanity studio

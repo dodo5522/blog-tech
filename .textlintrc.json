@@ -1,0 +1,13 @@
+{
+  "filters": {},
+  "rules": {
+    "preset-ja-technical-writing": {
+      "sentence-length": {
+        "max": 140
+      }
+    },
+    "prh": {
+      "rulePaths": ["./prh.yml"]
+    }
+  }
+}
