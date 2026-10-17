@@ -375,6 +375,17 @@ Sanity Studio の配置が異なる場合は、その理由を文書化するこ
 - ChatGPT の共有 URL など、素材を取得するための非公開 URL は、Issue、Pull Request、コミットメッセージ、記事本文へ記載しないこと。
 - 共有 URL や抽出した会話は Git 管理外の一時領域だけで扱い、Draft 作成後に削除すること。
 
+#### Sanity Draftのローカル認証情報
+
+- プロジェクト直下の `.env` がない場合、Git管理外の `~/.config/sanity/blog-tech.env` を `--env` で指定して使うこと。
+- 必要な変数は `SANITY_PROJECT_ID`、`SANITY_DATASET`、`SANITY_API_VERSION`、`SANITY_WRITE_TOKEN`。値をリポジトリ、Issue、Pull Request、コミットメッセージ、記事本文、会話へ記録しないこと。
+
+```bash
+pnpm sanity:import-draft -- \
+  --source tmp/<slug> \
+  --env ~/.config/sanity/blog-tech.env
+```
+
 ---
 
 ## やってはいけないこと
